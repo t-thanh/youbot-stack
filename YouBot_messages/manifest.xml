@@ -1,0 +1,10 @@
+<package>
+    <description brief="Orocos YouBot messages typekit package">
+        This package contains a typekit necessary for communication.
+    </description>
+    <!--NOTE: set the license and author before you publish this code-->
+    <license>FREE</license>
+    <author>BRICS UT</author>
+    <depend package="rtt" />
+</package>
+

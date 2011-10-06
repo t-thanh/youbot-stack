@@ -1,0 +1,15 @@
+This is a typekit for YouBot messages. 
+Currently it is only working for Orocos, but in the future ROS will be added. Hopefully, the struct's will remain functional and only includes need to be changed.
+
+How to make the typekit
+mkdir build
+cd build
+cmake ..
+make
+sudo make install
+
+How to use this typekit:
+* CMakeLists.txt - Add orocos_use_package( YouBot_messages-typekit ) . The Orocos build system will look in its component path for this.
+* CPP/header files - Add #include "orocos/YouBot_messages/Types.hpp" . The defined data structures are now usable in code. Maybe you also need to set the correct namespace.
+
+YouBot_messages is the name of the typekit.
