@@ -1,0 +1,20 @@
+<package>
+  <description brief="YouBot_adapters">
+
+     YouBot_adapters
+
+  </description>
+  <author>Yury Brodskiy and Robert Wilterdink</author>
+  <license>LGPLv2.1 / BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>ce203</url>
+  <depend package="rtt"/>
+  <depend package="rtt_ros_integration"/>
+  <depend package="rtt_ros_integration_std_msgs"/>
+  <depend package="rtt_ros_integration_sensor_msgs"/>
+  <depend package="rtt_motion_control_msgs"/>
+  <depend package="Orocos_OODL"/>
+
+</package>
+
+
