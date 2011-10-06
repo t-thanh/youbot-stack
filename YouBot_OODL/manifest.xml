@@ -1,0 +1,18 @@
+<package>
+  <description brief="Orocos_OODL">
+
+     Orocos_OODL
+
+  </description>
+  <author>Robert Wilterdink</author>
+  <license>LGPLv2.1 / BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>ce203</url>
+  <depend package="rtt"/>
+  <depend package="rtt_ros_integration"/>
+  <depend package="rtt_ros_integration_std_msgs"/>
+  <depend package="rtt_ros_integration_sensor_msgs"/>
+  <depend package="rtt_motion_control_msgs"/>
+</package>
+
+
