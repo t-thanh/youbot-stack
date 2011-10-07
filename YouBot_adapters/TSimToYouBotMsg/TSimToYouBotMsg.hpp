@@ -5,6 +5,7 @@
 #include <YouBotTypes.h>
 #include <sensor_msgs/typekit/Types.h>
 #include <motion_control_msgs/typekit/Types.h>
+#include <std_msgs/Float64MultiArray.h>
 
 namespace YouBot
 {
@@ -22,13 +23,13 @@ namespace YouBot
 			void updateHook() ;
 
 		private:
-			InputPort<std::vector<double> > input_cmd_signal;
+			InputPort<std_msgs::Float64MultiArray > input_cmd_signal;
 
 			OutputPort<motion_control_msgs::JointPositions> output_cmd_angles;
 			OutputPort<motion_control_msgs::JointVelocities> output_cmd_velocities;
 			OutputPort<motion_control_msgs::JointEfforts> output_cmd_torques;
 
-			std::vector<double> m_input_cmd_signal;
+			std_msgs::Float64MultiArray m_input_cmd_signal;
 
 			motion_control_msgs::JointVelocities m_output_cmd_velocities;
 			motion_control_msgs::JointPositions m_output_cmd_angles;

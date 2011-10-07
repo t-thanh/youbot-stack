@@ -13,10 +13,10 @@ namespace YouBot
 
 	TSimToYouBotMsg::TSimToYouBotMsg(string const& name) :
 			TaskContext(name),
-			m_input_cmd_signal(0),
 			m_ctrl_mode(MOTOR_STOP),
 			m_dimension(0)
 	{
+		m_input_cmd_signal.data = vector<double>(0); //TODO: Fix me properly
 		this->addPort("output_cmd_angles",output_cmd_angles)
 			.doc("Connect OODL angles. Converts 20Sim vectors to YouBot cmd messages.");
 		this->addPort("output_cmd_velocities",output_cmd_velocities)
@@ -39,7 +39,7 @@ namespace YouBot
 		m_ctrl_mode = ctrl_mode;
 		m_dimension = dimension;
 
-		m_input_cmd_signal.resize(m_dimension, 0);
+		m_input_cmd_signal.data.resize(m_dimension, 0);
 
 		m_output_cmd_angles.positions.assign(m_dimension, 0);
 		m_output_cmd_velocities.velocities.assign(m_dimension, 0);
@@ -99,21 +99,21 @@ namespace YouBot
 				{
 					for(unsigned int i = 0; i < m_dimension; ++i)
 					{
-						m_output_cmd_angles.positions[i] = m_input_cmd_signal[i];
+						m_output_cmd_angles.positions[i] = m_input_cmd_signal.data[i];
 					}
 				}
 				case(ANGULAR_VELOCITY):
 				{
 					for(unsigned int i = 0; i < m_dimension; ++i)
 					{
-						m_output_cmd_velocities.velocities[i] = m_input_cmd_signal[i];
+						m_output_cmd_velocities.velocities[i] = m_input_cmd_signal.data[i];
 					}
 				}
 				case(TORQUE):
 				{
 					for(unsigned int i = 0; i < m_dimension; ++i)
 					{
-						m_output_cmd_torques.efforts[i] = m_input_cmd_signal[i];
+						m_output_cmd_torques.efforts[i] = m_input_cmd_signal.data[i];
 					}
 				}
 				default:

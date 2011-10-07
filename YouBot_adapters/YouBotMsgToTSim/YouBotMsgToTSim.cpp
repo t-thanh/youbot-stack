@@ -12,11 +12,12 @@ namespace YouBot
 
 	YouBotMsgToTSim::YouBotMsgToTSim(string const& name) :
 			TaskContext(name),
-			m_output_positions(0),
-			m_output_velocities(0),
-			m_output_torques(0),
 			m_dimension(0)
 	{
+		m_output_positions.data = vector<double>(0);
+		m_output_velocities.data = vector<double>(0);
+		m_output_torques.data = vector<double>(0);
+
 		this->addPort("output_positions",output_positions)
 			.doc("Connect 20Sim flat vectors. Converts YouBot state messages to positions vectors.");
 		this->addPort("output_velocities",output_velocities)
@@ -36,9 +37,9 @@ namespace YouBot
 	{
 		m_dimension = dimension;
 
-		m_output_positions.resize(m_dimension, 0.0);
-		m_output_velocities.resize(m_dimension, 0.0);
-		m_output_torques.resize(m_dimension, 0.0);
+		m_output_positions.data.resize(m_dimension, 0.0);
+		m_output_velocities.data.resize(m_dimension, 0.0);
+		m_output_torques.data.resize(m_dimension, 0.0);
 
 		m_input_states.position.assign(m_dimension, 0);
 		m_input_states.velocity.assign(m_dimension, 0);
@@ -78,9 +79,9 @@ namespace YouBot
 		{
 			for(unsigned int i = 0; i < m_dimension; ++i)
 			{
-				m_output_positions[i] = m_input_states.position[i];
-				m_output_velocities[i] = m_input_states.velocity[i];
-				m_output_torques[i] = m_input_states.effort[i];
+				m_output_positions.data[i] = m_input_states.position[i];
+				m_output_velocities.data[i] = m_input_states.velocity[i];
+				m_output_torques.data[i] = m_input_states.effort[i];
 			}
 		}
 	}
