@@ -20,6 +20,15 @@ if (ROS_ROOT)
   rosbuild_include(rtt_ros_integration GenerateRTTtypekit)
   ros_generate_rtt_typekit(YouBot_adapters)
 
+
+# Set the build type.  Options are:
+#  Coverage       : w/ debug symbols, w/o optimization, w/ code-coverage
+#  Debug          : w/ debug symbols, w/o optimization
+#  Release        : w/o debug symbols, w/ optimization
+#  RelWithDebInfo : w/ debug symbols, w/ optimization
+#  MinSizeRel     : w/o debug symbols, w/ optimization, stripped binaries
+#set(ROS_BUILD_TYPE RelWithDebInfo)
+
 rosbuild_find_ros_package( Orocos_OODL )
 
 # Set the CMAKE_PREFIX_PATH in case you're not using Orocos through ROS
@@ -46,5 +55,7 @@ SET(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_HOME_DIRECTORY}/bin)
 
 ADD_SUBDIRECTORY(TSimToYouBotMsg)
 ADD_SUBDIRECTORY(YouBotMsgToTSim)
+ADD_SUBDIRECTORY(HomogeneousToTF)
+ADD_SUBDIRECTORY(tests)
 
 endif()

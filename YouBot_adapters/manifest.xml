@@ -14,6 +14,7 @@
   <depend package="rtt_ros_integration_sensor_msgs"/>
   <depend package="rtt_motion_control_msgs"/>
   <depend package="YouBot_OODL"/>
+  <depend package="tf" />
 
 </package>
 
