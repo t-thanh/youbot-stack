@@ -1,0 +1,12 @@
+<stack>
+  <description brief="YouBot">
+
+    The Youbot control stack
+
+  </description>
+  <author>Yury Brodskiy / Robert Wilterdink</author>
+  <license>TBD</license>
+  <review status="unreviewed" notes=""/>
+  <url></url>
+  <depend stack="ros" />
+</stack>
