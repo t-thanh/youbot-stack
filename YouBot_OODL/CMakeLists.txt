@@ -4,7 +4,7 @@ cmake_minimum_required(VERSION 2.4.6)
 # This creates a standard cmake project. You may extend this file with
 # any cmake macro you see fit.
 #
-PROJECT(Orocos_OODL)
+PROJECT(YouBot_OODL)
 
 #
 # Do setup in case of ros package, If ROS_ROOT is set, it is
@@ -18,7 +18,7 @@ if (ROS_ROOT)
   set( RTT_HINTS HINTS ${rtt_PACKAGE_PATH}/install )
   rosbuild_genmsg()
   rosbuild_include(rtt_ros_integration GenerateRTTtypekit)
-  ros_generate_rtt_typekit(Orocos_OODL)
+  ros_generate_rtt_typekit(YouBot_OODL)
 
 # Set the CMAKE_PREFIX_PATH in case you're not using Orocos through ROS
 # for helping these find commands find RTT.
