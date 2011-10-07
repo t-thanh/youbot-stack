@@ -1,0 +1,4 @@
+INCLUDE_DIRECTORIES(${COMMON_INCLUDE_DIR})
+LINK_DIRECTORIES(${LIBRARY_OUTPUT_PATH})
+
+rosbuild_add_executable(HomogeneousToTF HomogeneousToTF.cpp)

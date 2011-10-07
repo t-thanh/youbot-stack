@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE properties SYSTEM "cpf.dtd">
+<properties>
+<simple name="Import" type="string"><value>YouBot_adapters</value></simple>
+
+<struct name="ROSConFloatOut" type="ConnPolicy">
+  <simple name="type" type="short"><value>0</value></simple><!-- type of connection: 0 means Data -->
+  <simple name="size" type="short"><value>1</value></simple><!-- buffer size -->
+  <simple name="transport" type="short"><value>3</value></simple><!--3 means ROS-->
+  <simple name="name_id" type="string"><value>float_array_rtt</value></simple><!-- topic name -->
+</struct>
+
+
+<struct name="H2tf_oro_test" type="H_matrix_publisher">
+  <struct name="Activity" type="PeriodicActivity">
+    <simple name="Period" type="double"><value>0.1</value></simple>
+    <simple name="Priority" type="short"><value>0</value></simple>
+    <simple name="Scheduler" type="string"><value>ORO_SCHED_RT</value></simple>
+  </struct>
+  <simple name="AutoConf" type="boolean"><value>1</value></simple>
+  <simple name="AutoStart" type="boolean"><value>1</value></simple>
+  <struct name="Ports" type="PropertyBag">
+    <simple name="Hmatrix" type="string"><value> ROSConFloatOut </value></simple>
+  </struct>
+</struct>
+
+
+</properties>

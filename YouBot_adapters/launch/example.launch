@@ -1,0 +1,3 @@
+<launch>
+<node name="Homogeneous_matrix_publisher" pkg="ocl" type="deployer-gnulinux" args="-s $(find YouBot_adapters)/launch/orocos_deployment/example.xml -linfo --" output="screen"/>
+</launch>
