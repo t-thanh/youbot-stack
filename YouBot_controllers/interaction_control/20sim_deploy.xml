@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="ASCII"?>
+<properties xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://Cpf/1.0">
+ <!-- Following xml loads the 20sim control with all required adapters.
+      The youbot components should be loaded and connected separately-->
+  <simple name="Import" type="string">
+    <value>interaction_control</value><!-- replace with package name if the libraries are not in the same folder-->
+  </simple>
+ <simple name="Import" type="string">
+	<value>YouBot_addapters</value>
+ </simple>
+  <struct name="control" type="gravity_test_vA::interaction_control">
+    <struct name="Ports" type="PropertyBag">
+      <simple name="bond_to_arm_T" type="string">
+        <value>cp_ad_torque</value>
+      </simple>
+      <simple name="measured_angles_arm" type="string">
+        <value>cp_ad_angles</value>
+      </simple>
+    </struct>
+    <struct name="Activity" type="Activity">
+      <simple name="Period" type="double">
+        <value>0.0010</value>
+      </simple>
+      <simple name="Priority" type="short">
+        <value>0</value>
+      </simple>
+      <simple name="Scheduler" type="string">
+        <value>ORO_SCHED_OTHER</value>
+      </simple>
+    </struct>
+  </struct>
+  <struct name="arm2control" type="addapters::YouBotMsgToTSim">
+    <struct name="Ports" type="PropertyBag">
+      <simple name="output_positions" type="string">
+        <value>cp_ad_angles</value>
+      </simple>
+    </struct>
+  </struct>
+  <struct name="control2arm" type="addapters::TSimToYouBotMsg">
+    <struct name="Ports" type="PropertyBag">
+      <simple name="input_cmd_signal" type="string">
+        <value>cp_ad_torque</value>
+      </simple>
+    </struct>
+  </struct>
+  <struct name="cp_ad_torque" type="ConnPolicy">
+    <simple name="type" type="short">
+      <value>0</value>
+    </simple>
+  </struct>
+  <struct name="cp_ad_angles" type="ConnPolicy">
+    <simple name="type" type="short">
+      <value>0</value>
+    </simple>
+  </struct>
+  
+</properties>

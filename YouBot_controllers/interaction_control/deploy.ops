@@ -1,0 +1,63 @@
+//import(""); //importing addpaters and control_test should be in same directory
+kickStart("20sim_deploy.xml")
+import("YouBot_OODL")
+require("print")
+displayComponentTypes;
+//setup parameters
+var strings  arm_joint_uri=strings("joint1","joint2","joint3","joint4","joint5");
+var std.vector<ctrl_modes>  arm_ctrl_modes=std.vector<ctrl_modes>(5,TORQUE)
+
+
+//creatring all components
+loadComponent("youbot","YouBot::YouBotOODL");
+
+//set periods
+youbot.setPeriod(0.001);
+// configure all componetns
+youbot.configure;
+control.configure;
+control2arm.configure;
+arm2control.configure;
+
+var double M_RAD=3.14/180;
+
+control.xyzypr[0]=0.0;
+control.xyzypr[1]=0.0;
+control.xyzypr[2]=1.0; 
+control.xyzypr[3]=-3.0;
+control.xyzypr[4]=0.0;
+control.xyzypr[5]=0.0;
+
+//setup control mode
+youbot.Arm1.setControlModes(arm_ctrl_modes)
+control2arm.initialize(TORQUE,6);
+arm2control.initialize(6);
+
+//making connections
+
+var ConnPolicy cp_5;
+cp_5.type = DATA;  // Use ''BUFFER'' or ''DATA''
+cp_5.lock_policy = LOCK_FREE; // Use  ''LOCKED'', ''LOCK_FREE'' or ''UNSYNC''
+connect("control2arm.output_cmd_torques","youbot.Arm1.joint_cmd",cp_5)
+
+
+var ConnPolicy cp_7;
+cp_7.type = DATA;  // Use ''BUFFER'' or ''DATA''
+cp_7.lock_policy = LOCK_FREE; // Use  ''LOCKED'', ''LOCK_FREE'' or ''UNSYNC''
+connect("arm2control.input_states","youbot.Arm1.joint_angles",cp_7)
+
+
+
+//All start
+youbot.start
+arm2control.start
+control.start
+//control2arm.start
+
+control.CtipControl.CtipControl[0]=0.05;
+control.GravityCompensation1.Link1.Gravity.m[0]=0.845;
+control.GravityCompensation1.Link2.Gravity.m[0]=2.412;
+control.GravityCompensation1.Link3.Gravity.m[0]=0.934;
+control.GravityCompensation1.Link4.Gravity.m[0]=0.877;
+control.GravityCompensation1.Link5.Gravity.m[0]=1.121;
+

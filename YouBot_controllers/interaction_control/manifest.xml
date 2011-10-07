@@ -1,0 +1,22 @@
+<package>
+  <description brief="gravity_test_vA_interaction_control">
+
+     gravity_test_vA_interaction_control
+
+  </description>
+  <author>Campuslicentie</author>
+  <license>LGPLv2.1 / BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>none</url>
+  <depend package="rtt"/>
+  <depend package="rtt_ros_integration"/>
+  <depend package="rtt_ros_integration_std_msgs"/>
+ <!-- <depend package="rtt_ros_integration_sensor_msgs"/>
+  <depend package="rtt_motion_control_msgs"/>
+  <depend package="YouBot_OODL"/>
+  <depend package="tf" />-->
+
+</package>
+
+
+
