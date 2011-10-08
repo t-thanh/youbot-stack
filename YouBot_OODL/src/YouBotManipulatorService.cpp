@@ -1,10 +1,10 @@
-#include "YouBotArmService.h"
+#include "YouBotManipulatorService.hpp"
 
 #include <stdio.h>
 #include <cassert>
 #include <youbot/ProtocolDefinitions.hpp>
 
-#include "YouBotHelpers.h"
+#include "YouBotHelpers.hpp"
 
 namespace YouBot
 {
@@ -12,9 +12,9 @@ namespace YouBot
 	using namespace RTT::types;
 	using namespace std;
 
-	unsigned int YouBotArmService::non_errors = MOTOR_HALTED | PWM_MODE_ACTIVE | VELOCITY_MODE | POSITION_MODE | TORQUE_MODE | POSITION_REACHED | INITIALIZED;
+	unsigned int YouBotManipulatorService::non_errors = MOTOR_HALTED | PWM_MODE_ACTIVE | VELOCITY_MODE | POSITION_MODE | TORQUE_MODE | POSITION_REACHED | INITIALIZED;
 
-	YouBotArmService::YouBotArmService(const string& name, TaskContext* parent, unsigned int min_slave_nr) :
+	YouBotManipulatorService::YouBotManipulatorService(const string& name, TaskContext* parent, unsigned int min_slave_nr) :
 			Service(name, parent),
 //			m_joint_states(NR_OF_ARM_SLAVES),
 
@@ -37,13 +37,22 @@ namespace YouBot
 		m_joint_states.name[3]="arm_joint_4";
 		m_joint_states.name[4]="arm_joint_5";
 
+//		m_gripper_state.name.assign(1, "");
+//		m_gripper_state.name[0] = "gripper";
+
 		m_joint_states.position.assign(NR_OF_ARM_SLAVES,0);
 		m_joint_states.velocity.assign(NR_OF_ARM_SLAVES,0);
 		m_joint_states.effort.assign(NR_OF_ARM_SLAVES,0);
 
+//		m_gripper_state.position.assign(1, 0);
+//		m_gripper_state.velocity.assign(0);
+//		m_gripper_state.effort.assign(0);
+
 		m_joint_cmd_angles.positions.assign(NR_OF_ARM_SLAVES,0);
 		m_joint_cmd_velocities.velocities.assign(NR_OF_ARM_SLAVES,0);
 		m_joint_cmd_torques.efforts.assign(NR_OF_ARM_SLAVES,0);
+
+		m_gripper_cmd_position.positions.assign(1, 0);
 
 		this->addPort("joint_states",joint_states).doc("Joint states");
 
@@ -53,43 +62,46 @@ namespace YouBot
 		this->addPort("joint_cmd_velocities",joint_cmd_velocities).doc("Command joint velocities");
 		this->addPort("joint_cmd_torques",joint_cmd_torques).doc("Command joint torques");
 
+		this->addPort("gripper_cmd_position", gripper_cmd_position).doc("Command the gripper position");
+
 		this->addPort("joint_ctrl_modes",joint_ctrl_modes).doc("Joint controller modes");
 
-        this->addOperation("start",&YouBotArmService::start,this);
-        this->addOperation("update",&YouBotArmService::update,this);
-        this->addOperation("calibrate",&YouBotArmService::calibrate,this);
-        this->addOperation("stop",&YouBotArmService::stop,this);
-        this->addOperation("cleanup",&YouBotArmService::cleanup,this);
+        this->addOperation("start",&YouBotManipulatorService::start,this);
+        this->addOperation("update",&YouBotManipulatorService::update,this);
+        this->addOperation("calibrate",&YouBotManipulatorService::calibrate,this);
+        this->addOperation("stop",&YouBotManipulatorService::stop,this);
+        this->addOperation("cleanup",&YouBotManipulatorService::cleanup,this);
 
-        this->addOperation("setControlModes",&YouBotArmService::setControlModes,this, OwnThread);
-        this->addOperation("getControlModes",&YouBotArmService::getControlModes,this, OwnThread);
-        this->addOperation("displayJointStatuses",&YouBotArmService::displayJointStatuses,this, OwnThread);
+        this->addOperation("setControlModes",&YouBotManipulatorService::setControlModes,this, OwnThread);
+        this->addOperation("getControlModes",&YouBotManipulatorService::getControlModes,this, OwnThread);
+        this->addOperation("displayJointStatuses",&YouBotManipulatorService::displayJointStatuses,this, OwnThread);
 
-        this->addOperation("check_error",&YouBotArmService::check_error,this, OwnThread);
+        this->addOperation("check_error",&YouBotManipulatorService::check_error,this, OwnThread);
 
         // Pre-allocate port memory for outputs
         joint_states.setDataSample( m_joint_states );
+//        gripper_state.setDataSample(m_gripper_state);
         joint_statuses.setDataSample(m_joint_statuses);
 	}
 
-	YouBotArmService::~YouBotArmService()
+	YouBotManipulatorService::~YouBotManipulatorService()
 	{
 		delete m_manipulator;
 	}
 
-	void YouBotArmService::setControlModes(vector<ctrl_modes>& all)
+	void YouBotManipulatorService::setControlModes(vector<ctrl_modes>& all)
 	{
 //		log(Debug) << "Control modes set to: " << all << endlog();
 		m_joint_ctrl_modes = all;
 	}
 
-	void YouBotArmService::getControlModes(vector<ctrl_modes>& all)
+	void YouBotManipulatorService::getControlModes(vector<ctrl_modes>& all)
 	{
 		log(Info) << "getting the control modes" << endlog();
 		all = m_joint_ctrl_modes;
 	}
 
-	void YouBotArmService::displayJointStatuses()
+	void YouBotManipulatorService::displayJointStatuses()
 	{
 		for(unsigned int i = 0; i < m_joint_statuses.size(); ++i)
 		{
@@ -97,12 +109,12 @@ namespace YouBot
 		}
 	}
 
-	bool YouBotArmService::start()
+	bool YouBotManipulatorService::start()
 	{
 		return m_calibrated;
 	}
 
-	void YouBotArmService::updateJointSetpoint(unsigned int joint_nr)
+	void YouBotManipulatorService::updateJointSetpoint(unsigned int joint_nr)
 	{
 		assert(joint_nr < NR_OF_ARM_SLAVES);
 
@@ -110,19 +122,14 @@ namespace YouBot
 		{
 			case(PLANE_ANGLE):
 			{
-				quantity<plane_angle> tmp = m_joint_cmd_angles.positions[joint_nr] * si::radian;
-				//normal case:
-				if(tmp < m_joint_limits[joint_nr].max_angle && tmp > m_joint_limits[joint_nr].min_angle)
-				{
-					m_tmp_joint_cmd_angle.angle = tmp;
-				}
-				//below limits:
-				else if( tmp < ( (m_joint_limits[joint_nr].max_angle + m_joint_limits[joint_nr].min_angle) / (2.0 * radian) * radian) )
+				m_tmp_joint_cmd_angle.angle = m_joint_cmd_angles.positions[joint_nr] * si::radian;
+				// below limits
+				if(m_tmp_joint_cmd_angle.angle < m_joint_limits[joint_nr].min_angle)
 				{
 					m_tmp_joint_cmd_angle.angle = m_joint_limits[joint_nr].min_angle;
 				}
-				//above limits:
-				else
+				// above limits
+				else if(m_tmp_joint_cmd_angle.angle > m_joint_limits[joint_nr].max_angle)
 				{
 					m_tmp_joint_cmd_angle.angle = m_joint_limits[joint_nr].max_angle;
 				}
@@ -154,14 +161,17 @@ namespace YouBot
 		}
 	}
 
-	void YouBotArmService::update()
+	void YouBotManipulatorService::update()
 	{
-//		log(Info) << "update ArmService" << endlog();
+//		log(Info) << "update YouBotManipulatorService" << endlog();
 
 		// YouBot -> OutputPort
 		m_manipulator->getJointData(m_tmp_joint_angles);
 		m_manipulator->getJointData(m_tmp_joint_velocities);
 		m_manipulator->getJointData(m_tmp_joint_torques);
+
+		// The OODL gripper does not support this.
+//		m_gripper->getData(m_tmp_gripper_state);
 
 		assert(m_tmp_joint_angles.size() == m_tmp_joint_velocities.size() && m_tmp_joint_velocities.size() == m_tmp_joint_torques.size());
 
@@ -177,7 +187,11 @@ namespace YouBot
 			m_joint_states.effort[i] = m_tmp_joint_torques[i].torque.value();
 		}
 
+//		m_gripper_state.header.stamp = m_joint_states.header.stamp;
+//		m_gripper_state.position[0] = m_tmp_gripper_state.barSpacing.value();
+
 		joint_states.write(m_joint_states);
+//		gripper_state.write(m_gripper_state);
 
 		// InputPort -> YouBot
 		joint_ctrl_modes.read(m_joint_ctrl_modes);
@@ -185,18 +199,37 @@ namespace YouBot
 		joint_cmd_velocities.read(m_joint_cmd_velocities);
 		joint_cmd_torques.read(m_joint_cmd_torques);
 
+		// Update joint setpoints
 		for(unsigned int i = 0; i < NR_OF_ARM_SLAVES; ++i)
 		{
 			updateJointSetpoint(i);
+		}
+
+		// Update gripper setpoint
+		if(gripper_cmd_position.read(m_gripper_cmd_position) == NewData) //setData has SLEEP_MILLISECOND :-(
+		{
+			m_tmp_gripper_cmd_position.barSpacing = m_gripper_cmd_position.positions[0] * si::meter;
+			// check limits to prevent exceptions
+			if( m_tmp_gripper_cmd_position.barSpacing < m_gripper_limits.min_position )
+			{
+				m_tmp_gripper_cmd_position.barSpacing = m_gripper_limits.min_position;
+			}
+			//above limits:
+			else if(m_tmp_gripper_cmd_position.barSpacing > m_gripper_limits.max_position)
+			{
+				m_tmp_gripper_cmd_position.barSpacing = m_gripper_limits.max_position;
+			}
+
+			m_gripper->setData(m_tmp_gripper_cmd_position);
 		}
 
 		// Check for errors:
 		check_error();
 	}
 
-	bool YouBotArmService::calibrate()
+	bool YouBotManipulatorService::calibrate()
 	{
-		log(Info) << "Calibrating YouBotArmService" << endlog();
+		log(Info) << "Calibrating YouBotManipulatorService" << endlog();
 		if(m_calibrated)
 		{
 			log(Info) << "Already calibrated." << endlog();
@@ -248,10 +281,6 @@ namespace YouBot
 				m_joint_limits[i].min_angle = ((double) lower_limit / ticks_per_round) * gearRatio * (2.0 * M_PI) * radian;
 				m_joint_limits[i].max_angle = ((double) upper_limit / ticks_per_round) * gearRatio * (2.0 * M_PI) * radian;
 
-				// OODL uses value < max/min instead of <=
-				m_joint_limits[i].min_angle *= 0.999;
-				m_joint_limits[i].max_angle *= 1.001;
-
 				InverseMovementDirection invMov;
 				m_joints[i]->getConfigurationParameter(invMov);
 				bool invMov2(false);
@@ -262,6 +291,10 @@ namespace YouBot
 					m_joint_limits[i].min_angle = -m_joint_limits[i].max_angle;
 					m_joint_limits[i].max_angle = -tmp;
 				}
+
+				// OODL uses value < max/min instead of <=
+				m_joint_limits[i].min_angle *= 0.999;
+				m_joint_limits[i].max_angle *= 1.001;
 
 				log(Info) << "Min angle: " << m_joint_limits[i].min_angle << " Max angle: " << m_joint_limits[i].max_angle << endlog();
 
@@ -274,6 +307,22 @@ namespace YouBot
 
 			}
 
+			// Gripper
+			m_manipulator->calibrateGripper();
+			m_gripper = &(m_manipulator->getArmGripper());
+
+			// Determine gripper limits to prevent exceptions
+			MaxTravelDistance _max_distance;
+			BarSpacingOffset _spacing;
+			quantity<length> max_distance;
+			quantity<length> spacing;
+			m_gripper->getConfigurationParameter(_max_distance, BAR_ONE);
+			m_gripper->getConfigurationParameter(_spacing, BAR_ONE);
+			_max_distance.getParameter(max_distance);
+			_spacing.getParameter(spacing);
+			m_gripper_limits.min_position = spacing;
+			m_gripper_limits.max_position = max_distance + spacing;
+
 		}
 		catch (std::exception& e)
 		{
@@ -285,7 +334,7 @@ namespace YouBot
 		return (m_calibrated = true);
 	}
 
-	bool YouBotArmService::check_error()
+	bool YouBotManipulatorService::check_error()
 	{
 		bool found_error(false);
 		for(unsigned int i = 0; i < NR_OF_ARM_SLAVES; ++i)
@@ -307,7 +356,7 @@ namespace YouBot
 		return found_error;
 	}
 
-	void YouBotArmService::stop()
+	void YouBotManipulatorService::stop()
 	{
 		for(unsigned int i = 0; i < NR_OF_ARM_SLAVES; ++i)
 		{
@@ -315,7 +364,7 @@ namespace YouBot
 		}
 	}
 
-	void YouBotArmService::cleanup()
+	void YouBotManipulatorService::cleanup()
 	{
 		for(unsigned int i = 0; i < NR_OF_ARM_SLAVES; ++i)
 		{

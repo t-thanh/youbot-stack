@@ -1,7 +1,7 @@
-#include "YouBotOODL.h"
-#include "YouBotBaseService.h"
-#include "YouBotArmService.h"
-#include "YouBotHelpers.h"
+#include "YouBotOODL.hpp"
+#include "YouBotBaseService.hpp"
+#include "YouBotManipulatorService.hpp"
+#include "YouBotHelpers.hpp"
 
 #include <ocl/Component.hpp>
 
@@ -60,23 +60,23 @@ namespace YouBot
 		log(Info) << "Detected youbot base, loading Base service" << endlog();
 
 		// Arm 1
-		this->provides()->addService(Service::shared_ptr( new YouBotArmService("Arm1",this, 1) ) );
-		update_ops.push_back(this->provides("Arm1")->getOperation("update"));
-		calibrate_ops.push_back(this->provides("Arm1")->getOperation("calibrate"));
-		start_ops.push_back(this->provides("Arm1")->getOperation("start"));
-		stop_ops.push_back(this->provides("Arm1")->getOperation("stop"));
-		cleanup_ops.push_back(this->provides("Arm1")->getOperation("cleanup"));
-		log(Info) << "Detected youbot arm, loading Arm1 service" << endlog();
+		this->provides()->addService(Service::shared_ptr( new YouBotManipulatorService("Manipulator1",this, 1) ) );
+		update_ops.push_back(this->provides("Manipulator1")->getOperation("update"));
+		calibrate_ops.push_back(this->provides("Manipulator1")->getOperation("calibrate"));
+		start_ops.push_back(this->provides("Manipulator1")->getOperation("start"));
+		stop_ops.push_back(this->provides("Manipulator1")->getOperation("stop"));
+		cleanup_ops.push_back(this->provides("Manipulator1")->getOperation("cleanup"));
+		log(Info) << "Detected youbot arm, loading Manipulator1 service" << endlog();
 
 		if(nr_slaves == NR_OF_BASE_SLAVES + 2*NR_OF_ARM_SLAVES) // Arm 2
 		{
-			this->provides()->addService(Service::shared_ptr( new YouBotArmService("Arm2",this, 1 + NR_OF_ARM_SLAVES) ) );
-			update_ops.push_back(this->provides("Arm2")->getOperation("update"));
-			calibrate_ops.push_back(this->provides("Arm2")->getOperation("calibrate"));
-			start_ops.push_back(this->provides("Arm2")->getOperation("start"));
-			stop_ops.push_back(this->provides("Arm2")->getOperation("stop"));
-			cleanup_ops.push_back(this->provides("Arm2")->getOperation("cleanup"));
-			log(Info) << "Detected youbot arm, loading Arm2 service" << endlog();
+			this->provides()->addService(Service::shared_ptr( new YouBotManipulatorService("Manipulator2",this, 1 + NR_OF_ARM_SLAVES) ) );
+			update_ops.push_back(this->provides("Manipulator2")->getOperation("update"));
+			calibrate_ops.push_back(this->provides("Manipulator2")->getOperation("calibrate"));
+			start_ops.push_back(this->provides("Manipulator2")->getOperation("start"));
+			stop_ops.push_back(this->provides("Manipulator2")->getOperation("stop"));
+			cleanup_ops.push_back(this->provides("Manipulator2")->getOperation("cleanup"));
+			log(Info) << "Detected youbot arm, loading Manipulator2 service" << endlog();
 		}
 
 		// invoke all calibration operations

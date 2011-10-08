@@ -12,7 +12,7 @@
 #include <rtt/PropertyBag.hpp>
 #include <rtt/Time.hpp>
 
-#include "YouBotTypes.h"
+#include "YouBotTypes.hpp"
 
 enum arm_settings {NR_OF_ARM_SLAVES=5};
 enum base_settings {NR_OF_BASE_SLAVES=4};

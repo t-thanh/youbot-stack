@@ -1,8 +1,8 @@
 #include <rtt/RTT.hpp>
 #include <rtt/plugin/Plugin.hpp>
 #include <iostream>
-#include <YouBotTypes.h>
-#include "YouBotHelpers.h"
+#include <YouBotTypes.hpp>
+#include "YouBotHelpers.hpp"
 #include <rtt/types/SequenceTypeInfo.hpp>
 #include <rtt/types/GlobalsRepository.hpp>
 using namespace RTT;

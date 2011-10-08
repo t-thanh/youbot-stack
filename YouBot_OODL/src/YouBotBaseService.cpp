@@ -1,9 +1,9 @@
-#include "YouBotBaseService.h"
+#include "YouBotBaseService.hpp"
 
 #include <cassert>
 #include <youbot/ProtocolDefinitions.hpp>
 
-#include "YouBotHelpers.h"
+#include "YouBotHelpers.hpp"
 
 namespace YouBot
 {
