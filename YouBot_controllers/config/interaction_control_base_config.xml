@@ -127,7 +127,7 @@
 		</modelVariable>
 		<modelVariable id="7">
 			<name>CalculateJ\Htip0</name>
-			<kind>parameter</kind>
+			<kind>variable</kind>
 			<type>real</type>
 			<value>0.0, 0.0, 0.0, 0.0; 0.0, 0.0, 0.0, 0.0; 0.0, 0.0, 0.0, 0.0; 0.0, 0.0, 0.0, 0.0</value>
 			<description></description>
