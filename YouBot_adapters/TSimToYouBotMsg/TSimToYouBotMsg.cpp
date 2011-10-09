@@ -36,6 +36,11 @@ namespace YouBot
 
 	void TSimToYouBotMsg::initialize(ctrl_modes ctrl_mode, unsigned int dimension)
 	{
+		if(ctrl_mode == MOTOR_STOP)
+		{
+			log(Error) << "ctrl_mode cannot be MOTOR_STOP for this component." << endlog();
+		}
+
 		m_ctrl_mode = ctrl_mode;
 		m_dimension = dimension;
 
@@ -67,7 +72,7 @@ namespace YouBot
 			log(Error) << "The constructor ctrl_mode must match the connected output_cmd_* port." << endlog();
 			return false;
 		}
-		else
+		else if(m_ctrl_mode == MOTOR_STOP)
 		{
 			log(Error) << "Atleast one of the output_cmd_* ports needs to be connected." << endlog();
 			log(Error) << "Furthermore, the following ctrl_modes are supported: PLANE_ANGLE, ANGULAR_VELOCITY and TORQUE." << endlog();
