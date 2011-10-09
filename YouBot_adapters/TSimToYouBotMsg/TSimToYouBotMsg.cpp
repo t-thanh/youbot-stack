@@ -99,7 +99,7 @@ namespace YouBot
 		TaskContext::updateHook();
 		if(input_cmd_signal.read(m_input_cmd_signal) == NewData)
 		{
-			log(Info) << "NewData" << endlog();
+			//log(Info) << "NewData" << endlog();
 			switch(m_ctrl_mode)
 			{
 				case(PLANE_ANGLE):
@@ -108,6 +108,7 @@ namespace YouBot
 					{
 						m_output_cmd_angles.positions[i] = m_input_cmd_signal.data[i];
 					}
+					output_cmd_angles.write(m_output_cmd_angles);
 					break;
 				}
 				case(ANGULAR_VELOCITY):
@@ -116,6 +117,7 @@ namespace YouBot
 					{
 						m_output_cmd_velocities.velocities[i] = m_input_cmd_signal.data[i];
 					}
+					output_cmd_velocities.write(m_output_cmd_velocities);
 					break;
 				}
 				case(TORQUE):
@@ -124,6 +126,7 @@ namespace YouBot
 					{
 						m_output_cmd_torques.efforts[i] = m_input_cmd_signal.data[i];
 					}
+					output_cmd_torques.write(m_output_cmd_torques);
 					break;
 				}
 				default:

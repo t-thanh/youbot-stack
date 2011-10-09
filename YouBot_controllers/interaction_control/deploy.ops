@@ -30,8 +30,8 @@ control.xyzypr[5]=0.0;
 
 //setup control mode
 youbot.Manipulator1.setControlModes(arm_ctrl_modes)
-control2arm.initialize(TORQUE,6);
-arm2control.initialize(6);
+control2arm.initialize(TORQUE,5);
+arm2control.initialize(5);
 
 //making connections
 
