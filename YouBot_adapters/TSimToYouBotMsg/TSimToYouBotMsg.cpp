@@ -29,13 +29,13 @@ namespace YouBot
 
 		this->addOperation("initialize",&TSimToYouBotMsg::initialize,this, OwnThread);
 
-		//RTT::types::Types()->addType( new RTT::types::SequenceTypeInfo<std::vector<double> >("std.vector<double>") );
 	}
 
 	TSimToYouBotMsg::~TSimToYouBotMsg() {}
 
 	void TSimToYouBotMsg::initialize(ctrl_modes ctrl_mode, unsigned int dimension)
 	{
+		log(Info) << "Setting up with ctrl_mode: " << ctrl_mode << " and dimension: " << dimension << endlog();
 		if(ctrl_mode == MOTOR_STOP)
 		{
 			log(Error) << "ctrl_mode cannot be MOTOR_STOP for this component." << endlog();
@@ -91,13 +91,15 @@ namespace YouBot
 			return false;
 		}
 
-		return true;
+		return TaskContext::startHook();
 	}
 
 	void TSimToYouBotMsg::updateHook()
 	{
+		TaskContext::updateHook();
 		if(input_cmd_signal.read(m_input_cmd_signal) == NewData)
 		{
+			log(Info) << "NewData" << endlog();
 			switch(m_ctrl_mode)
 			{
 				case(PLANE_ANGLE):
@@ -106,6 +108,7 @@ namespace YouBot
 					{
 						m_output_cmd_angles.positions[i] = m_input_cmd_signal.data[i];
 					}
+					break;
 				}
 				case(ANGULAR_VELOCITY):
 				{
@@ -113,6 +116,7 @@ namespace YouBot
 					{
 						m_output_cmd_velocities.velocities[i] = m_input_cmd_signal.data[i];
 					}
+					break;
 				}
 				case(TORQUE):
 				{
@@ -120,10 +124,12 @@ namespace YouBot
 					{
 						m_output_cmd_torques.efforts[i] = m_input_cmd_signal.data[i];
 					}
+					break;
 				}
 				default:
 				{
 					this->error();
+					break;
 				}
 			}
 		}

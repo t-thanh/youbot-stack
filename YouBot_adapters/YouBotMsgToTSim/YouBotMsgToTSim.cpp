@@ -70,11 +70,12 @@ namespace YouBot
 			return false;
 		}
 
-		return true;
+		return TaskContext::startHook();
 	}
 
 	void YouBotMsgToTSim::updateHook()
 	{
+		TaskContext::updateHook();
 		if(input_states.read(m_input_states) == NewData)
 		{
 			for(unsigned int i = 0; i < m_dimension; ++i)
@@ -83,6 +84,9 @@ namespace YouBot
 				m_output_velocities.data[i] = m_input_states.velocity[i];
 				m_output_torques.data[i] = m_input_states.effort[i];
 			}
+			output_positions.write(m_output_positions);
+			output_velocities.write(m_output_velocities);
+			output_torques.write(m_output_torques);
 		}
 	}
 }

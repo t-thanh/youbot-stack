@@ -29,7 +29,7 @@ control.xyzypr[4]=0.0;
 control.xyzypr[5]=0.0;
 
 //setup control mode
-youbot.Arm1.setControlModes(arm_ctrl_modes)
+youbot.Manipulator1.setControlModes(arm_ctrl_modes)
 control2arm.initialize(TORQUE,6);
 arm2control.initialize(6);
 
@@ -38,13 +38,13 @@ arm2control.initialize(6);
 var ConnPolicy cp_5;
 cp_5.type = DATA;  // Use ''BUFFER'' or ''DATA''
 cp_5.lock_policy = LOCK_FREE; // Use  ''LOCKED'', ''LOCK_FREE'' or ''UNSYNC''
-connect("control2arm.output_cmd_torques","youbot.Arm1.joint_cmd",cp_5)
+connect("control2arm.output_cmd_torques","youbot.Manipulator1.joint_cmd_torques",cp_5)
 
 
 var ConnPolicy cp_7;
 cp_7.type = DATA;  // Use ''BUFFER'' or ''DATA''
 cp_7.lock_policy = LOCK_FREE; // Use  ''LOCKED'', ''LOCK_FREE'' or ''UNSYNC''
-connect("arm2control.input_states","youbot.Arm1.joint_angles",cp_7)
+connect("arm2control.input_states","youbot.Manipulator1.joint_states",cp_7)
 
 
 
