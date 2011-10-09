@@ -5,8 +5,8 @@
  *  subm:  interaction_control
  *  model: gravity_test_vA
  *  expmt: gravity_test_vA
- *  date:  October 7, 2011
- *  time:  5:35:40 pm
+ *  date:  October 9, 2011
+ *  time:  5:20:53 pm
  *  user:  Campuslicentie
  *  from:  Universiteit Twente
  *  build: 4.1.2.2
@@ -1675,6 +1675,14 @@ namespace gravity_test_vA
 		if(! TaskContext::startHook())
 		{
 			return false;
+		}
+
+		for (vector<Adapter20Sim<RTT::InputPort<flat_matrix_t> > >::iterator it = inputPorts.begin(); it != inputPorts.end(); ++it) {
+			flat_matrix_t temp ;
+			if(! it->getPort()->connected() ){
+				log(Warning) << "InputPort (" << it->getFullName() << ") not connected." << endlog();
+//				return false;
+			}
 		}
 
 		/* calculate initial and static equations */
@@ -3645,7 +3653,8 @@ namespace gravity_test_vA
 			if (p_bag == NULL)
 			{
 				RTT::Property<PropertyBag>* ppb = dynamic_cast<RTT::Property<
-						PropertyBag>*>(this->getProperty(cleaned_name));if(ppb == NULL)
+						PropertyBag>*>(this->getProperty(cleaned_name));
+				if(ppb == NULL)
 				{
 					p_bag = new RTT::PropertyBag;
 					this->addProperty(cleaned_name, *p_bag).doc("Submodel parameters");

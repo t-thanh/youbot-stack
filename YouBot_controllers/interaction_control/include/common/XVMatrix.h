@@ -16,13 +16,14 @@ namespace common20sim
 		RTT::types::carray<double> mat_carray;
 		std::size_t rows;
 		std::size_t columns;
+
 		bool sizeCheck(std::size_t size);
 
 	public:
 		XVMatrix();
 		XVMatrix(XXMatrix& mat_source);
 		XVMatrix(double* mat_source,std::size_t rows, std::size_t columns);
-		XVMatrix(XVMatrix& copy);
+		XVMatrix(const XVMatrix& copy);
 		virtual ~XVMatrix();
 
 		std::size_t getColumns();

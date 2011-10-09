@@ -49,7 +49,6 @@ namespace common20sim {
 			_description = copy._description;
 			_data = copy._data;
 			_link = copy._link;
-
 		}
 
 		virtual ~Adapter20Sim()
@@ -93,10 +92,10 @@ namespace common20sim {
 	private:
 		std::string makeShortName(std::string str)
 		{
-			using namespace boost;
-			int pos;
+//			using namespace boost;
+			size_t pos;
 			pos=str.find_last_of("\\");
-			if (pos!=std::string::npos)
+			if (pos != std::string::npos)
 			{
 				std::string temp;
 				temp=str.substr(pos+1,temp.length()-pos-1);
