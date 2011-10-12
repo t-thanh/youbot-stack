@@ -13,6 +13,22 @@ namespace common20sim {
 		return str;
 	}
 
+	std::string makeShortName(std::string str)
+	{
+		size_t pos;
+		pos=str.find_last_of("\\");
+		if (pos != std::string::npos)
+		{
+			std::string temp;
+			temp=str.substr(pos+1,temp.length()-pos-1);
+			return temp;
+		}
+		else
+		{
+			return str;
+		}
+	}
+
 }
 
 
