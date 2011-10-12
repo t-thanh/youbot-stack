@@ -21,7 +21,7 @@ namespace YouBot
 
 	YouBotOODL::YouBotOODL(const string& name) : TaskContext(name, PreOperational)
 	{
-		youbot::Logger::logginLevel = youbot::info;
+		youbot::Logger::logginLevel = youbot::fatal;
 		RTT::Logger* ins = RTT::Logger::Instance();
 		ins->setLogLevel(RTT::Logger::Info);
 	}
@@ -32,6 +32,7 @@ namespace YouBot
 	{
 		// MUST BE THE FIRST ONE TO CALL getInstance!!!
 		unsigned int nr_slaves = 0;
+
 		try
 		{
 			m_ec_master = &(EthercatMaster::getInstance("/youbot-ethercat.cfg", OODL_YOUBOT_CONFIG_DIR));
@@ -80,6 +81,15 @@ namespace YouBot
 			log(Info) << "Detected youbot arm, loading Manipulator2 service" << endlog();
 		}
 
+		Seconds period = this->getPeriod();
+		if(period < 0.001)
+		{
+			log(Error) << "The EthercatMaster thread needs at least 1kHz frequency to operate properly." << endlog();
+			return false;
+		}
+
+		log(Info) << "EthercatMaster thread period: " << period << endlog();
+
 		// invoke all calibration operations
 		bool proper_calibration(true);
 		for(unsigned int i=0; i<calibrate_ops.size(); ++i)
@@ -113,6 +123,7 @@ namespace YouBot
 
 	bool YouBotOODL::startHook()
 	{
+		// invoke all starts
 		bool fully_started(true);
 
         for(unsigned int i=0;i<start_ops.size();++i)

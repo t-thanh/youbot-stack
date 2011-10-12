@@ -281,24 +281,25 @@ namespace YouBot
 
 	bool YouBotArmService::check_error()
 	{
-		bool found_error(false);
+//		bool found_error(false);
 		for(unsigned int i = 0; i < NR_OF_ARM_SLAVES; ++i)
 		{
 			m_joints[i]->getStatus(m_joint_statuses[i]);
 			m_joint_statuses[i] = m_joint_statuses[i] & !non_errors; //filter non errors!
 			//@todo: Check if initialized!
-			if( m_joint_statuses[i] != 0)
-			{
-				found_error = true;
-			}
+//			if( m_joint_statuses[i] != 0)
+//			{
+//				found_error = true;
+//			}
 		}
 
-		if(found_error)
-		{
+//		if(found_error)
+//		{
 			joint_statuses.write(m_joint_statuses);
-		}
+//		}
 		//emit errors via port.
-		return found_error;
+//		return found_error;
+			return true;
 	}
 
 	void YouBotArmService::stop()

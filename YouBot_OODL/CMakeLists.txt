@@ -69,7 +69,7 @@ SET(CMAKE_BUILD_TYPE Debug)
 #each generates one library or application	
 ADD_SUBDIRECTORY(src)
 
-ADD_SUBDIRECTORY(examples) 
+#ADD_SUBDIRECTORY(examples) 
 
 orocos_generate_package()
 
