@@ -5,8 +5,8 @@
  *  subm:  interaction_control
  *  model: gravity_test_vA
  *  expmt: gravity_test_vA
- *  date:  October 9, 2011
- *  time:  5:20:53 pm
+ *  date:  October 12, 2011
+ *  time:  2:22:58 pm
  *  user:  Campuslicentie
  *  from:  Universiteit Twente
  *  build: 4.1.2.2
@@ -24,6 +24,7 @@
 #include <ocl/Component.hpp>
 #include <rtt/types/SequenceTypeInfo.hpp>
 #include <rtt/types/carray.hpp>
+#include <ros/package.h>
 
 using namespace Orocos;
 using namespace RTT;
@@ -31,49 +32,24 @@ using namespace std;
 
 namespace gravity_test_vA
 {
-	const string XXsim_config_xml = "config/interaction_control_base_config.xml";
 
-	interaction_control::interaction_control(string name): TaskContext(name, PreOperational)
+
+	interaction_control::interaction_control(string name): TaskContext(name, PreOperational),TSim_config_xml("config/interaction_control_base_config.xml")
 	{
 		using namespace boost;
 
 		RTT::types::Types()->addType(new
 				RTT::types::CArrayTypeInfo<RTT::types::carray<double> >("double[]"));
 
-		//------------------ 20-sim ------------------------------
-		start_time = 0.0;
-		finish_time = 40.0;
-		step_size = 0.001;
-		time = 0;
-		major = true;
+		initializeComputation();
 
-		number_constants = 25;
-		number_parameters = 226;
-		number_initialvalues = 16;
-		number_variables = 2132;
-		number_states = 16;
-		number_rates = 16;
-		number_matrices = 418;
-		number_unnamed = 3774;
+		std::string path = ros::package::getPath("interaction_control");
+		TSim_config_xml=path+"/config/interaction_control_base_config.xml";
 
-		/* the variable arrays */
-		C = new XXDouble[25 + 1];		/* constants */
-		P = new XXDouble[226 + 1];		/* parameters, currently only one type of parameter exists: double */
-		I = new XXDouble[16 + 1];		/* initial values */
-		V = new XXDouble[2132 + 1];		/* variables */
-		s = new XXDouble[16 + 1];		/* states */
-		R = new XXDouble[16 + 1];		/* rates (or new states) */
-		M = new XXMatrix[418 + 1];		/* matrices */
-		U = new XXDouble[3774 + 1];		/* unnamed */
-		workarray = new XXDouble[156 + 1];
-
-		myintegmethod.Initialize(this);
-
-//		state = initialrun;
-
-		//------------------orocos------------------------------
 		this->addProperty("integration_step_size", step_size ).doc("Integration step size.");
-
+		this->addProperty("configuration_file",TSim_config_xml).doc("Path to configuation xml, relative to run directory");
+		// move to configureHook
+		setPeriod(step_size);
 		setupParametersAndStates();
 
 	}
@@ -93,7 +69,7 @@ namespace gravity_test_vA
 		delete[] U;
 		delete[] workarray;
 	}
-	
+
 	bool interaction_control::configureHook()
 	{
 		if(! TaskContext::configureHook())
@@ -101,13 +77,2176 @@ namespace gravity_test_vA
 			return false;
 		}
 
+		return true;
+	}
+
+	/* the initialization function for submodel */
+	bool interaction_control::startHook()
+	{
+		if(! TaskContext::startHook())
+		{
+			return false;
+		}
+
+		for (vector<Adapter20Sim<RTT::InputPort<flat_matrix_t> > >::iterator it = inputPorts.begin(); it != inputPorts.end(); ++it)
+		{
+			flat_matrix_t temp;
+			if(! it->getPort()->connected() )
+			{
+				log(Warning) << "InputPort (" << it->getFullName() << ") not connected." << endlog();
+				//				return false;
+			}
+		}
+
+		/* calculate initial and static equations */
+		CalculateInitial ();
+		CalculateStatic ();
+		CopyInputsToVariables ();
+		CalculateInput ();
+		CalculateDynamic();
+		CalculateOutput ();
+		CopyVariablesToOutputs ();
+		return true;
+	}
+
+	/* the function that calculates the submodel */
+	void interaction_control::updateHook ()
+	{
+		TaskContext::updateHook();
+
+		/* another precessor submodel could determine the parameters of this submodel
+		 and therefore the static parameter calculations need to be performed. */
+		CalculateStatic ();
+
+		/* main calculation of the model */
+		CopyInputsToVariables (); //get input from port
+		CalculateInput ();
+		myintegmethod.Step();
+		CalculateOutput ();
+		CopyVariablesToOutputs (); //send output to port
+	}
+
+	/* the termination function for submodel */
+	void interaction_control::stopHook()
+	{
+		TaskContext::stopHook();
+
+		/* copy the inputs */
+		CopyInputsToVariables (); //get inputs from port
+
+		/* calculate the final model equations */
+		CalculateFinal ();
+
+		/* set the outputs */
+		CopyVariablesToOutputs (); //send output to port
+	}
+
+	/* this PRIVATE function sets the input variables from the input vector */
+	//@todo Improve for multiple component inputs to have a synchronized execution.
+	void interaction_control::CopyInputsToVariables ()
+	{
+		/* OROCOS Entry to copy port to input array */
+		for (vector<Adapter20Sim<RTT::InputPort<flat_matrix_t> > >::iterator it =
+				inputPorts.begin(); it != inputPorts.end(); ++it)
+		{
+			flat_matrix_t temp;
+			if(it->getPort()->read(temp)!=RTT::NoData)
+			{
+				log(Debug)<<"CopyInputsToVariables"<<endlog();
+				it->setValue(temp);
+			}
+		}
+
+	}
+
+	/* this PRIVATE function uses the output variables to fill the output vector */
+	void interaction_control::CopyVariablesToOutputs ()
+	{
+
+		/* OROCOS Entry to copy output to port */
+		for (vector<Adapter20Sim<RTT::OutputPort<flat_matrix_t> > >::iterator it =
+				outputPorts.begin(); it != outputPorts.end(); ++it)
+		{
+			//	log(Debug)<<"writing out ="<<it->getValue().address()[1]<<endlog();
+
+			//temp=it->getValue();
+
+			//log(Debug)<<temp.address()[0]<<temp.address()[1]<<temp.address()[2]<<endlog();
+			//log(Debug)<<it->getPort().getName()<<endlog();
+			flat_matrix_t temp;
+			temp=it->getValue();
+			it->getPort()->write(temp);
+		}
+	}
+
+	/* This function calculates the initial equations of the model.
+	 * These equations are calculated before anything else
+	 */
+	void interaction_control::CalculateInitial (void)
+	{
+				/* CalculateJ\initialq = [0; 0; 0; CalculateJ\InitialJointPos[1]; CalculateJ\InitialJointPos[2]; CalculateJ\InitialJointPos[3]; CalculateJ\InitialJointPos[4]; CalculateJ\InitialJointPos[5]]; */
+		M[48].mat[0] = 0.0;
+		M[48].mat[1] = 0.0;
+		M[48].mat[2] = 0.0;
+		M[48].mat[3] = M[3].mat[0];
+		M[48].mat[4] = M[3].mat[1];
+		M[48].mat[5] = M[3].mat[2];
+		M[48].mat[6] = M[3].mat[3];
+		M[48].mat[7] = M[3].mat[4];
+
+		/* GravityCompensation1\Base\AdHik1\COMdim = GravityCompensation1\Base\COMdim; */
+		XXMatrixMov (&M[74], &M[84]);
+
+		/* GravityCompensation1\Base\Hij\dim = GravityCompensation1\Base\dim; */
+		XXMatrixMov (&M[82], &M[85]);
+
+		/* GravityCompensation1\Base\Gravity\m = GravityCompensation1\Base\m; */
+		P[48] = P[52];
+
+		/* GravityCompensation1\Joint12\Integrate\init = GravityCompensation1\Joint12\InitialPos; */
+		P[59] = P[60];
+
+		/* GravityCompensation1\Joint23\Integrate\init = GravityCompensation1\Joint23\InitialPos; */
+		P[61] = P[62];
+
+		/* GravityCompensation1\Joint34\Integrate\init = GravityCompensation1\Joint34\InitialPos; */
+		P[63] = P[64];
+
+		/* GravityCompensation1\Joint45\Integrate\init = GravityCompensation1\Joint45\InitialPos; */
+		P[65] = P[66];
+
+		/* GravityCompensation1\JointBase1\Integrate\init = GravityCompensation1\JointBase1\InitialPos; */
+		P[67] = P[68];
+
+		/* GravityCompensation1\Link1\AdHik1\COMdim = GravityCompensation1\Link1\COMdim; */
+		XXMatrixMov (&M[134], &M[144]);
+
+		/* GravityCompensation1\Link1\Hij\dim = GravityCompensation1\Link1\dim; */
+		XXMatrixMov (&M[142], &M[145]);
+
+		/* GravityCompensation1\Link1\Gravity\m = GravityCompensation1\Link1\m; */
+		P[72] = P[76];
+
+		/* GravityCompensation1\Link2\AdHik1\COMdim = GravityCompensation1\Link2\COMdim; */
+		XXMatrixMov (&M[153], &M[163]);
+
+		/* GravityCompensation1\Link2\Hij\dim = GravityCompensation1\Link2\dim; */
+		XXMatrixMov (&M[161], &M[164]);
+
+		/* GravityCompensation1\Link2\Gravity\m = GravityCompensation1\Link2\m; */
+		P[86] = P[90];
+
+		/* GravityCompensation1\Link3\AdHik1\COMdim = GravityCompensation1\Link3\COMdim; */
+		XXMatrixMov (&M[172], &M[182]);
+
+		/* GravityCompensation1\Link3\Hij\dim = GravityCompensation1\Link3\dim; */
+		XXMatrixMov (&M[180], &M[183]);
+
+		/* GravityCompensation1\Link3\Gravity\m = GravityCompensation1\Link3\m; */
+		P[100] = P[104];
+
+		/* GravityCompensation1\Link4\AdHik1\COMdim = GravityCompensation1\Link4\COMdim; */
+		XXMatrixMov (&M[191], &M[201]);
+
+		/* GravityCompensation1\Link4\Hij\dim = GravityCompensation1\Link4\dim; */
+		XXMatrixMov (&M[199], &M[202]);
+
+		/* GravityCompensation1\Link4\Gravity\m = GravityCompensation1\Link4\m; */
+		P[114] = P[118];
+
+		/* GravityCompensation1\Link5\AdHik1\COMdim = GravityCompensation1\Link5\COMdim; */
+		XXMatrixMov (&M[210], &M[220]);
+
+		/* GravityCompensation1\Link5\Hij\dim = GravityCompensation1\Link5\dim; */
+		XXMatrixMov (&M[218], &M[221]);
+
+		/* GravityCompensation1\Link5\Gravity\m = GravityCompensation1\Link5\m; */
+		P[128] = P[132];
+
+		/* GravityCompensation1\Base\m = GravityCompensation1\Linkm[1]; */
+		P[52] = M[228].mat[0];
+
+		/* GravityCompensation1\Base\COMdim = GravityCompensation1\LinkCOMdim[1:3,1]; */
+		M[84].mat[0] = M[226].mat[0];
+		M[84].mat[1] = M[226].mat[6];
+		M[84].mat[2] = M[226].mat[12];
+
+		/* GravityCompensation1\Base\dim = GravityCompensation1\Linkdim[1:3,1]; */
+		M[85].mat[0] = M[227].mat[0];
+		M[85].mat[1] = M[227].mat[6];
+		M[85].mat[2] = M[227].mat[12];
+
+		/* GravityCompensation1\Link1\m = GravityCompensation1\Linkm[2]; */
+		P[76] = M[228].mat[1];
+
+		/* GravityCompensation1\Link1\COMdim = GravityCompensation1\LinkCOMdim[1:3,2]; */
+		M[144].mat[0] = M[226].mat[1];
+		M[144].mat[1] = M[226].mat[7];
+		M[144].mat[2] = M[226].mat[13];
+
+		/* GravityCompensation1\Link1\dim = GravityCompensation1\Linkdim[1:3,2]; */
+		M[145].mat[0] = M[227].mat[1];
+		M[145].mat[1] = M[227].mat[7];
+		M[145].mat[2] = M[227].mat[13];
+
+		/* GravityCompensation1\Link2\m = GravityCompensation1\Linkm[3]; */
+		P[90] = M[228].mat[2];
+
+		/* GravityCompensation1\Link2\COMdim = GravityCompensation1\LinkCOMdim[1:3,3]; */
+		M[163].mat[0] = M[226].mat[2];
+		M[163].mat[1] = M[226].mat[8];
+		M[163].mat[2] = M[226].mat[14];
+
+		/* GravityCompensation1\Link2\dim = GravityCompensation1\Linkdim[1:3,3]; */
+		M[164].mat[0] = M[227].mat[2];
+		M[164].mat[1] = M[227].mat[8];
+		M[164].mat[2] = M[227].mat[14];
+
+		/* GravityCompensation1\Link3\m = GravityCompensation1\Linkm[4]; */
+		P[104] = M[228].mat[3];
+
+		/* GravityCompensation1\Link3\COMdim = GravityCompensation1\LinkCOMdim[1:3,4]; */
+		M[182].mat[0] = M[226].mat[3];
+		M[182].mat[1] = M[226].mat[9];
+		M[182].mat[2] = M[226].mat[15];
+
+		/* GravityCompensation1\Link3\dim = GravityCompensation1\Linkdim[1:3,4]; */
+		M[183].mat[0] = M[227].mat[3];
+		M[183].mat[1] = M[227].mat[9];
+		M[183].mat[2] = M[227].mat[15];
+
+		/* GravityCompensation1\Link4\m = GravityCompensation1\Linkm[5]; */
+		P[118] = M[228].mat[4];
+
+		/* GravityCompensation1\Link4\COMdim = GravityCompensation1\LinkCOMdim[1:3,5]; */
+		M[201].mat[0] = M[226].mat[4];
+		M[201].mat[1] = M[226].mat[10];
+		M[201].mat[2] = M[226].mat[16];
+
+		/* GravityCompensation1\Link4\dim = GravityCompensation1\Linkdim[1:3,5]; */
+		M[202].mat[0] = M[227].mat[4];
+		M[202].mat[1] = M[227].mat[10];
+		M[202].mat[2] = M[227].mat[16];
+
+		/* GravityCompensation1\Link5\m = GravityCompensation1\Linkm[6]; */
+		P[132] = M[228].mat[5];
+
+		/* GravityCompensation1\Link5\COMdim = GravityCompensation1\LinkCOMdim[1:3,6]; */
+		M[220].mat[0] = M[226].mat[5];
+		M[220].mat[1] = M[226].mat[11];
+		M[220].mat[2] = M[226].mat[17];
+
+		/* GravityCompensation1\Link5\dim = GravityCompensation1\Linkdim[1:3,6]; */
+		M[221].mat[0] = M[227].mat[5];
+		M[221].mat[1] = M[227].mat[11];
+		M[221].mat[2] = M[227].mat[17];
+
+		/* GravityCompensation1\JointBase1\InitialPos = GravityCompensation1\InitialJointPos[1]; */
+		P[68] = M[225].mat[0];
+
+		/* GravityCompensation1\Joint12\InitialPos = GravityCompensation1\InitialJointPos[2]; */
+		P[60] = M[225].mat[1];
+
+		/* GravityCompensation1\Joint23\InitialPos = GravityCompensation1\InitialJointPos[3]; */
+		P[62] = M[225].mat[2];
+
+		/* GravityCompensation1\Joint34\InitialPos = GravityCompensation1\InitialJointPos[4]; */
+		P[64] = M[225].mat[3];
+
+		/* GravityCompensation1\Joint45\InitialPos = GravityCompensation1\InitialJointPos[5]; */
+		P[66] = M[225].mat[4];
+
+	}
+
+	/* This function calculates the static equations of the model.
+	 * These equations are only dependent from parameters and constants
+	 */
+	void interaction_control::CalculateStatic (void)
+	{
+			/* C\p.e[1] = 0; */
+	M[0].mat[0] = 0.0;
+
+	/* C\p.e[2] = 0; */
+	M[0].mat[1] = 0.0;
+
+	/* C\p.e[3] = 0; */
+	M[0].mat[2] = 0.0;
+
+	/* CalculateJ\base_offset_H = homogeneous (eye (3), CalculateJ\baseoffset); */
+	XXMatrixEye (&M[263]);
+	XXMatrixHomogeneous (&M[47], &M[263], &M[6]);
+
+	/* CalculateJ\p1ref = CalculateJ\Linkdim[1:3,1]; */
+	M[29].mat[0] = M[4].mat[0];
+	M[29].mat[1] = M[4].mat[6];
+	M[29].mat[2] = M[4].mat[12];
+
+	/* CalculateJ\p21 = CalculateJ\Linkdim[1:3,2]; */
+	M[30].mat[0] = M[4].mat[1];
+	M[30].mat[1] = M[4].mat[7];
+	M[30].mat[2] = M[4].mat[13];
+
+	/* CalculateJ\p32 = CalculateJ\Linkdim[1:3,3]; */
+	M[31].mat[0] = M[4].mat[2];
+	M[31].mat[1] = M[4].mat[8];
+	M[31].mat[2] = M[4].mat[14];
+
+	/* CalculateJ\p43 = CalculateJ\Linkdim[1:3,4]; */
+	M[32].mat[0] = M[4].mat[3];
+	M[32].mat[1] = M[4].mat[9];
+	M[32].mat[2] = M[4].mat[15];
+
+	/* CalculateJ\p54 = CalculateJ\Linkdim[1:3,5]; */
+	M[33].mat[0] = M[4].mat[4];
+	M[33].mat[1] = M[4].mat[10];
+	M[33].mat[2] = M[4].mat[16];
+
+	/* CalculateJ\Rtip5 = eye (3); */
+	XXMatrixEye (&M[28]);
+
+	/* CalculateJ\ptip5 = CalculateJ\Linkdim[1:3,6]; */
+	M[34].mat[0] = M[4].mat[5];
+	M[34].mat[1] = M[4].mat[11];
+	M[34].mat[2] = M[4].mat[17];
+
+	/* CalculateJ\Htip5 = homogeneous (CalculateJ\Rtip5, CalculateJ\ptip5); */
+	XXMatrixHomogeneous (&M[41], &M[28], &M[34]);
+
+	/* CalculateJ\uTrzrefref[1:3] = CalculateJ\omegaz; */
+	M[15].mat[0] = M[9].mat[0];
+	M[15].mat[1] = M[9].mat[1];
+	M[15].mat[2] = M[9].mat[2];
+
+	/* CalculateJ\uTrzrefref[4:6] = 0; */
+	M[15].mat[3] = 0.0;
+	M[15].mat[4] = 0.0;
+	M[15].mat[5] = 0.0;
+
+	/* CalculateJ\uTryrefref[1:3] = 0; */
+	M[16].mat[0] = 0.0;
+	M[16].mat[1] = 0.0;
+	M[16].mat[2] = 0.0;
+
+	/* CalculateJ\uTryrefref[4:6] = CalculateJ\vy; */
+	M[16].mat[3] = M[8].mat[0];
+	M[16].mat[4] = M[8].mat[1];
+	M[16].mat[5] = M[8].mat[2];
+
+	/* CalculateJ\uTrxrefref[1:3] = 0; */
+	M[17].mat[0] = 0.0;
+	M[17].mat[1] = 0.0;
+	M[17].mat[2] = 0.0;
+
+	/* CalculateJ\uTrxrefref[4:6] = CalculateJ\vx; */
+	M[17].mat[3] = M[7].mat[0];
+	M[17].mat[4] = M[7].mat[1];
+	M[17].mat[5] = M[7].mat[2];
+
+	/* CalculateJ\uTr1refref[1:3] = CalculateJ\omega1; */
+	M[18].mat[0] = M[10].mat[0];
+	M[18].mat[1] = M[10].mat[1];
+	M[18].mat[2] = M[10].mat[2];
+
+	/* CalculateJ\uTr1refref[4:6] = skew (CalculateJ\Linkdim[1:3,1]) * CalculateJ\omega1; */
+	M[266].mat[0] = M[4].mat[0];
+	M[266].mat[1] = M[4].mat[6];
+	M[266].mat[2] = M[4].mat[12];
+	XXMatrixSkew (&M[265], &M[266]);
+	XXMatrixMul (&M[264], &M[265], &M[10]);
+	M[18].mat[3] = M[264].mat[0];
+	M[18].mat[4] = M[264].mat[1];
+	M[18].mat[5] = M[264].mat[2];
+
+	/* CalculateJ\uTr211[1:3] = CalculateJ\omega2; */
+	M[19].mat[0] = M[11].mat[0];
+	M[19].mat[1] = M[11].mat[1];
+	M[19].mat[2] = M[11].mat[2];
+
+	/* CalculateJ\uTr211[4:6] = skew (CalculateJ\Linkdim[1:3,2]) * CalculateJ\omega2; */
+	M[269].mat[0] = M[4].mat[1];
+	M[269].mat[1] = M[4].mat[7];
+	M[269].mat[2] = M[4].mat[13];
+	XXMatrixSkew (&M[268], &M[269]);
+	XXMatrixMul (&M[267], &M[268], &M[11]);
+	M[19].mat[3] = M[267].mat[0];
+	M[19].mat[4] = M[267].mat[1];
+	M[19].mat[5] = M[267].mat[2];
+
+	/* CalculateJ\uTr322[1:3] = CalculateJ\omega3; */
+	M[20].mat[0] = M[12].mat[0];
+	M[20].mat[1] = M[12].mat[1];
+	M[20].mat[2] = M[12].mat[2];
+
+	/* CalculateJ\uTr322[4:6] = skew (CalculateJ\Linkdim[1:3,3]) * CalculateJ\omega3; */
+	M[272].mat[0] = M[4].mat[2];
+	M[272].mat[1] = M[4].mat[8];
+	M[272].mat[2] = M[4].mat[14];
+	XXMatrixSkew (&M[271], &M[272]);
+	XXMatrixMul (&M[270], &M[271], &M[12]);
+	M[20].mat[3] = M[270].mat[0];
+	M[20].mat[4] = M[270].mat[1];
+	M[20].mat[5] = M[270].mat[2];
+
+	/* CalculateJ\uTr433[1:3] = CalculateJ\omega4; */
+	M[21].mat[0] = M[13].mat[0];
+	M[21].mat[1] = M[13].mat[1];
+	M[21].mat[2] = M[13].mat[2];
+
+	/* CalculateJ\uTr433[4:6] = skew (CalculateJ\Linkdim[1:3,4]) * CalculateJ\omega4; */
+	M[275].mat[0] = M[4].mat[3];
+	M[275].mat[1] = M[4].mat[9];
+	M[275].mat[2] = M[4].mat[15];
+	XXMatrixSkew (&M[274], &M[275]);
+	XXMatrixMul (&M[273], &M[274], &M[13]);
+	M[21].mat[3] = M[273].mat[0];
+	M[21].mat[4] = M[273].mat[1];
+	M[21].mat[5] = M[273].mat[2];
+
+	/* CalculateJ\uTr544[1:3] = CalculateJ\omega5; */
+	M[22].mat[0] = M[14].mat[0];
+	M[22].mat[1] = M[14].mat[1];
+	M[22].mat[2] = M[14].mat[2];
+
+	/* CalculateJ\uTr544[4:6] = skew (CalculateJ\Linkdim[1:3,5]) * CalculateJ\omega5; */
+	M[278].mat[0] = M[4].mat[4];
+	M[278].mat[1] = M[4].mat[10];
+	M[278].mat[2] = M[4].mat[16];
+	XXMatrixSkew (&M[277], &M[278]);
+	XXMatrixMul (&M[276], &M[277], &M[14]);
+	M[22].mat[3] = M[276].mat[0];
+	M[22].mat[4] = M[276].mat[1];
+	M[22].mat[5] = M[276].mat[2];
+
+	/* CtipControl\Wt[1:3] = 0; */
+	M[56].mat[0] = 0.0;
+	M[56].mat[1] = 0.0;
+	M[56].mat[2] = 0.0;
+
+	/* CtipControl\Wr[4:6] = 0; */
+	M[55].mat[3] = 0.0;
+	M[55].mat[4] = 0.0;
+	M[55].mat[5] = 0.0;
+
+	/* filter\BWrad = (filter\BW * 2) * 3.1415926536; */
+	V[501] = (P[44] * 2.0) * 3.1415926536;
+
+	/* GravityCompensation1\Base\AdHik1\d = GravityCompensation1\Base\AdHik1\COMdim; */
+	XXMatrixMov (&M[75], &M[74]);
+
+	/* GravityCompensation1\Base\AdHik1\R = eye (3); */
+	XXMatrixEye (&M[76]);
+
+	/* GravityCompensation1\Base\AdHik1\H = homogeneous (GravityCompensation1\Base\AdHik1\R, GravityCompensation1\Base\AdHik1\d); */
+	XXMatrixHomogeneous (&M[77], &M[76], &M[75]);
+
+	/* GravityCompensation1\Base\AdHik1\AdH = Adjoint (GravityCompensation1\Base\AdHik1\H); */
+	XXMatrixAdjoint (&M[78], &M[77]);
+
+	/* GravityCompensation1\Base\Gravity\effort = [0; 0; 0; 0; 0; -9.8 * GravityCompensation1\Base\Gravity\m]; */
+	M[79].mat[0] = 0.0;
+	M[79].mat[1] = 0.0;
+	M[79].mat[2] = 0.0;
+	M[79].mat[3] = 0.0;
+	M[79].mat[4] = 0.0;
+	M[79].mat[5] = -9.8 * P[48];
+
+	/* GravityCompensation1\Base\Hij\Hab = homogeneous (eye (3), GravityCompensation1\Base\Hij\dim); */
+	XXMatrixEye (&M[279]);
+	XXMatrixHomogeneous (&M[81], &M[279], &M[82]);
+
+	/* GravityCompensation1\Hfloor0\output = eye (4); */
+	XXMatrixEye (&M[86]);
+
+	/* GravityCompensation1\Joint12\Integrate\p = [0; 0; 0]; */
+	M[91].mat[0] = 0.0;
+	M[91].mat[1] = 0.0;
+	M[91].mat[2] = 0.0;
+
+	/* GravityCompensation1\Joint23\Integrate\p = [0; 0; 0]; */
+	M[99].mat[0] = 0.0;
+	M[99].mat[1] = 0.0;
+	M[99].mat[2] = 0.0;
+
+	/* GravityCompensation1\Joint34\Integrate\p = [0; 0; 0]; */
+	M[107].mat[0] = 0.0;
+	M[107].mat[1] = 0.0;
+	M[107].mat[2] = 0.0;
+
+	/* GravityCompensation1\Joint45\Integrate\p = [0; 0; 0]; */
+	M[115].mat[0] = 0.0;
+	M[115].mat[1] = 0.0;
+	M[115].mat[2] = 0.0;
+
+	/* GravityCompensation1\JointBase1\Integrate\p = [0; 0; 0]; */
+	M[123].mat[0] = 0.0;
+	M[123].mat[1] = 0.0;
+	M[123].mat[2] = 0.0;
+
+	/* GravityCompensation1\Link1\AdHik1\d = GravityCompensation1\Link1\AdHik1\COMdim; */
+	XXMatrixMov (&M[135], &M[134]);
+
+	/* GravityCompensation1\Link1\AdHik1\R = eye (3); */
+	XXMatrixEye (&M[136]);
+
+	/* GravityCompensation1\Link1\AdHik1\H = homogeneous (GravityCompensation1\Link1\AdHik1\R, GravityCompensation1\Link1\AdHik1\d); */
+	XXMatrixHomogeneous (&M[137], &M[136], &M[135]);
+
+	/* GravityCompensation1\Link1\AdHik1\AdH = Adjoint (GravityCompensation1\Link1\AdHik1\H); */
+	XXMatrixAdjoint (&M[138], &M[137]);
+
+	/* GravityCompensation1\Link1\Gravity\effort = [0; 0; 0; 0; 0; -9.8 * GravityCompensation1\Link1\Gravity\m]; */
+	M[139].mat[0] = 0.0;
+	M[139].mat[1] = 0.0;
+	M[139].mat[2] = 0.0;
+	M[139].mat[3] = 0.0;
+	M[139].mat[4] = 0.0;
+	M[139].mat[5] = -9.8 * P[72];
+
+	/* GravityCompensation1\Link1\Hij\Hab = homogeneous (eye (3), GravityCompensation1\Link1\Hij\dim); */
+	XXMatrixEye (&M[280]);
+	XXMatrixHomogeneous (&M[141], &M[280], &M[142]);
+
+	/* GravityCompensation1\Link2\AdHik1\d = GravityCompensation1\Link2\AdHik1\COMdim; */
+	XXMatrixMov (&M[154], &M[153]);
+
+	/* GravityCompensation1\Link2\AdHik1\R = eye (3); */
+	XXMatrixEye (&M[155]);
+
+	/* GravityCompensation1\Link2\AdHik1\H = homogeneous (GravityCompensation1\Link2\AdHik1\R, GravityCompensation1\Link2\AdHik1\d); */
+	XXMatrixHomogeneous (&M[156], &M[155], &M[154]);
+
+	/* GravityCompensation1\Link2\AdHik1\AdH = Adjoint (GravityCompensation1\Link2\AdHik1\H); */
+	XXMatrixAdjoint (&M[157], &M[156]);
+
+	/* GravityCompensation1\Link2\Gravity\effort = [0; 0; 0; 0; 0; -9.8 * GravityCompensation1\Link2\Gravity\m]; */
+	M[158].mat[0] = 0.0;
+	M[158].mat[1] = 0.0;
+	M[158].mat[2] = 0.0;
+	M[158].mat[3] = 0.0;
+	M[158].mat[4] = 0.0;
+	M[158].mat[5] = -9.8 * P[86];
+
+	/* GravityCompensation1\Link2\Hij\Hab = homogeneous (eye (3), GravityCompensation1\Link2\Hij\dim); */
+	XXMatrixEye (&M[281]);
+	XXMatrixHomogeneous (&M[160], &M[281], &M[161]);
+
+	/* GravityCompensation1\Link3\AdHik1\d = GravityCompensation1\Link3\AdHik1\COMdim; */
+	XXMatrixMov (&M[173], &M[172]);
+
+	/* GravityCompensation1\Link3\AdHik1\R = eye (3); */
+	XXMatrixEye (&M[174]);
+
+	/* GravityCompensation1\Link3\AdHik1\H = homogeneous (GravityCompensation1\Link3\AdHik1\R, GravityCompensation1\Link3\AdHik1\d); */
+	XXMatrixHomogeneous (&M[175], &M[174], &M[173]);
+
+	/* GravityCompensation1\Link3\AdHik1\AdH = Adjoint (GravityCompensation1\Link3\AdHik1\H); */
+	XXMatrixAdjoint (&M[176], &M[175]);
+
+	/* GravityCompensation1\Link3\Gravity\effort = [0; 0; 0; 0; 0; -9.8 * GravityCompensation1\Link3\Gravity\m]; */
+	M[177].mat[0] = 0.0;
+	M[177].mat[1] = 0.0;
+	M[177].mat[2] = 0.0;
+	M[177].mat[3] = 0.0;
+	M[177].mat[4] = 0.0;
+	M[177].mat[5] = -9.8 * P[100];
+
+	/* GravityCompensation1\Link3\Hij\Hab = homogeneous (eye (3), GravityCompensation1\Link3\Hij\dim); */
+	XXMatrixEye (&M[282]);
+	XXMatrixHomogeneous (&M[179], &M[282], &M[180]);
+
+	/* GravityCompensation1\Link4\AdHik1\d = GravityCompensation1\Link4\AdHik1\COMdim; */
+	XXMatrixMov (&M[192], &M[191]);
+
+	/* GravityCompensation1\Link4\AdHik1\R = eye (3); */
+	XXMatrixEye (&M[193]);
+
+	/* GravityCompensation1\Link4\AdHik1\H = homogeneous (GravityCompensation1\Link4\AdHik1\R, GravityCompensation1\Link4\AdHik1\d); */
+	XXMatrixHomogeneous (&M[194], &M[193], &M[192]);
+
+	/* GravityCompensation1\Link4\AdHik1\AdH = Adjoint (GravityCompensation1\Link4\AdHik1\H); */
+	XXMatrixAdjoint (&M[195], &M[194]);
+
+	/* GravityCompensation1\Link4\Gravity\effort = [0; 0; 0; 0; 0; -9.8 * GravityCompensation1\Link4\Gravity\m]; */
+	M[196].mat[0] = 0.0;
+	M[196].mat[1] = 0.0;
+	M[196].mat[2] = 0.0;
+	M[196].mat[3] = 0.0;
+	M[196].mat[4] = 0.0;
+	M[196].mat[5] = -9.8 * P[114];
+
+	/* GravityCompensation1\Link4\Hij\Hab = homogeneous (eye (3), GravityCompensation1\Link4\Hij\dim); */
+	XXMatrixEye (&M[283]);
+	XXMatrixHomogeneous (&M[198], &M[283], &M[199]);
+
+	/* GravityCompensation1\Link5\AdHik1\d = GravityCompensation1\Link5\AdHik1\COMdim; */
+	XXMatrixMov (&M[211], &M[210]);
+
+	/* GravityCompensation1\Link5\AdHik1\R = eye (3); */
+	XXMatrixEye (&M[212]);
+
+	/* GravityCompensation1\Link5\AdHik1\H = homogeneous (GravityCompensation1\Link5\AdHik1\R, GravityCompensation1\Link5\AdHik1\d); */
+	XXMatrixHomogeneous (&M[213], &M[212], &M[211]);
+
+	/* GravityCompensation1\Link5\AdHik1\AdH = Adjoint (GravityCompensation1\Link5\AdHik1\H); */
+	XXMatrixAdjoint (&M[214], &M[213]);
+
+	/* GravityCompensation1\Link5\Gravity\effort = [0; 0; 0; 0; 0; -9.8 * GravityCompensation1\Link5\Gravity\m]; */
+	M[215].mat[0] = 0.0;
+	M[215].mat[1] = 0.0;
+	M[215].mat[2] = 0.0;
+	M[215].mat[3] = 0.0;
+	M[215].mat[4] = 0.0;
+	M[215].mat[5] = -9.8 * P[128];
+
+	/* GravityCompensation1\Link5\Hij\Hab = homogeneous (eye (3), GravityCompensation1\Link5\Hij\dim); */
+	XXMatrixEye (&M[284]);
+	XXMatrixHomogeneous (&M[217], &M[284], &M[218]);
+
+	/* GravityCompensation1\Mux\port.e[1] = 0; */
+	M[222].mat[0] = 0.0;
+
+	/* GravityCompensation1\Mux\port.e[2] = 0; */
+	M[222].mat[1] = 0.0;
+
+	/* GravityCompensation1\Mux\port.e[3] = 0; */
+	M[222].mat[2] = 0.0;
+
+	/* GravityCompensation1\Wtip0\p.e = GravityCompensation1\Wtip0\effort; */
+	XXMatrixScalarMov (&M[223], P[140]);
+
+	/* GravityCompensation1\ZeroJunction\p1.f = 0; */
+	XXMatrixScalarMov (&M[224], 0.0);
+
+	/* R\R = diag (R\r); */
+	XXMatrixDiag (&M[247], &M[246]);
+
+	/* GravityCompensation1\Link5\AdHij\p1.e = transpose (Adjoint (GravityCompensation1\Link5\Hij\Hab)) * GravityCompensation1\Wtip0\p.e; */
+	XXMatrixAdjoint (&M[286], &M[217]);
+	XXMatrixTranspose (&M[285], &M[286]);
+	XXMatrixMul (&M[206], &M[285], &M[223]);
+
+	/* GravityCompensation1\Base\AdHij\p2.f = Adjoint (GravityCompensation1\Base\Hij\Hab) * GravityCompensation1\ZeroJunction\p1.f; */
+	XXMatrixAdjoint (&M[287], &M[81]);
+	XXMatrixMul (&M[71], &M[287], &M[224]);
+
+	/* GravityCompensation1\Base\AdHik1\p2.f = (1.0 / GravityCompensation1\Base\AdHik1\AdH) * GravityCompensation1\ZeroJunction\p1.f; */
+	XXScalarMatrixDiv (&M[288], 1.0, &M[78], workarray);
+	XXMatrixMul (&M[73], &M[288], &M[224]);
+
+	/* GravityCompensation1\Base\Hij\output = GravityCompensation1\Hfloor0\output * GravityCompensation1\Base\Hij\Hab; */
+	XXMatrixMul (&M[80], &M[86], &M[81]);
+
+	}
+
+	/* This function calculates the input equations of the model.
+	 * These equations are dynamic equations that must not change
+	 * in calls from the integration method (like random and delay).
+	 */
+	void interaction_control::CalculateInput (void)
+	{
+		
+	}
+
+	/* This function calculates the dynamic equations of the model.
+	 * These equations are called from the integration method
+	 * to calculate the new model rates (that are then integrated).
+	 */
+	void interaction_control::CalculateDynamic (void)
+	{
+			/* additional code for filter\s1y; */
+	R[6] = s[0];
+	R[7] = s[1];
+	R[8] = s[2];
+	R[9] = s[3];
+	R[10] = s[4];
+	R[11] = s[5];
+
+	/* DemuxHW1\base.f = bond_to_base.v; */
+	XXMatrixMov (&M[58], &M[249]);
+
+	/* DemuxHW1\arm.f = bond_to_arm.omega; */
+	XXMatrixMov (&M[61], &M[251]);
+
+	/* filter\u = xyzypr; */
+	XXMatrixMov (&M[62], &M[252]);
+
+	/* MuxToControl1\base = odometry_base; */
+	XXMatrixMov (&M[241], &M[253]);
+
+	/* MuxToControl1\arm = measured_angles_arm; */
+	XXMatrixMov (&M[240], &M[254]);
+
+	/* DemuxHW1\control.f[1:3] = DemuxHW1\base.f; */
+	M[59].mat[0] = M[58].mat[0];
+	M[59].mat[1] = M[58].mat[1];
+	M[59].mat[2] = M[58].mat[2];
+
+	/* DemuxHW1\control.f[4:8] = DemuxHW1\arm.f; */
+	M[59].mat[3] = M[61].mat[0];
+	M[59].mat[4] = M[61].mat[1];
+	M[59].mat[5] = M[61].mat[2];
+	M[59].mat[6] = M[61].mat[3];
+	M[59].mat[7] = M[61].mat[4];
+
+	/* filter\s2y = filter\BWrad ^ 2 * (filter\u - filter\y) - (1.4142 * filter\BWrad) * filter\s1y; */
+	XXMatrixSub (&M[290], &M[62], &M[261]);
+	XXScalarMatrixMul (&M[289], (V[501] * V[501]), &M[290]);
+	XXScalarMatrixMul (&M[291], 1.4142 * V[501], &M[260]);
+	XXMatrixSub (&M[258], &M[289], &M[291]);
+
+	/* Gain\Rz = [cos (filter\y[4]), -sin (filter\y[4]), 0; sin (filter\y[4]), cos (filter\y[4]), 0; 0, 0, 1]; */
+	M[64].mat[0] = cos (M[261].mat[3]);
+	M[64].mat[1] = -(sin (M[261].mat[3]));
+	M[64].mat[2] = 0.0;
+	M[64].mat[3] = sin (M[261].mat[3]);
+	M[64].mat[4] = cos (M[261].mat[3]);
+	M[64].mat[5] = 0.0;
+	M[64].mat[6] = 0.0;
+	M[64].mat[7] = 0.0;
+	M[64].mat[8] = 1.0;
+
+	/* Gain\Ry = [cos (filter\y[5]), 0, sin (filter\y[5]); 0, 1, 0; -sin (filter\y[5]), 0, cos (filter\y[5])]; */
+	M[65].mat[0] = cos (M[261].mat[4]);
+	M[65].mat[1] = 0.0;
+	M[65].mat[2] = sin (M[261].mat[4]);
+	M[65].mat[3] = 0.0;
+	M[65].mat[4] = 1.0;
+	M[65].mat[5] = 0.0;
+	M[65].mat[6] = -(sin (M[261].mat[4]));
+	M[65].mat[7] = 0.0;
+	M[65].mat[8] = cos (M[261].mat[4]);
+
+	/* Gain\Rx = [1, 0, 0; 0, cos (filter\y[6]), -sin (filter\y[6]); 0, sin (filter\y[6]), cos (filter\y[6])]; */
+	M[66].mat[0] = 1.0;
+	M[66].mat[1] = 0.0;
+	M[66].mat[2] = 0.0;
+	M[66].mat[3] = 0.0;
+	M[66].mat[4] = cos (M[261].mat[5]);
+	M[66].mat[5] = -(sin (M[261].mat[5]));
+	M[66].mat[6] = 0.0;
+	M[66].mat[7] = sin (M[261].mat[5]);
+	M[66].mat[8] = cos (M[261].mat[5]);
+
+	/* Gain\H = homogeneous ((Gain\Rz * Gain\Ry) * Gain\Rx, filter\y[1:3]); */
+	XXMatrixMul (&M[293], &M[64], &M[65]);
+	XXMatrixMul (&M[292], &M[293], &M[66]);
+	M[294].mat[0] = M[261].mat[0];
+	M[294].mat[1] = M[261].mat[1];
+	M[294].mat[2] = M[261].mat[2];
+	XXMatrixHomogeneous (&M[63], &M[292], &M[294]);
+
+	/* MuxToControl1\control[4:8] = MuxToControl1\arm - (MuxToControl1\zero_angles * pi) / 180; */
+	XXMatrixScalarMul (&M[297], &M[242], C[24]);
+	XXMatrixScalarDiv (&M[296], &M[297], 180.0);
+	XXMatrixSub (&M[295], &M[240], &M[296]);
+	M[239].mat[3] = M[295].mat[0];
+	M[239].mat[4] = M[295].mat[1];
+	M[239].mat[5] = M[295].mat[2];
+	M[239].mat[6] = M[295].mat[3];
+	M[239].mat[7] = M[295].mat[4];
+
+	/* MuxToControl1\control[1:3] = MuxToControl1\base; */
+	M[239].mat[0] = M[241].mat[0];
+	M[239].mat[1] = M[241].mat[1];
+	M[239].mat[2] = M[241].mat[2];
+
+	/* C\p.e[4:8] = MuxToControl1\control[4:8] * C\c; */
+	M[299].mat[0] = M[239].mat[3];
+	M[299].mat[1] = M[239].mat[4];
+	M[299].mat[2] = M[239].mat[5];
+	M[299].mat[3] = M[239].mat[6];
+	M[299].mat[4] = M[239].mat[7];
+	XXMatrixScalarMul (&M[298], &M[299], P[0]);
+	M[0].mat[3] = M[298].mat[0];
+	M[0].mat[4] = M[298].mat[1];
+	M[0].mat[5] = M[298].mat[2];
+	M[0].mat[6] = M[298].mat[3];
+	M[0].mat[7] = M[298].mat[4];
+
+	/* CalculateJ\Rz = [cos (MuxToControl1\control[1]), -sin (MuxToControl1\control[1]), 0; sin (MuxToControl1\control[1]), cos (MuxToControl1\control[1]), 0; 0, 0, 1]; */
+	M[49].mat[0] = cos (M[239].mat[0]);
+	M[49].mat[1] = -(sin (M[239].mat[0]));
+	M[49].mat[2] = 0.0;
+	M[49].mat[3] = sin (M[239].mat[0]);
+	M[49].mat[4] = cos (M[239].mat[0]);
+	M[49].mat[5] = 0.0;
+	M[49].mat[6] = 0.0;
+	M[49].mat[7] = 0.0;
+	M[49].mat[8] = 1.0;
+
+	/* CalculateJ\Href0 = homogeneous (CalculateJ\Rz, [MuxToControl1\control[2]; MuxToControl1\control[3]; 0]) * CalculateJ\base_offset_H; */
+	M[301].mat[0] = M[239].mat[1];
+	M[301].mat[1] = M[239].mat[2];
+	M[301].mat[2] = 0.0;
+	XXMatrixHomogeneous (&M[300], &M[49], &M[301]);
+	XXMatrixMul (&M[35], &M[300], &M[47]);
+
+	/* CalculateJ\R1ref = [cos (-MuxToControl1\control[4]), -sin (-MuxToControl1\control[4]), 0; sin (-MuxToControl1\control[4]), cos (-MuxToControl1\control[4]), 0; 0, 0, 1]; */
+	M[23].mat[0] = cos (-M[239].mat[3]);
+	M[23].mat[1] = -(sin (-M[239].mat[3]));
+	M[23].mat[2] = 0.0;
+	M[23].mat[3] = sin (-M[239].mat[3]);
+	M[23].mat[4] = cos (-M[239].mat[3]);
+	M[23].mat[5] = 0.0;
+	M[23].mat[6] = 0.0;
+	M[23].mat[7] = 0.0;
+	M[23].mat[8] = 1.0;
+
+	/* CalculateJ\H1ref = homogeneous (CalculateJ\R1ref, CalculateJ\p1ref); */
+	XXMatrixHomogeneous (&M[36], &M[23], &M[29]);
+
+	/* CalculateJ\R21 = [cos (MuxToControl1\control[5]), 0, sin (MuxToControl1\control[5]); 0, 1, 0; -sin (MuxToControl1\control[5]), 0, cos (MuxToControl1\control[5])]; */
+	M[24].mat[0] = cos (M[239].mat[4]);
+	M[24].mat[1] = 0.0;
+	M[24].mat[2] = sin (M[239].mat[4]);
+	M[24].mat[3] = 0.0;
+	M[24].mat[4] = 1.0;
+	M[24].mat[5] = 0.0;
+	M[24].mat[6] = -(sin (M[239].mat[4]));
+	M[24].mat[7] = 0.0;
+	M[24].mat[8] = cos (M[239].mat[4]);
+
+	/* CalculateJ\H21 = homogeneous (CalculateJ\R21, CalculateJ\p21); */
+	XXMatrixHomogeneous (&M[37], &M[24], &M[30]);
+
+	/* CalculateJ\R32 = [cos (MuxToControl1\control[6]), 0, sin (MuxToControl1\control[6]); 0, 1, 0; -sin (MuxToControl1\control[6]), 0, cos (MuxToControl1\control[6])]; */
+	M[25].mat[0] = cos (M[239].mat[5]);
+	M[25].mat[1] = 0.0;
+	M[25].mat[2] = sin (M[239].mat[5]);
+	M[25].mat[3] = 0.0;
+	M[25].mat[4] = 1.0;
+	M[25].mat[5] = 0.0;
+	M[25].mat[6] = -(sin (M[239].mat[5]));
+	M[25].mat[7] = 0.0;
+	M[25].mat[8] = cos (M[239].mat[5]);
+
+	/* CalculateJ\H32 = homogeneous (CalculateJ\R32, CalculateJ\p32); */
+	XXMatrixHomogeneous (&M[38], &M[25], &M[31]);
+
+	/* CalculateJ\R43 = [cos (MuxToControl1\control[7]), 0, sin (MuxToControl1\control[7]); 0, 1, 0; -sin (MuxToControl1\control[7]), 0, cos (MuxToControl1\control[7])]; */
+	M[26].mat[0] = cos (M[239].mat[6]);
+	M[26].mat[1] = 0.0;
+	M[26].mat[2] = sin (M[239].mat[6]);
+	M[26].mat[3] = 0.0;
+	M[26].mat[4] = 1.0;
+	M[26].mat[5] = 0.0;
+	M[26].mat[6] = -(sin (M[239].mat[6]));
+	M[26].mat[7] = 0.0;
+	M[26].mat[8] = cos (M[239].mat[6]);
+
+	/* CalculateJ\H43 = homogeneous (CalculateJ\R43, CalculateJ\p43); */
+	XXMatrixHomogeneous (&M[39], &M[26], &M[32]);
+
+	/* CalculateJ\R54 = [cos (-MuxToControl1\control[8]), -sin (-MuxToControl1\control[8]), 0; sin (-MuxToControl1\control[8]), cos (-MuxToControl1\control[8]), 0; 0, 0, 1]; */
+	M[27].mat[0] = cos (-M[239].mat[7]);
+	M[27].mat[1] = -(sin (-M[239].mat[7]));
+	M[27].mat[2] = 0.0;
+	M[27].mat[3] = sin (-M[239].mat[7]);
+	M[27].mat[4] = cos (-M[239].mat[7]);
+	M[27].mat[5] = 0.0;
+	M[27].mat[6] = 0.0;
+	M[27].mat[7] = 0.0;
+	M[27].mat[8] = 1.0;
+
+	/* CalculateJ\H54 = homogeneous (CalculateJ\R54, CalculateJ\p54); */
+	XXMatrixHomogeneous (&M[40], &M[27], &M[33]);
+
+	/* CalculateJ\H10 = CalculateJ\Href0 * CalculateJ\H1ref; */
+	XXMatrixMul (&M[42], &M[35], &M[36]);
+
+	/* CalculateJ\H20 = CalculateJ\H10 * CalculateJ\H21; */
+	XXMatrixMul (&M[43], &M[42], &M[37]);
+
+	/* CalculateJ\H30 = CalculateJ\H20 * CalculateJ\H32; */
+	XXMatrixMul (&M[44], &M[43], &M[38]);
+
+	/* CalculateJ\H40 = CalculateJ\H30 * CalculateJ\H43; */
+	XXMatrixMul (&M[45], &M[44], &M[39]);
+
+	/* CalculateJ\H50 = CalculateJ\H40 * CalculateJ\H54; */
+	XXMatrixMul (&M[46], &M[45], &M[40]);
+
+	/* CalculateJ\Htip0 = CalculateJ\H50 * CalculateJ\Htip5; */
+	XXMatrixMul (&M[2], &M[46], &M[41]);
+
+	/* CalculateJ\controllableJ[1:6,1] = Adjoint (CalculateJ\Href0) * CalculateJ\uTrzrefref; */
+	XXMatrixAdjoint (&M[303], &M[35]);
+	XXMatrixMul (&M[302], &M[303], &M[15]);
+	M[1].mat[0] = M[302].mat[0];
+	M[1].mat[8] = M[302].mat[1];
+	M[1].mat[16] = M[302].mat[2];
+	M[1].mat[24] = M[302].mat[3];
+	M[1].mat[32] = M[302].mat[4];
+	M[1].mat[40] = M[302].mat[5];
+
+	/* CalculateJ\controllableJ[1:6,2] = Adjoint (CalculateJ\Href0) * CalculateJ\uTryrefref; */
+	XXMatrixAdjoint (&M[305], &M[35]);
+	XXMatrixMul (&M[304], &M[305], &M[16]);
+	M[1].mat[1] = M[304].mat[0];
+	M[1].mat[9] = M[304].mat[1];
+	M[1].mat[17] = M[304].mat[2];
+	M[1].mat[25] = M[304].mat[3];
+	M[1].mat[33] = M[304].mat[4];
+	M[1].mat[41] = M[304].mat[5];
+
+	/* CalculateJ\controllableJ[1:6,3] = Adjoint (CalculateJ\Href0) * CalculateJ\uTrxrefref; */
+	XXMatrixAdjoint (&M[307], &M[35]);
+	XXMatrixMul (&M[306], &M[307], &M[17]);
+	M[1].mat[2] = M[306].mat[0];
+	M[1].mat[10] = M[306].mat[1];
+	M[1].mat[18] = M[306].mat[2];
+	M[1].mat[26] = M[306].mat[3];
+	M[1].mat[34] = M[306].mat[4];
+	M[1].mat[42] = M[306].mat[5];
+
+	/* CalculateJ\controllableJ[1:6,4] = Adjoint (CalculateJ\Href0) * CalculateJ\uTr1refref; */
+	XXMatrixAdjoint (&M[309], &M[35]);
+	XXMatrixMul (&M[308], &M[309], &M[18]);
+	M[1].mat[3] = M[308].mat[0];
+	M[1].mat[11] = M[308].mat[1];
+	M[1].mat[19] = M[308].mat[2];
+	M[1].mat[27] = M[308].mat[3];
+	M[1].mat[35] = M[308].mat[4];
+	M[1].mat[43] = M[308].mat[5];
+
+	/* CalculateJ\controllableJ[1:6,5] = Adjoint (CalculateJ\H10) * CalculateJ\uTr211; */
+	XXMatrixAdjoint (&M[311], &M[42]);
+	XXMatrixMul (&M[310], &M[311], &M[19]);
+	M[1].mat[4] = M[310].mat[0];
+	M[1].mat[12] = M[310].mat[1];
+	M[1].mat[20] = M[310].mat[2];
+	M[1].mat[28] = M[310].mat[3];
+	M[1].mat[36] = M[310].mat[4];
+	M[1].mat[44] = M[310].mat[5];
+
+	/* CalculateJ\controllableJ[1:6,6] = Adjoint (CalculateJ\H20) * CalculateJ\uTr322; */
+	XXMatrixAdjoint (&M[313], &M[43]);
+	XXMatrixMul (&M[312], &M[313], &M[20]);
+	M[1].mat[5] = M[312].mat[0];
+	M[1].mat[13] = M[312].mat[1];
+	M[1].mat[21] = M[312].mat[2];
+	M[1].mat[29] = M[312].mat[3];
+	M[1].mat[37] = M[312].mat[4];
+	M[1].mat[45] = M[312].mat[5];
+
+	/* CalculateJ\controllableJ[1:6,7] = Adjoint (CalculateJ\H30) * CalculateJ\uTr433; */
+	XXMatrixAdjoint (&M[315], &M[44]);
+	XXMatrixMul (&M[314], &M[315], &M[21]);
+	M[1].mat[6] = M[314].mat[0];
+	M[1].mat[14] = M[314].mat[1];
+	M[1].mat[22] = M[314].mat[2];
+	M[1].mat[30] = M[314].mat[3];
+	M[1].mat[38] = M[314].mat[4];
+	M[1].mat[46] = M[314].mat[5];
+
+	/* CalculateJ\controllableJ[1:6,8] = Adjoint (CalculateJ\H40) * CalculateJ\uTr544; */
+	XXMatrixAdjoint (&M[317], &M[45]);
+	XXMatrixMul (&M[316], &M[317], &M[22]);
+	M[1].mat[7] = M[316].mat[0];
+	M[1].mat[15] = M[316].mat[1];
+	M[1].mat[23] = M[316].mat[2];
+	M[1].mat[31] = M[316].mat[3];
+	M[1].mat[39] = M[316].mat[4];
+	M[1].mat[47] = M[316].mat[5];
+
+		/* JointSoftLimits\tempstate = MuxToControl1\control; */
+		XXMatrixMov (&M[238], &M[239]);
+
+		/* JointSoftLimits\posdangerzones = [0; 0; 0; JointSoftLimits\MaxEndstopPos[1] - JointSoftLimits\dangerzone; JointSoftLimits\MaxEndstopPos[2] - JointSoftLimits\dangerzone; JointSoftLimits\MaxEndstopPos[3] - JointSoftLimits\dangerzone; JointSoftLimits\MaxEndstopPos[4] - JointSoftLimits\dangerzone; JointSoftLimits\MaxEndstopPos[5] - JointSoftLimits\dangerzone]; */
+		M[236].mat[0] = 0.0;
+		M[236].mat[1] = 0.0;
+		M[236].mat[2] = 0.0;
+		M[236].mat[3] = M[231].mat[0] - P[189];
+		M[236].mat[4] = M[231].mat[1] - P[189];
+		M[236].mat[5] = M[231].mat[2] - P[189];
+		M[236].mat[6] = M[231].mat[3] - P[189];
+		M[236].mat[7] = M[231].mat[4] - P[189];
+
+		/* JointSoftLimits\negdangerzones = [0; 0; 0; JointSoftLimits\MinEndstopPos[1] + JointSoftLimits\dangerzone; JointSoftLimits\MinEndstopPos[2] + JointSoftLimits\dangerzone; JointSoftLimits\MinEndstopPos[3] + JointSoftLimits\dangerzone; JointSoftLimits\MinEndstopPos[4] + JointSoftLimits\dangerzone; JointSoftLimits\MinEndstopPos[5] + JointSoftLimits\dangerzone]; */
+		M[237].mat[0] = 0.0;
+		M[237].mat[1] = 0.0;
+		M[237].mat[2] = 0.0;
+		M[237].mat[3] = M[232].mat[0] + P[189];
+		M[237].mat[4] = M[232].mat[1] + P[189];
+		M[237].mat[5] = M[232].mat[2] + P[189];
+		M[237].mat[6] = M[232].mat[3] + P[189];
+		M[237].mat[7] = M[232].mat[4] + P[189];
+
+		/* JointSoftLimits\ks[1] = 0; */
+		M[235].mat[0] = 0.0;
+
+		/* JointSoftLimits\ks[2] = 0; */
+		M[235].mat[1] = 0.0;
+
+		/* JointSoftLimits\ks[3] = 0; */
+		M[235].mat[2] = 0.0;
+
+		/* if (MuxToControl1\control[4] > JointSoftLimits\posdangerzones[4]) */
+		if (M[239].mat[3] > M[236].mat[3])
+		{
+			/* JointSoftLimits\ks[4] = JointSoftLimits\CendstopAvoidanceControl; */
+			M[235].mat[3] = P[188];
+
+			/* JointSoftLimits\tempstate[4] = (JointSoftLimits\posdangerzones[4] - MuxToControl1\control[4]); */
+			M[238].mat[3] = M[236].mat[3] - M[239].mat[3];
+		}
+		else
+		{
+			/* if (MuxToControl1\control[4] < JointSoftLimits\negdangerzones[4]) */
+			if (M[239].mat[3] < M[237].mat[3])
+			{
+				/* JointSoftLimits\ks[4] = JointSoftLimits\CendstopAvoidanceControl; */
+				M[235].mat[3] = P[188];
+
+				/* JointSoftLimits\tempstate[4] = (JointSoftLimits\negdangerzones[4] - MuxToControl1\control[4]); */
+				M[238].mat[3] = M[237].mat[3] - M[239].mat[3];
+			}
+			else
+			{
+				/* JointSoftLimits\ks[4] = 0; */
+				M[235].mat[3] = 0.0;
+			}
+		}
+
+		/* if (MuxToControl1\control[5] > JointSoftLimits\posdangerzones[5]) */
+		if (M[239].mat[4] > M[236].mat[4])
+		{
+			/* JointSoftLimits\ks[5] = JointSoftLimits\CendstopAvoidanceControl; */
+			M[235].mat[4] = P[188];
+
+			/* JointSoftLimits\tempstate[5] = (JointSoftLimits\posdangerzones[5] - MuxToControl1\control[5]); */
+			M[238].mat[4] = M[236].mat[4] - M[239].mat[4];
+		}
+		else
+		{
+			/* if (MuxToControl1\control[5] < JointSoftLimits\negdangerzones[5]) */
+			if (M[239].mat[4] < M[237].mat[4])
+			{
+				/* JointSoftLimits\ks[5] = JointSoftLimits\CendstopAvoidanceControl; */
+				M[235].mat[4] = P[188];
+
+				/* JointSoftLimits\tempstate[5] = (JointSoftLimits\negdangerzones[5] - MuxToControl1\control[5]); */
+				M[238].mat[4] = M[237].mat[4] - M[239].mat[4];
+			}
+			else
+			{
+				/* JointSoftLimits\ks[5] = 0; */
+				M[235].mat[4] = 0.0;
+			}
+		}
+
+		/* if (MuxToControl1\control[6] > JointSoftLimits\posdangerzones[6]) */
+		if (M[239].mat[5] > M[236].mat[5])
+		{
+			/* JointSoftLimits\ks[6] = JointSoftLimits\CendstopAvoidanceControl; */
+			M[235].mat[5] = P[188];
+
+			/* JointSoftLimits\tempstate[6] = (JointSoftLimits\posdangerzones[6] - MuxToControl1\control[6]); */
+			M[238].mat[5] = M[236].mat[5] - M[239].mat[5];
+		}
+		else
+		{
+			/* if (MuxToControl1\control[6] < JointSoftLimits\negdangerzones[6]) */
+			if (M[239].mat[5] < M[237].mat[5])
+			{
+				/* JointSoftLimits\ks[6] = JointSoftLimits\CendstopAvoidanceControl; */
+				M[235].mat[5] = P[188];
+
+				/* JointSoftLimits\tempstate[6] = (JointSoftLimits\negdangerzones[6] - MuxToControl1\control[6]); */
+				M[238].mat[5] = M[237].mat[5] - M[239].mat[5];
+			}
+			else
+			{
+				/* JointSoftLimits\ks[6] = 0; */
+				M[235].mat[5] = 0.0;
+			}
+		}
+
+		/* if (MuxToControl1\control[7] > JointSoftLimits\posdangerzones[7]) */
+		if (M[239].mat[6] > M[236].mat[6])
+		{
+			/* JointSoftLimits\ks[7] = JointSoftLimits\CendstopAvoidanceControl; */
+			M[235].mat[6] = P[188];
+
+			/* JointSoftLimits\tempstate[7] = (JointSoftLimits\posdangerzones[7] - MuxToControl1\control[7]); */
+			M[238].mat[6] = M[236].mat[6] - M[239].mat[6];
+		}
+		else
+		{
+			/* if (MuxToControl1\control[7] < JointSoftLimits\negdangerzones[7]) */
+			if (M[239].mat[6] < M[237].mat[6])
+			{
+				/* JointSoftLimits\ks[7] = JointSoftLimits\CendstopAvoidanceControl; */
+				M[235].mat[6] = P[188];
+
+				/* JointSoftLimits\tempstate[7] = (JointSoftLimits\negdangerzones[7] - MuxToControl1\control[7]); */
+				M[238].mat[6] = M[237].mat[6] - M[239].mat[6];
+			}
+			else
+			{
+				/* JointSoftLimits\ks[7] = 0; */
+				M[235].mat[6] = 0.0;
+			}
+		}
+
+		/* if (MuxToControl1\control[8] > JointSoftLimits\posdangerzones[8]) */
+		if (M[239].mat[7] > M[236].mat[7])
+		{
+			/* JointSoftLimits\ks[8] = JointSoftLimits\CendstopAvoidanceControl; */
+			M[235].mat[7] = P[188];
+
+			/* JointSoftLimits\tempstate[8] = (JointSoftLimits\posdangerzones[8] - MuxToControl1\control[8]); */
+			M[238].mat[7] = M[236].mat[7] - M[239].mat[7];
+		}
+		else
+		{
+			/* if (MuxToControl1\control[8] < JointSoftLimits\negdangerzones[8]) */
+			if (M[239].mat[7] < M[237].mat[7])
+			{
+				/* JointSoftLimits\ks[8] = JointSoftLimits\CendstopAvoidanceControl; */
+				M[235].mat[7] = P[188];
+
+				/* JointSoftLimits\tempstate[8] = (JointSoftLimits\negdangerzones[8] - MuxToControl1\control[8]); */
+				M[238].mat[7] = M[237].mat[7] - M[239].mat[7];
+			}
+			else
+			{
+				/* JointSoftLimits\ks[8] = 0; */
+				M[235].mat[7] = 0.0;
+			}
+		}
+
+		/* JointSoftLimits\K = diag (JointSoftLimits\ks); */
+		XXMatrixDiag (&M[234], &M[235]);
+
+		/* JointSoftLimits\p.e = (diag (JointSoftLimits\forceMap) * JointSoftLimits\K) * JointSoftLimits\tempstate; */
+		XXMatrixDiag (&M[319], &M[233]);
+		XXMatrixMul (&M[318], &M[319], &M[234]);
+		XXMatrixMul (&M[229], &M[318], &M[238]);
+
+	/* CtipControl\state = inverse (Gain\H) * CalculateJ\Htip0; */
+	XXMatrixInverse (&M[320], &M[63], workarray);
+	XXMatrixMul (&M[53], &M[320], &M[2]);
+
+	/* CtipControl\temp = (trace (CtipControl\state[1:3,1:3]) - 1) / 2; */
+	M[322].mat[0] = M[53].mat[0];
+	M[322].mat[1] = M[53].mat[1];
+	M[322].mat[2] = M[53].mat[2];
+	M[322].mat[3] = M[53].mat[4];
+	M[322].mat[4] = M[53].mat[5];
+	M[322].mat[5] = M[53].mat[6];
+	M[322].mat[6] = M[53].mat[8];
+	M[322].mat[7] = M[53].mat[9];
+	M[322].mat[8] = M[53].mat[10];
+	M[321].mat[0] = XXMatrixTrace (&M[322]);
+	V[469] = (XXMatrixTrace (&M[322]) - 1.0) / 2.0;
+
+	/* if (CtipControl\temp < -1) */
+	if (V[469] < -1.0)
+	{
+		/* CtipControl\temp = -1; */
+		V[469] = -1.0;
+	}
+
+	/* if (CtipControl\temp > 1) */
+	if (V[469] > 1.0)
+	{
+		/* CtipControl\temp = 1; */
+		V[469] = 1.0;
+	}
+
+	/* CtipControl\theta = arccos (CtipControl\temp); */
+	V[453] = acos (V[469]);
+
+	/* if (CtipControl\theta == 0) */
+	if (V[453] == 0.0)
+	{
+		/* CtipControl\omega = 0; */
+		XXMatrixScalarMov (&M[54], 0.0);
+	}
+	else
+	{
+		/* CtipControl\omega = (1 / (2 * sin (CtipControl\theta))) * [CtipControl\state[3,2] - CtipControl\state[2,3]; CtipControl\state[1,3] - CtipControl\state[3,1]; CtipControl\state[2,1] - CtipControl\state[1,2]]; */
+		M[325].mat[0] = M[53].mat[9] - M[53].mat[6];
+		M[325].mat[1] = M[53].mat[2] - M[53].mat[8];
+		M[325].mat[2] = M[53].mat[4] - M[53].mat[1];
+		XXScalarMatrixMul (&M[54], (1.0 / (2.0 * sin (V[453]))), &M[325]);
+	}
+
+	/* CtipControl\Wt[4:6] = (CtipControl\state[1:3,4] / CtipControl\CtipControl); */
+	M[327].mat[0] = M[53].mat[3];
+	M[327].mat[1] = M[53].mat[7];
+	M[327].mat[2] = M[53].mat[11];
+	XXMatrixScalarDiv (&M[326], &M[327], P[43]);
+	M[56].mat[3] = M[326].mat[0];
+	M[56].mat[4] = M[326].mat[1];
+	M[56].mat[5] = M[326].mat[2];
+
+	/* CtipControl\optimizationCriteria_dot = transpose (CtipControl\state[1:3,4]) * CtipControl\state[1:3,4]; */
+	M[329].mat[0] = M[53].mat[3];
+	M[329].mat[1] = M[53].mat[7];
+	M[329].mat[2] = M[53].mat[11];
+	XXMatrixTranspose (&M[328], &M[329]);
+	M[330].mat[0] = M[53].mat[3];
+	M[330].mat[1] = M[53].mat[7];
+	M[330].mat[2] = M[53].mat[11];
+	XXScalarMatrixMatrixMul (&R[15], &M[328], &M[330]);
+
+	/* CtipControl\Wr[1:3] = (CtipControl\theta * CtipControl\omega) / (CtipControl\CtipControl * 15); */
+	XXScalarMatrixMul (&M[332], V[453], &M[54]);
+	XXMatrixScalarDiv (&M[331], &M[332], (P[43] * 15.0));
+	M[55].mat[0] = M[331].mat[0];
+	M[55].mat[1] = M[331].mat[1];
+	M[55].mat[2] = M[331].mat[2];
+
+	/* CtipControl\p.e = inverse (transpose (Adjoint (Gain\H))) * (CtipControl\Wt + CtipControl\Wr); */
+	XXMatrixAdjoint (&M[335], &M[63]);
+	XXMatrixTranspose (&M[334], &M[335]);
+	XXMatrixInverse (&M[333], &M[334], workarray);
+	XXMatrixAdd (&M[336], &M[56], &M[55]);
+	XXMatrixMul (&M[52], &M[333], &M[336]);
+
+		/* GravityCompensation1\Base\AdHi0\onlyRotH = GravityCompensation1\Hfloor0\output; */
+		XXMatrixMov (&M[69], &M[86]);
+
+		/* GravityCompensation1\Base\AdHi0\onlyRotH[1,4] = 0; */
+		M[69].mat[3] = 0.0;
+
+		/* GravityCompensation1\Base\AdHi0\onlyRotH[2,4] = 0; */
+		M[69].mat[7] = 0.0;
+
+		/* GravityCompensation1\Base\AdHi0\onlyRotH[3,4] = 0; */
+		M[69].mat[11] = 0.0;
+
+		/* GravityCompensation1\Base\AdHi0\p2.e = transpose (Adjoint (GravityCompensation1\Base\AdHi0\onlyRotH)) * GravityCompensation1\Base\Gravity\effort; */
+		XXMatrixAdjoint (&M[338], &M[69]);
+		XXMatrixTranspose (&M[337], &M[338]);
+		XXMatrixMul (&M[68], &M[337], &M[79]);
+
+		/* GravityCompensation1\Base\AdHi0\p1.f = Adjoint (GravityCompensation1\Base\AdHi0\onlyRotH) * GravityCompensation1\Base\AdHik1\p2.f; */
+		XXMatrixAdjoint (&M[339], &M[69]);
+		XXMatrixMul (&M[67], &M[339], &M[73]);
+
+	/* GravityCompensation1\Submodel13\port1 = MuxToControl1\control[4]; */
+	V[1879] = M[239].mat[3];
+
+	/* GravityCompensation1\Submodel13\port2 = MuxToControl1\control[5]; */
+	V[1880] = M[239].mat[4];
+
+	/* GravityCompensation1\Submodel13\port3 = MuxToControl1\control[6]; */
+	V[1881] = M[239].mat[5];
+
+	/* GravityCompensation1\Submodel13\port4 = MuxToControl1\control[7]; */
+	V[1882] = M[239].mat[6];
+
+	/* GravityCompensation1\Submodel13\port5 = MuxToControl1\control[8]; */
+	V[1883] = M[239].mat[7];
+
+	/* R\p.e = R\R * DemuxHW1\control.f; */
+	XXMatrixMul (&M[245], &M[247], &M[59]);
+
+	/* C\x_dot = DemuxHW1\control.f[1:3]; */
+	M[255].mat[0] = M[59].mat[0];
+	M[255].mat[1] = M[59].mat[1];
+	M[255].mat[2] = M[59].mat[2];
+
+	/* OneJunction\p2.e = -CtipControl\p.e; */
+	XXMatrixInv (&M[243], &M[52]);
+
+	/* ControllableJ\joints.e = transpose (CalculateJ\controllableJ) * OneJunction\p2.e; */
+	XXMatrixTranspose (&M[340], &M[1]);
+	XXMatrixMul (&M[50], &M[340], &M[243]);
+
+	/* GravityCompensation1\Joint12\Integrate\R = [cos (GravityCompensation1\Submodel13\port2), 0, sin (GravityCompensation1\Submodel13\port2); 0, 1, 0; -sin (GravityCompensation1\Submodel13\port2), 0, cos (GravityCompensation1\Submodel13\port2)]; */
+	M[90].mat[0] = cos (V[1880]);
+	M[90].mat[1] = 0.0;
+	M[90].mat[2] = sin (V[1880]);
+	M[90].mat[3] = 0.0;
+	M[90].mat[4] = 1.0;
+	M[90].mat[5] = 0.0;
+	M[90].mat[6] = -(sin (V[1880]));
+	M[90].mat[7] = 0.0;
+	M[90].mat[8] = cos (V[1880]);
+
+	/* GravityCompensation1\Joint12\Integrate\output = homogeneous (GravityCompensation1\Joint12\Integrate\R, GravityCompensation1\Joint12\Integrate\p); */
+	XXMatrixHomogeneous (&M[89], &M[90], &M[91]);
+
+	/* GravityCompensation1\Joint23\Integrate\R = [cos (GravityCompensation1\Submodel13\port3), 0, sin (GravityCompensation1\Submodel13\port3); 0, 1, 0; -sin (GravityCompensation1\Submodel13\port3), 0, cos (GravityCompensation1\Submodel13\port3)]; */
+	M[98].mat[0] = cos (V[1881]);
+	M[98].mat[1] = 0.0;
+	M[98].mat[2] = sin (V[1881]);
+	M[98].mat[3] = 0.0;
+	M[98].mat[4] = 1.0;
+	M[98].mat[5] = 0.0;
+	M[98].mat[6] = -(sin (V[1881]));
+	M[98].mat[7] = 0.0;
+	M[98].mat[8] = cos (V[1881]);
+
+	/* GravityCompensation1\Joint23\Integrate\output = homogeneous (GravityCompensation1\Joint23\Integrate\R, GravityCompensation1\Joint23\Integrate\p); */
+	XXMatrixHomogeneous (&M[97], &M[98], &M[99]);
+
+	/* GravityCompensation1\Joint34\Integrate\R = [cos (GravityCompensation1\Submodel13\port4), 0, sin (GravityCompensation1\Submodel13\port4); 0, 1, 0; -sin (GravityCompensation1\Submodel13\port4), 0, cos (GravityCompensation1\Submodel13\port4)]; */
+	M[106].mat[0] = cos (V[1882]);
+	M[106].mat[1] = 0.0;
+	M[106].mat[2] = sin (V[1882]);
+	M[106].mat[3] = 0.0;
+	M[106].mat[4] = 1.0;
+	M[106].mat[5] = 0.0;
+	M[106].mat[6] = -(sin (V[1882]));
+	M[106].mat[7] = 0.0;
+	M[106].mat[8] = cos (V[1882]);
+
+	/* GravityCompensation1\Joint34\Integrate\output = homogeneous (GravityCompensation1\Joint34\Integrate\R, GravityCompensation1\Joint34\Integrate\p); */
+	XXMatrixHomogeneous (&M[105], &M[106], &M[107]);
+
+	/* GravityCompensation1\Joint45\Integrate\R = [cos (-GravityCompensation1\Submodel13\port5), -sin (-GravityCompensation1\Submodel13\port5), 0; sin (-GravityCompensation1\Submodel13\port5), cos (-GravityCompensation1\Submodel13\port5), 0; 0, 0, 1]; */
+	M[114].mat[0] = cos (-V[1883]);
+	M[114].mat[1] = -(sin (-V[1883]));
+	M[114].mat[2] = 0.0;
+	M[114].mat[3] = sin (-V[1883]);
+	M[114].mat[4] = cos (-V[1883]);
+	M[114].mat[5] = 0.0;
+	M[114].mat[6] = 0.0;
+	M[114].mat[7] = 0.0;
+	M[114].mat[8] = 1.0;
+
+	/* GravityCompensation1\Joint45\Integrate\output = homogeneous (GravityCompensation1\Joint45\Integrate\R, GravityCompensation1\Joint45\Integrate\p); */
+	XXMatrixHomogeneous (&M[113], &M[114], &M[115]);
+
+	/* GravityCompensation1\JointBase1\Integrate\R = [cos (-GravityCompensation1\Submodel13\port1), -sin (-GravityCompensation1\Submodel13\port1), 0; sin (-GravityCompensation1\Submodel13\port1), cos (-GravityCompensation1\Submodel13\port1), 0; 0, 0, 1]; */
+	M[122].mat[0] = cos (-V[1879]);
+	M[122].mat[1] = -(sin (-V[1879]));
+	M[122].mat[2] = 0.0;
+	M[122].mat[3] = sin (-V[1879]);
+	M[122].mat[4] = cos (-V[1879]);
+	M[122].mat[5] = 0.0;
+	M[122].mat[6] = 0.0;
+	M[122].mat[7] = 0.0;
+	M[122].mat[8] = 1.0;
+
+	/* GravityCompensation1\JointBase1\Integrate\output = homogeneous (GravityCompensation1\JointBase1\Integrate\R, GravityCompensation1\JointBase1\Integrate\p); */
+	XXMatrixHomogeneous (&M[121], &M[122], &M[123]);
+
+	/* GravityCompensation1\JointBase1\MatrixMul\output = GravityCompensation1\Base\Hij\output * GravityCompensation1\JointBase1\Integrate\output; */
+	XXMatrixMul (&M[124], &M[80], &M[121]);
+
+	/* GravityCompensation1\Link1\Hij\output = GravityCompensation1\JointBase1\MatrixMul\output * GravityCompensation1\Link1\Hij\Hab; */
+	XXMatrixMul (&M[140], &M[124], &M[141]);
+
+	/* GravityCompensation1\Joint12\MatrixMul\output = GravityCompensation1\Link1\Hij\output * GravityCompensation1\Joint12\Integrate\output; */
+	XXMatrixMul (&M[92], &M[140], &M[89]);
+
+		/* GravityCompensation1\Link1\AdHi0\onlyRotH = GravityCompensation1\JointBase1\MatrixMul\output; */
+		XXMatrixMov (&M[129], &M[124]);
+
+		/* GravityCompensation1\Link1\AdHi0\onlyRotH[1,4] = 0; */
+		M[129].mat[3] = 0.0;
+
+		/* GravityCompensation1\Link1\AdHi0\onlyRotH[2,4] = 0; */
+		M[129].mat[7] = 0.0;
+
+		/* GravityCompensation1\Link1\AdHi0\onlyRotH[3,4] = 0; */
+		M[129].mat[11] = 0.0;
+
+		/* GravityCompensation1\Link1\AdHi0\p2.e = transpose (Adjoint (GravityCompensation1\Link1\AdHi0\onlyRotH)) * GravityCompensation1\Link1\Gravity\effort; */
+		XXMatrixAdjoint (&M[342], &M[129]);
+		XXMatrixTranspose (&M[341], &M[342]);
+		XXMatrixMul (&M[128], &M[341], &M[139]);
+
+		/* GravityCompensation1\Link1\AdHi0\p1.f = Adjoint (GravityCompensation1\Link1\AdHi0\onlyRotH) * GravityCompensation1\Link1\AdHik1\p2.f; */
+		XXMatrixAdjoint (&M[343], &M[129]);
+		XXMatrixMul (&M[127], &M[343], &M[133]);
+
+	/* GravityCompensation1\Link2\Hij\output = GravityCompensation1\Joint12\MatrixMul\output * GravityCompensation1\Link2\Hij\Hab; */
+	XXMatrixMul (&M[159], &M[92], &M[160]);
+
+	/* GravityCompensation1\Link1\AdHik1\p1.e = (1.0 / transpose (GravityCompensation1\Link1\AdHik1\AdH)) * GravityCompensation1\Link1\AdHi0\p2.e; */
+	XXMatrixTranspose (&M[345], &M[138]);
+	XXScalarMatrixDiv (&M[344], 1.0, &M[345], workarray);
+	XXMatrixMul (&M[132], &M[344], &M[128]);
+
+	/* GravityCompensation1\Joint23\MatrixMul\output = GravityCompensation1\Link2\Hij\output * GravityCompensation1\Joint23\Integrate\output; */
+	XXMatrixMul (&M[100], &M[159], &M[97]);
+
+	/* GravityCompensation1\Link3\Hij\output = GravityCompensation1\Joint23\MatrixMul\output * GravityCompensation1\Link3\Hij\Hab; */
+	XXMatrixMul (&M[178], &M[100], &M[179]);
+
+		/* GravityCompensation1\Link2\AdHi0\onlyRotH = GravityCompensation1\Joint12\MatrixMul\output; */
+		XXMatrixMov (&M[148], &M[92]);
+
+		/* GravityCompensation1\Link2\AdHi0\onlyRotH[1,4] = 0; */
+		M[148].mat[3] = 0.0;
+
+		/* GravityCompensation1\Link2\AdHi0\onlyRotH[2,4] = 0; */
+		M[148].mat[7] = 0.0;
+
+		/* GravityCompensation1\Link2\AdHi0\onlyRotH[3,4] = 0; */
+		M[148].mat[11] = 0.0;
+
+		/* GravityCompensation1\Link2\AdHi0\p2.e = transpose (Adjoint (GravityCompensation1\Link2\AdHi0\onlyRotH)) * GravityCompensation1\Link2\Gravity\effort; */
+		XXMatrixAdjoint (&M[347], &M[148]);
+		XXMatrixTranspose (&M[346], &M[347]);
+		XXMatrixMul (&M[147], &M[346], &M[158]);
+
+		/* GravityCompensation1\Link2\AdHi0\p1.f = Adjoint (GravityCompensation1\Link2\AdHi0\onlyRotH) * GravityCompensation1\Link2\AdHik1\p2.f; */
+		XXMatrixAdjoint (&M[348], &M[148]);
+		XXMatrixMul (&M[146], &M[348], &M[152]);
+
+	/* GravityCompensation1\Joint34\MatrixMul\output = GravityCompensation1\Link3\Hij\output * GravityCompensation1\Joint34\Integrate\output; */
+	XXMatrixMul (&M[108], &M[178], &M[105]);
+
+	/* GravityCompensation1\Link2\AdHik1\p1.e = (1.0 / transpose (GravityCompensation1\Link2\AdHik1\AdH)) * GravityCompensation1\Link2\AdHi0\p2.e; */
+	XXMatrixTranspose (&M[350], &M[157]);
+	XXScalarMatrixDiv (&M[349], 1.0, &M[350], workarray);
+	XXMatrixMul (&M[151], &M[349], &M[147]);
+
+	/* GravityCompensation1\Link4\Hij\output = GravityCompensation1\Joint34\MatrixMul\output * GravityCompensation1\Link4\Hij\Hab; */
+	XXMatrixMul (&M[197], &M[108], &M[198]);
+
+	/* GravityCompensation1\Joint45\MatrixMul\output = GravityCompensation1\Link4\Hij\output * GravityCompensation1\Joint45\Integrate\output; */
+	XXMatrixMul (&M[116], &M[197], &M[113]);
+
+		/* GravityCompensation1\Link3\AdHi0\onlyRotH = GravityCompensation1\Joint23\MatrixMul\output; */
+		XXMatrixMov (&M[167], &M[100]);
+
+		/* GravityCompensation1\Link3\AdHi0\onlyRotH[1,4] = 0; */
+		M[167].mat[3] = 0.0;
+
+		/* GravityCompensation1\Link3\AdHi0\onlyRotH[2,4] = 0; */
+		M[167].mat[7] = 0.0;
+
+		/* GravityCompensation1\Link3\AdHi0\onlyRotH[3,4] = 0; */
+		M[167].mat[11] = 0.0;
+
+		/* GravityCompensation1\Link3\AdHi0\p2.e = transpose (Adjoint (GravityCompensation1\Link3\AdHi0\onlyRotH)) * GravityCompensation1\Link3\Gravity\effort; */
+		XXMatrixAdjoint (&M[352], &M[167]);
+		XXMatrixTranspose (&M[351], &M[352]);
+		XXMatrixMul (&M[166], &M[351], &M[177]);
+
+		/* GravityCompensation1\Link3\AdHi0\p1.f = Adjoint (GravityCompensation1\Link3\AdHi0\onlyRotH) * GravityCompensation1\Link3\AdHik1\p2.f; */
+		XXMatrixAdjoint (&M[353], &M[167]);
+		XXMatrixMul (&M[165], &M[353], &M[171]);
+
+	/* GravityCompensation1\Link3\AdHik1\p1.e = (1.0 / transpose (GravityCompensation1\Link3\AdHik1\AdH)) * GravityCompensation1\Link3\AdHi0\p2.e; */
+	XXMatrixTranspose (&M[355], &M[176]);
+	XXScalarMatrixDiv (&M[354], 1.0, &M[355], workarray);
+	XXMatrixMul (&M[170], &M[354], &M[166]);
+
+		/* GravityCompensation1\Link4\AdHi0\onlyRotH = GravityCompensation1\Joint34\MatrixMul\output; */
+		XXMatrixMov (&M[186], &M[108]);
+
+		/* GravityCompensation1\Link4\AdHi0\onlyRotH[1,4] = 0; */
+		M[186].mat[3] = 0.0;
+
+		/* GravityCompensation1\Link4\AdHi0\onlyRotH[2,4] = 0; */
+		M[186].mat[7] = 0.0;
+
+		/* GravityCompensation1\Link4\AdHi0\onlyRotH[3,4] = 0; */
+		M[186].mat[11] = 0.0;
+
+		/* GravityCompensation1\Link4\AdHi0\p2.e = transpose (Adjoint (GravityCompensation1\Link4\AdHi0\onlyRotH)) * GravityCompensation1\Link4\Gravity\effort; */
+		XXMatrixAdjoint (&M[357], &M[186]);
+		XXMatrixTranspose (&M[356], &M[357]);
+		XXMatrixMul (&M[185], &M[356], &M[196]);
+
+		/* GravityCompensation1\Link4\AdHi0\p1.f = Adjoint (GravityCompensation1\Link4\AdHi0\onlyRotH) * GravityCompensation1\Link4\AdHik1\p2.f; */
+		XXMatrixAdjoint (&M[358], &M[186]);
+		XXMatrixMul (&M[184], &M[358], &M[190]);
+
+	/* GravityCompensation1\Link4\AdHik1\p1.e = (1.0 / transpose (GravityCompensation1\Link4\AdHik1\AdH)) * GravityCompensation1\Link4\AdHi0\p2.e; */
+	XXMatrixTranspose (&M[360], &M[195]);
+	XXScalarMatrixDiv (&M[359], 1.0, &M[360], workarray);
+	XXMatrixMul (&M[189], &M[359], &M[185]);
+
+		/* GravityCompensation1\Link5\AdHi0\onlyRotH = GravityCompensation1\Joint45\MatrixMul\output; */
+		XXMatrixMov (&M[205], &M[116]);
+
+		/* GravityCompensation1\Link5\AdHi0\onlyRotH[1,4] = 0; */
+		M[205].mat[3] = 0.0;
+
+		/* GravityCompensation1\Link5\AdHi0\onlyRotH[2,4] = 0; */
+		M[205].mat[7] = 0.0;
+
+		/* GravityCompensation1\Link5\AdHi0\onlyRotH[3,4] = 0; */
+		M[205].mat[11] = 0.0;
+
+		/* GravityCompensation1\Link5\AdHi0\p2.e = transpose (Adjoint (GravityCompensation1\Link5\AdHi0\onlyRotH)) * GravityCompensation1\Link5\Gravity\effort; */
+		XXMatrixAdjoint (&M[362], &M[205]);
+		XXMatrixTranspose (&M[361], &M[362]);
+		XXMatrixMul (&M[204], &M[361], &M[215]);
+
+		/* GravityCompensation1\Link5\AdHi0\p1.f = Adjoint (GravityCompensation1\Link5\AdHi0\onlyRotH) * GravityCompensation1\Link5\AdHik1\p2.f; */
+		XXMatrixAdjoint (&M[363], &M[205]);
+		XXMatrixMul (&M[203], &M[363], &M[209]);
+
+	/* GravityCompensation1\Link5\AdHik1\p1.e = (1.0 / transpose (GravityCompensation1\Link5\AdHik1\AdH)) * GravityCompensation1\Link5\AdHi0\p2.e; */
+	XXMatrixTranspose (&M[365], &M[214]);
+	XXScalarMatrixDiv (&M[364], 1.0, &M[365], workarray);
+	XXMatrixMul (&M[208], &M[364], &M[204]);
+
+	/* GravityCompensation1\Link5\Ta0i\p2.e = GravityCompensation1\Link5\AdHik1\p1.e + GravityCompensation1\Link5\AdHij\p1.e; */
+	XXMatrixAdd (&M[219], &M[208], &M[206]);
+
+	/* GravityCompensation1\Joint45\AdHji\p1.e = (1.0 / transpose (Adjoint (GravityCompensation1\Joint45\Integrate\output))) * GravityCompensation1\Link5\Ta0i\p2.e; */
+	XXMatrixAdjoint (&M[368], &M[113]);
+	XXMatrixTranspose (&M[367], &M[368]);
+	XXScalarMatrixDiv (&M[366], 1.0, &M[367], workarray);
+	XXMatrixMul (&M[111], &M[366], &M[219]);
+
+	/* GravityCompensation1\Joint45\uTbai\p1.e = GravityCompensation1\Joint45\AdHji\p1.e[3]; */
+	V[984] = M[111].mat[2];
+
+	/* GravityCompensation1\Link4\AdHij\p1.e = transpose (Adjoint (GravityCompensation1\Link4\Hij\Hab)) * GravityCompensation1\Joint45\AdHji\p1.e; */
+	XXMatrixAdjoint (&M[370], &M[198]);
+	XXMatrixTranspose (&M[369], &M[370]);
+	XXMatrixMul (&M[187], &M[369], &M[111]);
+
+	/* GravityCompensation1\Link4\Ta0i\p2.e = GravityCompensation1\Link4\AdHik1\p1.e + GravityCompensation1\Link4\AdHij\p1.e; */
+	XXMatrixAdd (&M[200], &M[189], &M[187]);
+
+	/* GravityCompensation1\Mux\port.e[8] = GravityCompensation1\Joint45\uTbai\p1.e * GravityCompensation1\Mux\calibartion; */
+	M[222].mat[7] = V[984] * P[139];
+
+	/* GravityCompensation1\Joint34\AdHji\p1.e = (1.0 / transpose (Adjoint (GravityCompensation1\Joint34\Integrate\output))) * GravityCompensation1\Link4\Ta0i\p2.e; */
+	XXMatrixAdjoint (&M[373], &M[105]);
+	XXMatrixTranspose (&M[372], &M[373]);
+	XXScalarMatrixDiv (&M[371], 1.0, &M[372], workarray);
+	XXMatrixMul (&M[103], &M[371], &M[200]);
+
+	/* GravityCompensation1\Joint34\uTbai\p1.e = GravityCompensation1\Joint34\AdHji\p1.e[2]; */
+	V[915] = M[103].mat[1];
+
+	/* GravityCompensation1\Link3\AdHij\p1.e = transpose (Adjoint (GravityCompensation1\Link3\Hij\Hab)) * GravityCompensation1\Joint34\AdHji\p1.e; */
+	XXMatrixAdjoint (&M[375], &M[179]);
+	XXMatrixTranspose (&M[374], &M[375]);
+	XXMatrixMul (&M[168], &M[374], &M[103]);
+
+	/* GravityCompensation1\Link3\Ta0i\p2.e = GravityCompensation1\Link3\AdHik1\p1.e + GravityCompensation1\Link3\AdHij\p1.e; */
+	XXMatrixAdd (&M[181], &M[170], &M[168]);
+
+	/* GravityCompensation1\Mux\port.e[7] = GravityCompensation1\Joint34\uTbai\p1.e * GravityCompensation1\Mux\calibartion; */
+	M[222].mat[6] = V[915] * P[139];
+
+	/* GravityCompensation1\Joint23\AdHji\p1.e = (1.0 / transpose (Adjoint (GravityCompensation1\Joint23\Integrate\output))) * GravityCompensation1\Link3\Ta0i\p2.e; */
+	XXMatrixAdjoint (&M[378], &M[97]);
+	XXMatrixTranspose (&M[377], &M[378]);
+	XXScalarMatrixDiv (&M[376], 1.0, &M[377], workarray);
+	XXMatrixMul (&M[95], &M[376], &M[181]);
+
+	/* GravityCompensation1\Joint23\uTbai\p1.e = GravityCompensation1\Joint23\AdHji\p1.e[2]; */
+	V[846] = M[95].mat[1];
+
+	/* GravityCompensation1\Link2\AdHij\p1.e = transpose (Adjoint (GravityCompensation1\Link2\Hij\Hab)) * GravityCompensation1\Joint23\AdHji\p1.e; */
+	XXMatrixAdjoint (&M[380], &M[160]);
+	XXMatrixTranspose (&M[379], &M[380]);
+	XXMatrixMul (&M[149], &M[379], &M[95]);
+
+	/* GravityCompensation1\Link2\Ta0i\p2.e = GravityCompensation1\Link2\AdHik1\p1.e + GravityCompensation1\Link2\AdHij\p1.e; */
+	XXMatrixAdd (&M[162], &M[151], &M[149]);
+
+	/* GravityCompensation1\Mux\port.e[6] = GravityCompensation1\Joint23\uTbai\p1.e * GravityCompensation1\Mux\calibartion; */
+	M[222].mat[5] = V[846] * P[139];
+
+	/* GravityCompensation1\Joint12\AdHji\p1.e = (1.0 / transpose (Adjoint (GravityCompensation1\Joint12\Integrate\output))) * GravityCompensation1\Link2\Ta0i\p2.e; */
+	XXMatrixAdjoint (&M[383], &M[89]);
+	XXMatrixTranspose (&M[382], &M[383]);
+	XXScalarMatrixDiv (&M[381], 1.0, &M[382], workarray);
+	XXMatrixMul (&M[87], &M[381], &M[162]);
+
+	/* GravityCompensation1\Joint12\uTbai\p1.e = GravityCompensation1\Joint12\AdHji\p1.e[2]; */
+	V[777] = M[87].mat[1];
+
+	/* GravityCompensation1\Link1\AdHij\p1.e = transpose (Adjoint (GravityCompensation1\Link1\Hij\Hab)) * GravityCompensation1\Joint12\AdHji\p1.e; */
+	XXMatrixAdjoint (&M[385], &M[141]);
+	XXMatrixTranspose (&M[384], &M[385]);
+	XXMatrixMul (&M[130], &M[384], &M[87]);
+
+	/* GravityCompensation1\Link1\Ta0i\p2.e = GravityCompensation1\Link1\AdHik1\p1.e + GravityCompensation1\Link1\AdHij\p1.e; */
+	XXMatrixAdd (&M[143], &M[132], &M[130]);
+
+	/* GravityCompensation1\Mux\port.e[5] = GravityCompensation1\Joint12\uTbai\p1.e * GravityCompensation1\Mux\calibartion; */
+	M[222].mat[4] = V[777] * P[139];
+
+	/* GravityCompensation1\JointBase1\AdHji\p1.e = (1.0 / transpose (Adjoint (GravityCompensation1\JointBase1\Integrate\output))) * GravityCompensation1\Link1\Ta0i\p2.e; */
+	XXMatrixAdjoint (&M[388], &M[121]);
+	XXMatrixTranspose (&M[387], &M[388]);
+	XXScalarMatrixDiv (&M[386], 1.0, &M[387], workarray);
+	XXMatrixMul (&M[119], &M[386], &M[143]);
+
+	/* GravityCompensation1\JointBase1\uTbai\p1.e = GravityCompensation1\JointBase1\AdHji\p1.e[3]; */
+	V[1053] = M[119].mat[2];
+
+	/* GravityCompensation1\Mux\port.e[4] = GravityCompensation1\JointBase1\uTbai\p1.e * GravityCompensation1\Mux\calibartion; */
+	M[222].mat[3] = V[1053] * P[139];
+
+	/* OneJunction2\p3.e = ((ControllableJ\joints.e + GravityCompensation1\Mux\port.e) - C\p.e) - (R\p.e + JointSoftLimits\p.e); */
+	XXMatrixAdd (&M[390], &M[50], &M[222]);
+	XXMatrixSub (&M[389], &M[390], &M[0]);
+	XXMatrixAdd (&M[391], &M[245], &M[229]);
+	XXMatrixSub (&M[244], &M[389], &M[391]);
+
+	/* DemuxHW1\base.e = OneJunction2\p3.e[1:3]; */
+	M[57].mat[0] = M[244].mat[0];
+	M[57].mat[1] = M[244].mat[1];
+	M[57].mat[2] = M[244].mat[2];
+
+	/* DemuxHW1\arm.e = OneJunction2\p3.e[4:8]; */
+	M[60].mat[0] = M[244].mat[3];
+	M[60].mat[1] = M[244].mat[4];
+	M[60].mat[2] = M[244].mat[5];
+	M[60].mat[3] = M[244].mat[6];
+	M[60].mat[4] = M[244].mat[7];
+
+	/* bond_to_base.F = DemuxHW1\base.e; */
+	XXMatrixMov (&M[248], &M[57]);
+
+	/* bond_to_arm.T = DemuxHW1\arm.e; */
+	XXMatrixMov (&M[250], &M[60]);
+
+	}
+
+	/* This function calculates the output equations of the model.
+	 * These equations are not needed for calculation of the rates
+	 * and are kept separate to make the dynamic set of equations smaller.
+	 * These dynamic equations are called often more than one time for each
+	 * integration step that is taken. This makes model computation much faster.
+	 */
+	void interaction_control::CalculateOutput (void)
+	{
+			/* ControllableJ\tip.f = CalculateJ\controllableJ * DemuxHW1\control.f; */
+	XXMatrixMul (&M[51], &M[1], &M[59]);
+
+	/* CtipControl\stenght = sqrt (transpose (CtipControl\Wt) * CtipControl\Wt); */
+	XXMatrixTranspose (&M[393], &M[56]);
+	XXScalarMatrixMatrixMul (M[392].mat, &M[393], &M[56]);
+	V[470] = sqrt (M[392].mat[0]);
+
+	/* GravityCompensation1\Base\AdHik1\p1.e = (1.0 / transpose (GravityCompensation1\Base\AdHik1\AdH)) * GravityCompensation1\Base\AdHi0\p2.e; */
+	XXMatrixTranspose (&M[395], &M[78]);
+	XXScalarMatrixDiv (&M[394], 1.0, &M[395], workarray);
+	XXMatrixMul (&M[72], &M[394], &M[68]);
+
+	/* GravityCompensation1\Mux\port5.f = DemuxHW1\control.f[4]; */
+	V[1874] = M[59].mat[3];
+
+	/* GravityCompensation1\Mux\port6.f = DemuxHW1\control.f[5]; */
+	V[1875] = M[59].mat[4];
+
+	/* GravityCompensation1\Mux\port7.f = DemuxHW1\control.f[6]; */
+	V[1876] = M[59].mat[5];
+
+	/* GravityCompensation1\Mux\port8.f = DemuxHW1\control.f[7]; */
+	V[1877] = M[59].mat[6];
+
+	/* GravityCompensation1\Mux\port9.f = DemuxHW1\control.f[8]; */
+	V[1878] = M[59].mat[7];
+
+	/* GravityCompensation1\Joint12\uTbai\p2.f = [0; GravityCompensation1\Mux\port6.f; 0; 0; 0; 0]; */
+	M[93].mat[0] = 0.0;
+	M[93].mat[1] = V[1875];
+	M[93].mat[2] = 0.0;
+	M[93].mat[3] = 0.0;
+	M[93].mat[4] = 0.0;
+	M[93].mat[5] = 0.0;
+
+	/* GravityCompensation1\Joint23\uTbai\p2.f = [0; GravityCompensation1\Mux\port7.f; 0; 0; 0; 0]; */
+	M[101].mat[0] = 0.0;
+	M[101].mat[1] = V[1876];
+	M[101].mat[2] = 0.0;
+	M[101].mat[3] = 0.0;
+	M[101].mat[4] = 0.0;
+	M[101].mat[5] = 0.0;
+
+	/* GravityCompensation1\Joint34\uTbai\p2.f = [0; GravityCompensation1\Mux\port8.f; 0; 0; 0; 0]; */
+	M[109].mat[0] = 0.0;
+	M[109].mat[1] = V[1877];
+	M[109].mat[2] = 0.0;
+	M[109].mat[3] = 0.0;
+	M[109].mat[4] = 0.0;
+	M[109].mat[5] = 0.0;
+
+	/* GravityCompensation1\Joint45\uTbai\p2.f = [0; 0; GravityCompensation1\Mux\port9.f; 0; 0; 0]; */
+	M[117].mat[0] = 0.0;
+	M[117].mat[1] = 0.0;
+	M[117].mat[2] = V[1878];
+	M[117].mat[3] = 0.0;
+	M[117].mat[4] = 0.0;
+	M[117].mat[5] = 0.0;
+
+	/* GravityCompensation1\JointBase1\uTbai\p2.f = [0; 0; GravityCompensation1\Mux\port5.f; 0; 0; 0]; */
+	M[125].mat[0] = 0.0;
+	M[125].mat[1] = 0.0;
+	M[125].mat[2] = V[1874];
+	M[125].mat[3] = 0.0;
+	M[125].mat[4] = 0.0;
+	M[125].mat[5] = 0.0;
+
+	/* GravityCompensation1\JointBase1\Wbai\p1.f = GravityCompensation1\Base\AdHij\p2.f - GravityCompensation1\JointBase1\uTbai\p2.f; */
+	XXMatrixSub (&M[126], &M[71], &M[125]);
+
+	/* GravityCompensation1\JointBase1\AdHji\p2.f = (1.0 / Adjoint (GravityCompensation1\JointBase1\Integrate\output)) * GravityCompensation1\JointBase1\Wbai\p1.f; */
+	XXMatrixAdjoint (&M[397], &M[121]);
+	XXScalarMatrixDiv (&M[396], 1.0, &M[397], workarray);
+	XXMatrixMul (&M[120], &M[396], &M[126]);
+
+	/* GravityCompensation1\Link1\AdHij\p2.f = Adjoint (GravityCompensation1\Link1\Hij\Hab) * GravityCompensation1\JointBase1\AdHji\p2.f; */
+	XXMatrixAdjoint (&M[398], &M[141]);
+	XXMatrixMul (&M[131], &M[398], &M[120]);
+
+	/* GravityCompensation1\Link1\AdHik1\p2.f = (1.0 / GravityCompensation1\Link1\AdHik1\AdH) * GravityCompensation1\JointBase1\AdHji\p2.f; */
+	XXScalarMatrixDiv (&M[399], 1.0, &M[138], workarray);
+	XXMatrixMul (&M[133], &M[399], &M[120]);
+
+	/* GravityCompensation1\Joint12\Wbai\p3.f = GravityCompensation1\Link1\AdHij\p2.f - GravityCompensation1\Joint12\uTbai\p2.f; */
+	XXMatrixSub (&M[94], &M[131], &M[93]);
+
+	/* GravityCompensation1\Joint12\AdHji\p2.f = (1.0 / Adjoint (GravityCompensation1\Joint12\Integrate\output)) * GravityCompensation1\Joint12\Wbai\p3.f; */
+	XXMatrixAdjoint (&M[401], &M[89]);
+	XXScalarMatrixDiv (&M[400], 1.0, &M[401], workarray);
+	XXMatrixMul (&M[88], &M[400], &M[94]);
+
+	/* GravityCompensation1\Link2\AdHij\p2.f = Adjoint (GravityCompensation1\Link2\Hij\Hab) * GravityCompensation1\Joint12\AdHji\p2.f; */
+	XXMatrixAdjoint (&M[402], &M[160]);
+	XXMatrixMul (&M[150], &M[402], &M[88]);
+
+	/* GravityCompensation1\Link2\AdHik1\p2.f = (1.0 / GravityCompensation1\Link2\AdHik1\AdH) * GravityCompensation1\Joint12\AdHji\p2.f; */
+	XXScalarMatrixDiv (&M[403], 1.0, &M[157], workarray);
+	XXMatrixMul (&M[152], &M[403], &M[88]);
+
+	/* GravityCompensation1\Joint23\Wbai\p3.f = GravityCompensation1\Link2\AdHij\p2.f - GravityCompensation1\Joint23\uTbai\p2.f; */
+	XXMatrixSub (&M[102], &M[150], &M[101]);
+
+	/* GravityCompensation1\Joint23\AdHji\p2.f = (1.0 / Adjoint (GravityCompensation1\Joint23\Integrate\output)) * GravityCompensation1\Joint23\Wbai\p3.f; */
+	XXMatrixAdjoint (&M[405], &M[97]);
+	XXScalarMatrixDiv (&M[404], 1.0, &M[405], workarray);
+	XXMatrixMul (&M[96], &M[404], &M[102]);
+
+	/* GravityCompensation1\Link3\AdHij\p2.f = Adjoint (GravityCompensation1\Link3\Hij\Hab) * GravityCompensation1\Joint23\AdHji\p2.f; */
+	XXMatrixAdjoint (&M[406], &M[179]);
+	XXMatrixMul (&M[169], &M[406], &M[96]);
+
+	/* GravityCompensation1\Link3\AdHik1\p2.f = (1.0 / GravityCompensation1\Link3\AdHik1\AdH) * GravityCompensation1\Joint23\AdHji\p2.f; */
+	XXScalarMatrixDiv (&M[407], 1.0, &M[176], workarray);
+	XXMatrixMul (&M[171], &M[407], &M[96]);
+
+	/* GravityCompensation1\Joint34\Wbai\p3.f = GravityCompensation1\Link3\AdHij\p2.f - GravityCompensation1\Joint34\uTbai\p2.f; */
+	XXMatrixSub (&M[110], &M[169], &M[109]);
+
+	/* GravityCompensation1\Joint34\AdHji\p2.f = (1.0 / Adjoint (GravityCompensation1\Joint34\Integrate\output)) * GravityCompensation1\Joint34\Wbai\p3.f; */
+	XXMatrixAdjoint (&M[409], &M[105]);
+	XXScalarMatrixDiv (&M[408], 1.0, &M[409], workarray);
+	XXMatrixMul (&M[104], &M[408], &M[110]);
+
+	/* GravityCompensation1\Link5\Hij\output = GravityCompensation1\Joint45\MatrixMul\output * GravityCompensation1\Link5\Hij\Hab; */
+	XXMatrixMul (&M[216], &M[116], &M[217]);
+
+	/* GravityCompensation1\Link4\AdHij\p2.f = Adjoint (GravityCompensation1\Link4\Hij\Hab) * GravityCompensation1\Joint34\AdHji\p2.f; */
+	XXMatrixAdjoint (&M[410], &M[198]);
+	XXMatrixMul (&M[188], &M[410], &M[104]);
+
+	/* GravityCompensation1\Link4\AdHik1\p2.f = (1.0 / GravityCompensation1\Link4\AdHik1\AdH) * GravityCompensation1\Joint34\AdHji\p2.f; */
+	XXScalarMatrixDiv (&M[411], 1.0, &M[195], workarray);
+	XXMatrixMul (&M[190], &M[411], &M[104]);
+
+	/* GravityCompensation1\Joint45\Wbai\p1.f = GravityCompensation1\Link4\AdHij\p2.f - GravityCompensation1\Joint45\uTbai\p2.f; */
+	XXMatrixSub (&M[118], &M[188], &M[117]);
+
+	/* GravityCompensation1\Joint45\AdHji\p2.f = (1.0 / Adjoint (GravityCompensation1\Joint45\Integrate\output)) * GravityCompensation1\Joint45\Wbai\p1.f; */
+	XXMatrixAdjoint (&M[413], &M[113]);
+	XXScalarMatrixDiv (&M[412], 1.0, &M[413], workarray);
+	XXMatrixMul (&M[112], &M[412], &M[118]);
+
+	/* GravityCompensation1\Link5\AdHij\p2.f = Adjoint (GravityCompensation1\Link5\Hij\Hab) * GravityCompensation1\Joint45\AdHji\p2.f; */
+	XXMatrixAdjoint (&M[414], &M[217]);
+	XXMatrixMul (&M[207], &M[414], &M[112]);
+
+	/* GravityCompensation1\Link5\AdHik1\p2.f = (1.0 / GravityCompensation1\Link5\AdHik1\AdH) * GravityCompensation1\Joint45\AdHji\p2.f; */
+	XXScalarMatrixDiv (&M[415], 1.0, &M[214], workarray);
+	XXMatrixMul (&M[209], &M[415], &M[112]);
+
+	/* GravityCompensation1\Base\AdHij\p1.e = transpose (Adjoint (GravityCompensation1\Base\Hij\Hab)) * GravityCompensation1\JointBase1\AdHji\p1.e; */
+	XXMatrixAdjoint (&M[417], &M[81]);
+	XXMatrixTranspose (&M[416], &M[417]);
+	XXMatrixMul (&M[70], &M[416], &M[119]);
+
+	/* GravityCompensation1\Base\Ta0i\p2.e = GravityCompensation1\Base\AdHik1\p1.e + GravityCompensation1\Base\AdHij\p1.e; */
+	XXMatrixAdd (&M[83], &M[72], &M[70]);
+
+			}
+
+	/* This function calculates the final equations of the model.
+	 * These equations are calculated after all the calculations
+	 * are performed
+	 */
+	void interaction_control::CalculateFinal (void)
+	{
+		
+	}
+
+	void interaction_control::setupParametersAndStates()
+	{
+		using namespace boost;
+
+		TiXmlDocument doc(TSim_config_xml);
+		if (!doc.LoadFile())
+		{
+			log(Error) << "File not found: " << TSim_config_xml << endlog();
+			return;
+		}
+
+		TiXmlHandle hdoc(&doc);
+		TiXmlElement* pElem;
+		TiXmlHandle hRoot(0);
+		TiXmlNode* tNode(NULL);
+
+		hRoot = TiXmlHandle(hdoc.FirstChildElement().Element());
+		pElem = hRoot.FirstChild("modelVariables").FirstChild().Element();
+
+		if (pElem)
+		{
+
+			do
+			{
+				log(Debug) << "Begin of processing the tag" << endlog();
+				log(Debug) << "Read all relevant fields" << endlog();
+				const char * kind =
+				(tNode = pElem->FirstChild("kind")) == NULL ?
+				NULL : tNode->ToElement()->GetText();
+				const char * name =
+				(tNode = pElem->FirstChild("name")) == NULL ?
+				NULL : tNode->ToElement()->GetText();
+				name =
+				name == NULL || name == "" ?
+				" " : name;
+				const char * description =
+				(tNode = pElem->FirstChild("description")) == NULL ?
+				" " : tNode->ToElement()->GetText();
+				description =
+				description == NULL || description == "" ?
+				" " : description;
+				const char * container =
+				(tNode = pElem->FirstChild("storage")) == NULL ?
+				NULL :
+				tNode->FirstChild("name")->ToElement()->GetText();
+				const char * strIndex =
+				(tNode = pElem->FirstChild("storage")) == NULL ?
+				NULL :
+				tNode->FirstChild("index")->ToElement()->GetText();
+				const char * strRows =
+				(tNode = pElem->FirstChild("size")) == NULL ?
+				NULL :
+				tNode->FirstChild("rows")->ToElement()->GetText();
+				const char * strColumns =
+				(tNode = pElem->FirstChild("size")) == NULL ?
+				NULL :
+				tNode->FirstChild("columns")->ToElement()->GetText();
+				const char * type =
+				(tNode = pElem->FirstChild("type")) == NULL ?
+				NULL : tNode->ToElement()->GetText();
+
+				const char * value=
+				(tNode = pElem->FirstChild("value")) == NULL ?
+				NULL : tNode->ToElement()->GetText();
+				log(Debug) << " strings to numbers" << endlog();
+				int index, rows, columns;
+				if (strIndex == NULL)
+				{
+					log(Debug)
+					<< "Processing : "
+					<< TSim_config_xml
+					<< " Link to 20 sim variables incorrectly defined: Index =null \n"
+					<< " The node will be not processed" << endlog();
+					continue;
+				}
+				index = atoi(strIndex);
+				rows = strRows == NULL ? 1 : atoi(strRows);
+				columns = strColumns == NULL ? 1 : atoi(strColumns);
+
+				if(index == -1 || rows == -1 || columns == -1)
+				{
+					log(Error) << "XML parse error: ";
+					log(Error) << "Name: " << name << " Disc: " << description
+					<< " Index: " << index << " Kind: " << kind << " Type: "
+					<< type << endlog();
+				}
+
+				log(Debug) << "Name: " << name << " Disc: " << description
+				<< " Index: " << index << " Kind: " << kind << " Type: "
+				<< type << endlog();
+
+				common20sim::XVMatrix* tempXVMatrix;
+				log(Debug) << " Selecting source of data for this node" << endlog();
+				if (boost::equals(container, "V"))
+				{
+					tempXVMatrix=new common20sim::XVMatrix(V+index, rows, columns);
+				}
+				else if (boost::equals(container, "C"))
+				{
+					tempXVMatrix=new common20sim::XVMatrix(C+index, rows, columns);
+				}
+				else if (boost::equals(container, "P"))
+				{
+					tempXVMatrix=new common20sim::XVMatrix(P+index, rows, columns);
+				}
+				else if (boost::equals(container, "I"))
+				{
+					tempXVMatrix=new common20sim::XVMatrix(I+index, rows, columns);
+				}
+				else if (boost::equals(container, "s"))
+				{
+					tempXVMatrix=new common20sim::XVMatrix(s+index, rows, columns);
+				}
+				else if (boost::equals(container, "R"))
+				{
+					tempXVMatrix=new common20sim::XVMatrix(R+index, rows, columns);
+				}
+				else if (boost::equals(container, "M"))
+				{
+					tempXVMatrix=new common20sim::XVMatrix(M[index]);
+				}
+				else if (boost::equals(container, "U"))
+				{
+					tempXVMatrix=new common20sim::XVMatrix(U+index, rows, columns);
+				}
+				else if (boost::equals(container, "workarray"))
+				{
+					tempXVMatrix=new common20sim::XVMatrix(workarray+index, rows, columns);
+				}
+				else
+				{
+					log(Debug) << "Processing : " << TSim_config_xml
+					<< " Link to 20 sim variables incorrectly defined: "
+					<< container << " The node will be not processed"
+					<< endlog();
+					continue;
+				}
+
+				log(Debug)<<"load matrix with parameters from xml"<<endlog();
+				log(Debug)<<"Read from xml values: \t "<<value<<endlog();
+				loadMatrixValue(value,tempXVMatrix);
+				log(Debug)<<"Confirm from XVmatrix: \t "<<*tempXVMatrix<<endlog();
+				log(Debug)<<"select the action based o kind of parameter"<<endlog();
+				log(Debug)<<"select the action based o kind of parameter"<<endlog();
+
+				if (boost::equals(kind, "parameter"))
+				{
+					// create port decorator
+					//RTT::Property<RTT::types::carray<double> >* p_rttPort; //TODO: Fix me!
+
+					Adapter20Sim<RTT::Property<RTT::types::carray<double> > > p_20simport(
+							string(name), string(description), tempXVMatrix, NULL);
+
+					// check if the property should be hierarchical folded
+					RTT::PropertyBag* p_bag(NULL);
+					p_bag = createHierarchicalPropertyBags(name);
+
+					p_bag->addProperty(p_20simport.getShortName(), p_20simport.getLink()->getCArray());
+					// save the link for updates
+					propertyPorts.push_back(p_20simport);
+
+				}
+				else if (boost::equals(kind, "state"))
+				{
+
+				}
+				else if (boost::equals(kind, "variable"))
+				{
+					//not implemented yet :)
+					log(Debug)<<"Variables are not exhibited to out side of the component"<<endlog();
+					// Recommend update is to show Interesting variables
+				}
+				else if (boost::equals(kind, "input"))
+				{
+					// create port decorator
+					RTT::InputPort<flat_matrix_t> * p_rttPort = new RTT::InputPort<flat_matrix_t>;
+
+					Adapter20Sim<RTT::InputPort<flat_matrix_t> > p_20simport(
+							string(name), string(description), tempXVMatrix, p_rttPort);
+
+					// create a port
+					this->addPort(p_20simport.getFullName(), *p_rttPort).doc(
+							p_20simport.getDescription());
+					//save link for updates
+
+					inputPorts.push_back(p_20simport);
+
+				}
+				else if (boost::equals(kind, "output"))
+				{
+					// create port decorator
+					RTT::OutputPort<flat_matrix_t> * p_rttPort = new RTT::OutputPort<flat_matrix_t>;
+
+					Adapter20Sim<RTT::OutputPort<flat_matrix_t> > p_20simport(
+							string(name), string(description), tempXVMatrix, p_rttPort);
+
+					// create a port
+					this->addPort(p_20simport.getFullName(), *p_rttPort).doc(
+							p_20simport.getDescription());
+
+					outputPorts.push_back(p_20simport);
+
+				}
+				else
+				{
+					log(Debug) << TSim_config_xml << " token kind not recognized("
+					<< kind << ")" << endlog();
+					continue;
+				}
+				log(Debug) << "End of processing the tag" << endlog();
+			}while ( (pElem = pElem->NextSiblingElement()) != NULL);
+			log(Debug) << "End of processing the xml" << endlog();
+		}
+	}
+	void interaction_control::loadMatrixValue(const char * input,XVMatrix *output)
+	{
+
+		std::size_t position=0;
+		istringstream iss_input(input);
+
+		do
+		{
+			std::string row;
+			getline(iss_input,row,';');
+			istringstream iss_row(row);
+
+			do
+			{
+				std::string field;
+				getline(iss_row,field,',');
+				output->at(position)=atof(field.c_str());
+				position++;
+			}while(!iss_row.eof());
+
+		}while(!iss_input.eof());
+	}
+
+	RTT::PropertyBag* interaction_control::createHierarchicalPropertyBags(const char * name)
+	{
+		using namespace boost;
+		RTT::PropertyBag* p_bag(NULL);
+		string cleaned_name;
+
+		typedef split_iterator<const char*> ssi;
+		ssi end;
+		for (ssi it = make_split_iterator(name, first_finder("\\", is_iequal()));
+				it != end;)
+		{
+			cleaned_name = replaceIllegalCharacter(
+					copy_range<std::string>(*it));
+
+			// Are we at the end already?
+			if (++it == end)
+			{
+				break; // last name of the string is the name of the property.
+			}
+
+			if (p_bag == NULL)
+			{
+				RTT::Property<PropertyBag>* ppb = dynamic_cast<RTT::Property<
+				PropertyBag>*>(this->getProperty(cleaned_name));
+				if(ppb == NULL)
+				{
+					p_bag = new RTT::PropertyBag;
+					this->addProperty(cleaned_name, *p_bag).doc("Submodel parameters");
+				}
+				else
+				{
+					p_bag = &(ppb->value());
+				}
+			}
+			else
+			{
+				RTT::Property<PropertyBag>* ppb = dynamic_cast<RTT::Property<PropertyBag>*>(p_bag->getProperty(cleaned_name));
+				RTT::PropertyBag* ptmp(NULL);
+				if(ppb == NULL)
+				{
+					ptmp = new RTT::PropertyBag;
+					p_bag->addProperty(cleaned_name, *ptmp).doc("Submodel parameters");
+				}
+				else
+				{
+					ptmp = &(ppb->value());
+				}
+				p_bag = ptmp;
+			}
+		}
+		if (p_bag != NULL)
+		{
+			return p_bag;
+		}
+		else
+		{
+			return this->properties();
+
+		}
+	}
+	void interaction_control::cleanupPropertyBags(RTT::PropertyBag* p)
+	{
+		RTT::PropertyBag::iterator it(p->begin());
+		RTT::PropertyBag::iterator end(p->end());
+
+		RTT::Property<PropertyBag>* ppb(NULL);
+
+		for(;it != end; ++it)
+		{
+			ppb = dynamic_cast<RTT::Property<PropertyBag>*>(*it);
+
+			if(ppb != NULL)
+			{
+				PropertyBag* ptmp = &(ppb->value());
+				cleanupPropertyBags(ptmp);
+				delete ptmp;
+			}
+		}
+	}
+
+	bool interaction_control::setPeriod(RTT::Seconds s)
+	{
+		if(TaskContext::setPeriod(s))
+		{
+			step_size = s;
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+	}
+	bool interaction_control::initializeComputation()
+	{
+		start_time = 0.0;
+		finish_time = 40.0;
+		step_size = 0.001;
+		time = 0;
+		major = true;
+
+		number_constants = 25;
+		number_parameters = 226;
+		number_initialvalues = 16;
+		number_variables = 2132;
+		number_states = 16;
+		number_rates = 16;
+		number_matrices = 418;
+		number_unnamed = 3774;
+
+		/* the variable arrays */
+		C = new XXDouble[25 + 1]; /* constants */
+		P = new XXDouble[226 + 1]; /* parameters, currently only one type of parameter exists: double */
+		I = new XXDouble[16 + 1]; /* initial values */
+		V = new XXDouble[2132 + 1]; /* variables */
+
+		s = new XXDouble[16 + 1]; /* states */
+		R = new XXDouble[16 + 1]; /* rates (or new states) */
+		M = new XXMatrix[418 + 1]; /* matrices */
+		U = new XXDouble[3774 + 1]; /* unnamed */
+		workarray = new XXDouble[156 + 1];
+
+		myintegmethod.Initialize(this);
+
 		/* initialization phase (allocating memory) */
 		initialize = true;
 
-		/* copy the inputs */
 		//time = t;
-
-		/* set the constants */
 			C[0] = 1.0;		/* CalculateJ\vx */
 	C[1] = 0.0;		
 	C[2] = 0.0;		
@@ -133,258 +2272,6 @@ namespace gravity_test_vA
 	C[22] = 0.0;		
 	C[23] = -1.0;		
 	C[24] = 3.1415926535898;		/* pi {} */
-
-
-		/* set the parameters */
-			P[0] = 0.0;		/* C\c */
-	P[1] = 1.0;		/* CalculateJ\InitialJointPos */
-	P[2] = 1.0;		
-	P[3] = 1.0;		
-	P[4] = 1.0;		
-	P[5] = 1.0;		
-	P[6] = 0.024;		/* CalculateJ\Linkdim */
-	P[7] = 0.033;		
-	P[8] = 0.0;		
-	P[9] = 0.0;		
-	P[10] = 0.0;		
-	P[11] = 0.0;		
-	P[12] = 0.0;		
-	P[13] = 0.0;		
-	P[14] = 0.0;		
-	P[15] = 0.0;		
-	P[16] = 0.0;		
-	P[17] = 0.0;		
-	P[18] = 0.096;		
-	P[19] = 0.019;		
-	P[20] = 0.155;		
-	P[21] = 0.135;		
-	P[22] = 0.096;		
-	P[23] = 0.034;		
-	P[24] = 1.0;		/* CalculateJ\InitialBasePos */
-	P[25] = 0.0;		
-	P[26] = 0.0;		
-	P[27] = 1.0;		
-	P[28] = 0.0;		
-	P[29] = 1.0;		
-	P[30] = 0.0;		
-	P[31] = 0.0;		
-	P[32] = 0.0;		
-	P[33] = 0.0;		
-	P[34] = 1.0;		
-	P[35] = 0.0;		
-	P[36] = 0.0;		
-	P[37] = 0.0;		
-	P[38] = 0.0;		
-	P[39] = 1.0;		
-	P[40] = 0.143;		/* CalculateJ\baseoffset */
-	P[41] = 0.0;		
-	P[42] = 0.046;		
-	P[43] = 0.001;		/* CtipControl\CtipControl */
-	P[44] = 0.3;		/* filter\BW */
-	P[45] = 0.01489;		/* GravityCompensation1\Base\AdHik1\COMdim */
-	P[46] = 0.00213;		
-	P[47] = 0.00213;		
-	P[48] = 2.412;		/* GravityCompensation1\Base\Gravity\m */
-	P[49] = 0.024;		/* GravityCompensation1\Base\Hij\dim */
-	P[50] = 0.0;		
-	P[51] = 0.096;		
-	P[52] = 2.412;		/* GravityCompensation1\Base\m */
-	P[53] = 0.01489;		/* GravityCompensation1\Base\COMdim */
-	P[54] = 0.00213;		
-	P[55] = 0.00213;		
-	P[56] = 0.024;		/* GravityCompensation1\Base\dim */
-	P[57] = 0.0;		
-	P[58] = 0.096;		
-	P[59] = 0.0;		/* GravityCompensation1\Joint12\Integrate\init */
-	P[60] = 0.0;		/* GravityCompensation1\Joint12\InitialPos */
-	P[61] = 0.0;		/* GravityCompensation1\Joint23\Integrate\init */
-	P[62] = 0.0;		/* GravityCompensation1\Joint23\InitialPos */
-	P[63] = 0.0;		/* GravityCompensation1\Joint34\Integrate\init */
-	P[64] = 0.0;		/* GravityCompensation1\Joint34\InitialPos */
-	P[65] = 0.0;		/* GravityCompensation1\Joint45\Integrate\init */
-	P[66] = 0.0;		/* GravityCompensation1\Joint45\InitialPos */
-	P[67] = 0.0;		/* GravityCompensation1\JointBase1\Integrate\init */
-	P[68] = 0.0;		/* GravityCompensation1\JointBase1\InitialPos */
-	P[69] = 0.10453;		/* GravityCompensation1\Link1\AdHik1\COMdim */
-	P[70] = 0.0017;		
-	P[71] = -0.00297;		
-	P[72] = 1.155;		/* GravityCompensation1\Link1\Gravity\m */
-	P[73] = 0.033;		/* GravityCompensation1\Link1\Hij\dim */
-	P[74] = 0.0;		
-	P[75] = 0.019;		
-	P[76] = 1.155;		/* GravityCompensation1\Link1\m */
-	P[77] = 0.10453;		/* GravityCompensation1\Link1\COMdim */
-	P[78] = 0.0017;		
-	P[79] = -0.00297;		
-	P[80] = 0.033;		/* GravityCompensation1\Link1\dim */
-	P[81] = 0.0;		
-	P[82] = 0.019;		
-	P[83] = 0.001;		/* GravityCompensation1\Link2\AdHik1\COMdim */
-	P[84] = 0.0967;		
-	P[85] = 0.02107;		
-	P[86] = 93.4;		/* GravityCompensation1\Link2\Gravity\m */
-	P[87] = 0.0;		/* GravityCompensation1\Link2\Hij\dim */
-	P[88] = 0.0;		
-	P[89] = 0.155;		
-	P[90] = 93.4;		/* GravityCompensation1\Link2\m */
-	P[91] = 0.001;		/* GravityCompensation1\Link2\COMdim */
-	P[92] = 0.0967;		
-	P[93] = 0.02107;		
-	P[94] = 0.0;		/* GravityCompensation1\Link2\dim */
-	P[95] = 0.0;		
-	P[96] = 0.155;		
-	P[97] = 0.011;		/* GravityCompensation1\Link3\AdHik1\COMdim */
-	P[98] = 0.05103;		
-	P[99] = -0.02319;		
-	P[100] = 0.877;		/* GravityCompensation1\Link3\Gravity\m */
-	P[101] = 0.0;		/* GravityCompensation1\Link3\Hij\dim */
-	P[102] = 0.0;		
-	P[103] = 0.135;		
-	P[104] = 0.877;		/* GravityCompensation1\Link3\m */
-	P[105] = 0.011;		/* GravityCompensation1\Link3\COMdim */
-	P[106] = 0.05103;		
-	P[107] = -0.02319;		
-	P[108] = 0.0;		/* GravityCompensation1\Link3\dim */
-	P[109] = 0.0;		
-	P[110] = 0.135;		
-	P[111] = 0.0;		/* GravityCompensation1\Link4\AdHik1\COMdim */
-	P[112] = 0.00115;		
-	P[113] = -0.01683;		
-	P[114] = 0.251;		/* GravityCompensation1\Link4\Gravity\m */
-	P[115] = 0.0;		/* GravityCompensation1\Link4\Hij\dim */
-	P[116] = 0.0;		
-	P[117] = 0.096;		
-	P[118] = 0.251;		/* GravityCompensation1\Link4\m */
-	P[119] = 0.0;		/* GravityCompensation1\Link4\COMdim */
-	P[120] = 0.00115;		
-	P[121] = -0.01683;		
-	P[122] = 0.0;		/* GravityCompensation1\Link4\dim */
-	P[123] = 0.0;		
-	P[124] = 0.096;		
-	P[125] = 0.0;		/* GravityCompensation1\Link5\AdHik1\COMdim */
-	P[126] = 0.0;		
-	P[127] = 0.001;		
-	P[128] = 0.12;		/* GravityCompensation1\Link5\Gravity\m */
-	P[129] = 0.0;		/* GravityCompensation1\Link5\Hij\dim */
-	P[130] = 0.0;		
-	P[131] = 0.034;		
-	P[132] = 0.12;		/* GravityCompensation1\Link5\m */
-	P[133] = 0.0;		/* GravityCompensation1\Link5\COMdim */
-	P[134] = 0.0;		
-	P[135] = 0.001;		
-	P[136] = 0.0;		/* GravityCompensation1\Link5\dim */
-	P[137] = 0.0;		
-	P[138] = 0.034;		
-	P[139] = 1.0;		/* GravityCompensation1\Mux\calibartion */
-	P[140] = 0.0;		/* GravityCompensation1\Wtip0\effort */
-	P[141] = 0.0;		/* GravityCompensation1\InitialJointPos */
-	P[142] = 0.0;		
-	P[143] = 0.0;		
-	P[144] = 0.0;		
-	P[145] = 0.0;		
-	P[146] = 0.01489;		/* GravityCompensation1\LinkCOMdim */
-	P[147] = 0.10453;		
-	P[148] = 0.001;		
-	P[149] = 0.011;		
-	P[150] = 0.0;		
-	P[151] = 0.0;		
-	P[152] = 0.00213;		
-	P[153] = 0.0017;		
-	P[154] = 0.0967;		
-	P[155] = 0.05103;		
-	P[156] = 0.00115;		
-	P[157] = 0.0;		
-	P[158] = 0.00213;		
-	P[159] = -0.00297;		
-	P[160] = 0.02107;		
-	P[161] = -0.02319;		
-	P[162] = -0.01683;		
-	P[163] = 0.001;		
-	P[164] = 0.024;		/* GravityCompensation1\Linkdim */
-	P[165] = 0.033;		
-	P[166] = 0.0;		
-	P[167] = 0.0;		
-	P[168] = 0.0;		
-	P[169] = 0.0;		
-	P[170] = 0.0;		
-	P[171] = 0.0;		
-	P[172] = 0.0;		
-	P[173] = 0.0;		
-	P[174] = 0.0;		
-	P[175] = 0.0;		
-	P[176] = 0.096;		
-	P[177] = 0.019;		
-	P[178] = 0.155;		
-	P[179] = 0.135;		
-	P[180] = 0.096;		
-	P[181] = 0.034;		
-	P[182] = 2.412;		/* GravityCompensation1\Linkm */
-	P[183] = 1.155;		
-	P[184] = 93.4;		
-	P[185] = 0.877;		
-	P[186] = 0.251;		
-	P[187] = 0.12;		
-	P[188] = 50.0;		/* JointSoftLimits\CendstopAvoidanceControl */
-	P[189] = 0.05;		/* JointSoftLimits\dangerzone {rad} */
-	P[190] = 0.0;		/* JointSoftLimits\InitialJointPos */
-	P[191] = 0.0;		
-	P[192] = 0.0;		
-	P[193] = 0.0;		
-	P[194] = 0.0;		
-	P[195] = 2.95;		/* JointSoftLimits\MaxEndstopPos */
-	P[196] = 1.5;		
-	P[197] = 2.55;		
-	P[198] = 1.79;		
-	P[199] = 2.92;		
-	P[200] = -2.95;		/* JointSoftLimits\MinEndstopPos */
-	P[201] = -1.05;		
-	P[202] = -2.64;		
-	P[203] = -1.79;		
-	P[204] = -2.92;		
-	P[205] = 1.0;		/* JointSoftLimits\forceMap */
-	P[206] = 1.0;		
-	P[207] = 1.0;		
-	P[208] = -1.0;		
-	P[209] = -1.0;		
-	P[210] = -1.0;		
-	P[211] = -1.0;		
-	P[212] = -1.0;		
-	P[213] = 169.0;		/* MuxToControl1\zero_angles */
-	P[214] = 65.0;		
-	P[215] = -146.0;		
-	P[216] = 102.5;		
-	P[217] = 167.5;		
-	P[218] = 10.0;		/* R\r */
-	P[219] = 10.0;		
-	P[220] = 10.0;		
-	P[221] = 10.0;		
-	P[222] = 10.0;		
-	P[223] = 10.0;		
-	P[224] = 10.0;		
-	P[225] = 10.0;		
-
-
-		/*set intial values*/
-			I[12] = 0.0;		/* C\x_initial */
-	I[13] = 0.0;		
-	I[14] = 0.0;		
-	I[15] = 0.0;		/* CtipControl\optimizationCriteria_initial */
-	I[0] = 0.0;		/* filter\s1y_initial */
-	I[1] = 0.0;		
-	I[2] = 0.0;		
-	I[3] = 0.0;		
-	I[4] = 0.0;		
-	I[5] = 0.0;		
-	I[6] = 0.0;		/* filter\initPos */
-	I[7] = 0.0;		
-	I[8] = 1.0;		
-	I[9] = 0.0;		
-	I[10] = 0.0;		
-	I[11] = 0.0;		
-
-		/*set favorite if any*/
-			
-		
 
 		/* set the states */
 			s[12] = I[12];		/* C\x */
@@ -1138,7 +3025,7 @@ namespace gravity_test_vA
 	M[243].mat = &V[2016];		/* OneJunction\p2.e */
 	M[243].rows = 6;
 	M[243].columns = 1;
-	M[244].mat = &V[2022];		/* OneJunction2\p2.e */
+	M[244].mat = &V[2022];		/* OneJunction2\p3.e */
 	M[244].rows = 8;
 	M[244].columns = 1;
 	M[245].mat = &V[2030];		/* R\p.e */
@@ -1162,14 +3049,14 @@ namespace gravity_test_vA
 	M[251].mat = &V[2113];		/* bond_to_arm.omega */
 	M[251].rows = 5;
 	M[251].columns = 1;
-	M[252].mat = &V[2118];		/* measured_angles_arm */
-	M[252].rows = 5;
+	M[252].mat = &V[2118];		/* xyzypr */
+	M[252].rows = 6;
 	M[252].columns = 1;
-	M[253].mat = &V[2123];		/* xyzypr */
-	M[253].rows = 6;
+	M[253].mat = &V[2124];		/* odometry_base */
+	M[253].rows = 3;
 	M[253].columns = 1;
-	M[254].mat = &V[2129];		/* odometry_base */
-	M[254].rows = 3;
+	M[254].mat = &V[2127];		/* measured_angles_arm */
+	M[254].rows = 5;
 	M[254].columns = 1;
 	M[255].mat = &R[12];		/* C\x_dot */
 	M[255].rows = 3;
@@ -1664,2061 +3551,7 @@ namespace gravity_test_vA
 
 		/* end of initialization phase */
 		initialize = false;
-
-		return true;
-	}
-
-
-	/* the initialization function for submodel */
-	bool interaction_control::startHook()
-	{
-		if(! TaskContext::startHook())
-		{
-			return false;
-		}
-
-		for (vector<Adapter20Sim<RTT::InputPort<flat_matrix_t> > >::iterator it = inputPorts.begin(); it != inputPorts.end(); ++it) {
-			flat_matrix_t temp ;
-			if(! it->getPort()->connected() ){
-				log(Warning) << "InputPort (" << it->getFullName() << ") not connected." << endlog();
-//				return false;
-			}
-		}
-
-		/* calculate initial and static equations */
-		CalculateInitial ();
-		CalculateStatic ();
-		CopyInputsToVariables ();
-		CalculateInput ();
-		CalculateDynamic();
-		CalculateOutput ();
-		CopyVariablesToOutputs ();
-		return true;
-	}
-
-	/* the function that calculates the submodel */
-	void interaction_control::updateHook ()
-	{
-		TaskContext::updateHook();
-
-		/* another precessor submodel could determine the parameters of this submodel
-		   and therefore the static parameter calculations need to be performed. */
-		CalculateStatic ();
-
-		/* main calculation of the model */
-		CopyInputsToVariables ();        //get input from port
-		CalculateInput ();
-		myintegmethod.Step();
-		CalculateOutput ();
-		CopyVariablesToOutputs ();       //send output to port
-	}
-
-	/* the termination function for submodel */
-	void interaction_control::stopHook()
-	{
-		TaskContext::stopHook();
-
-		/* copy the inputs */
-		CopyInputsToVariables ();       //get inputs from port
-
-		/* calculate the final model equations */
-		CalculateFinal ();
-
-		/* set the outputs */
-		CopyVariablesToOutputs ();     //send output to port
-	}
-
-	/* this PRIVATE function sets the input variables from the input vector */
-	//@todo Improve for multiple component inputs to have a synchronized execution.
-	void interaction_control::CopyInputsToVariables ()
-	{
-		/* OROCOS Entry to copy port to input array */
-		for (vector<Adapter20Sim<RTT::InputPort<flat_matrix_t> > >::iterator it =
-				inputPorts.begin(); it != inputPorts.end(); ++it) {
-			flat_matrix_t temp ;
-			if(it->getPort()->read(temp)!=RTT::NoData){
-				log(Debug)<<"CopyInputsToVariables"<<endlog();
-				it->setValue(temp);
-			}
-		}
-
-	}
-
-	/* this PRIVATE function uses the output variables to fill the output vector */
-	void interaction_control::CopyVariablesToOutputs ()
-	{
-
-		/* OROCOS Entry to copy output to port */
-		for (vector<Adapter20Sim<RTT::OutputPort<flat_matrix_t> > >::iterator it =
-				outputPorts.begin(); it != outputPorts.end(); ++it) {
-		//	log(Debug)<<"writing out ="<<it->getValue().address()[1]<<endlog();
-
-			//temp=it->getValue();
-
-			//log(Debug)<<temp.address()[0]<<temp.address()[1]<<temp.address()[2]<<endlog();
-			//log(Debug)<<it->getPort().getName()<<endlog();
-			flat_matrix_t temp;
-			temp=it->getValue();
-			it->getPort()->write(temp);
-		}
-	}
-
-	/* This function calculates the initial equations of the model.
-	 * These equations are calculated before anything else
-	 */
-	void interaction_control::CalculateInitial (void)
-	{
-	  		/* CalculateJ\initialq = [0; 0; 0; CalculateJ\InitialJointPos[1]; CalculateJ\InitialJointPos[2]; CalculateJ\InitialJointPos[3]; CalculateJ\InitialJointPos[4]; CalculateJ\InitialJointPos[5]]; */
-		M[48].mat[0] = 0.0;
-		M[48].mat[1] = 0.0;
-		M[48].mat[2] = 0.0;
-		M[48].mat[3] = M[3].mat[0];
-		M[48].mat[4] = M[3].mat[1];
-		M[48].mat[5] = M[3].mat[2];
-		M[48].mat[6] = M[3].mat[3];
-		M[48].mat[7] = M[3].mat[4];
-
-		/* GravityCompensation1\Base\AdHik1\COMdim = GravityCompensation1\Base\COMdim; */
-		XXMatrixMov (&M[74], &M[84]);
-
-		/* GravityCompensation1\Base\Hij\dim = GravityCompensation1\Base\dim; */
-		XXMatrixMov (&M[82], &M[85]);
-
-		/* GravityCompensation1\Base\Gravity\m = GravityCompensation1\Base\m; */
-		P[48] = P[52];
-
-		/* GravityCompensation1\Joint12\Integrate\init = GravityCompensation1\Joint12\InitialPos; */
-		P[59] = P[60];
-
-		/* GravityCompensation1\Joint23\Integrate\init = GravityCompensation1\Joint23\InitialPos; */
-		P[61] = P[62];
-
-		/* GravityCompensation1\Joint34\Integrate\init = GravityCompensation1\Joint34\InitialPos; */
-		P[63] = P[64];
-
-		/* GravityCompensation1\Joint45\Integrate\init = GravityCompensation1\Joint45\InitialPos; */
-		P[65] = P[66];
-
-		/* GravityCompensation1\JointBase1\Integrate\init = GravityCompensation1\JointBase1\InitialPos; */
-		P[67] = P[68];
-
-		/* GravityCompensation1\Link1\AdHik1\COMdim = GravityCompensation1\Link1\COMdim; */
-		XXMatrixMov (&M[134], &M[144]);
-
-		/* GravityCompensation1\Link1\Hij\dim = GravityCompensation1\Link1\dim; */
-		XXMatrixMov (&M[142], &M[145]);
-
-		/* GravityCompensation1\Link1\Gravity\m = GravityCompensation1\Link1\m; */
-		P[72] = P[76];
-
-		/* GravityCompensation1\Link2\AdHik1\COMdim = GravityCompensation1\Link2\COMdim; */
-		XXMatrixMov (&M[153], &M[163]);
-
-		/* GravityCompensation1\Link2\Hij\dim = GravityCompensation1\Link2\dim; */
-		XXMatrixMov (&M[161], &M[164]);
-
-		/* GravityCompensation1\Link2\Gravity\m = GravityCompensation1\Link2\m; */
-		P[86] = P[90];
-
-		/* GravityCompensation1\Link3\AdHik1\COMdim = GravityCompensation1\Link3\COMdim; */
-		XXMatrixMov (&M[172], &M[182]);
-
-		/* GravityCompensation1\Link3\Hij\dim = GravityCompensation1\Link3\dim; */
-		XXMatrixMov (&M[180], &M[183]);
-
-		/* GravityCompensation1\Link3\Gravity\m = GravityCompensation1\Link3\m; */
-		P[100] = P[104];
-
-		/* GravityCompensation1\Link4\AdHik1\COMdim = GravityCompensation1\Link4\COMdim; */
-		XXMatrixMov (&M[191], &M[201]);
-
-		/* GravityCompensation1\Link4\Hij\dim = GravityCompensation1\Link4\dim; */
-		XXMatrixMov (&M[199], &M[202]);
-
-		/* GravityCompensation1\Link4\Gravity\m = GravityCompensation1\Link4\m; */
-		P[114] = P[118];
-
-		/* GravityCompensation1\Link5\AdHik1\COMdim = GravityCompensation1\Link5\COMdim; */
-		XXMatrixMov (&M[210], &M[220]);
-
-		/* GravityCompensation1\Link5\Hij\dim = GravityCompensation1\Link5\dim; */
-		XXMatrixMov (&M[218], &M[221]);
-
-		/* GravityCompensation1\Link5\Gravity\m = GravityCompensation1\Link5\m; */
-		P[128] = P[132];
-
-		/* GravityCompensation1\Base\m = GravityCompensation1\Linkm[1]; */
-		P[52] = M[228].mat[0];
-
-		/* GravityCompensation1\Base\COMdim = GravityCompensation1\LinkCOMdim[1:3,1]; */
-		M[84].mat[0] = M[226].mat[0];
-		M[84].mat[1] = M[226].mat[6];
-		M[84].mat[2] = M[226].mat[12];
-
-		/* GravityCompensation1\Base\dim = GravityCompensation1\Linkdim[1:3,1]; */
-		M[85].mat[0] = M[227].mat[0];
-		M[85].mat[1] = M[227].mat[6];
-		M[85].mat[2] = M[227].mat[12];
-
-		/* GravityCompensation1\Link1\m = GravityCompensation1\Linkm[2]; */
-		P[76] = M[228].mat[1];
-
-		/* GravityCompensation1\Link1\COMdim = GravityCompensation1\LinkCOMdim[1:3,2]; */
-		M[144].mat[0] = M[226].mat[1];
-		M[144].mat[1] = M[226].mat[7];
-		M[144].mat[2] = M[226].mat[13];
-
-		/* GravityCompensation1\Link1\dim = GravityCompensation1\Linkdim[1:3,2]; */
-		M[145].mat[0] = M[227].mat[1];
-		M[145].mat[1] = M[227].mat[7];
-		M[145].mat[2] = M[227].mat[13];
-
-		/* GravityCompensation1\Link2\m = GravityCompensation1\Linkm[3]; */
-		P[90] = M[228].mat[2];
-
-		/* GravityCompensation1\Link2\COMdim = GravityCompensation1\LinkCOMdim[1:3,3]; */
-		M[163].mat[0] = M[226].mat[2];
-		M[163].mat[1] = M[226].mat[8];
-		M[163].mat[2] = M[226].mat[14];
-
-		/* GravityCompensation1\Link2\dim = GravityCompensation1\Linkdim[1:3,3]; */
-		M[164].mat[0] = M[227].mat[2];
-		M[164].mat[1] = M[227].mat[8];
-		M[164].mat[2] = M[227].mat[14];
-
-		/* GravityCompensation1\Link3\m = GravityCompensation1\Linkm[4]; */
-		P[104] = M[228].mat[3];
-
-		/* GravityCompensation1\Link3\COMdim = GravityCompensation1\LinkCOMdim[1:3,4]; */
-		M[182].mat[0] = M[226].mat[3];
-		M[182].mat[1] = M[226].mat[9];
-		M[182].mat[2] = M[226].mat[15];
-
-		/* GravityCompensation1\Link3\dim = GravityCompensation1\Linkdim[1:3,4]; */
-		M[183].mat[0] = M[227].mat[3];
-		M[183].mat[1] = M[227].mat[9];
-		M[183].mat[2] = M[227].mat[15];
-
-		/* GravityCompensation1\Link4\m = GravityCompensation1\Linkm[5]; */
-		P[118] = M[228].mat[4];
-
-		/* GravityCompensation1\Link4\COMdim = GravityCompensation1\LinkCOMdim[1:3,5]; */
-		M[201].mat[0] = M[226].mat[4];
-		M[201].mat[1] = M[226].mat[10];
-		M[201].mat[2] = M[226].mat[16];
-
-		/* GravityCompensation1\Link4\dim = GravityCompensation1\Linkdim[1:3,5]; */
-		M[202].mat[0] = M[227].mat[4];
-		M[202].mat[1] = M[227].mat[10];
-		M[202].mat[2] = M[227].mat[16];
-
-		/* GravityCompensation1\Link5\m = GravityCompensation1\Linkm[6]; */
-		P[132] = M[228].mat[5];
-
-		/* GravityCompensation1\Link5\COMdim = GravityCompensation1\LinkCOMdim[1:3,6]; */
-		M[220].mat[0] = M[226].mat[5];
-		M[220].mat[1] = M[226].mat[11];
-		M[220].mat[2] = M[226].mat[17];
-
-		/* GravityCompensation1\Link5\dim = GravityCompensation1\Linkdim[1:3,6]; */
-		M[221].mat[0] = M[227].mat[5];
-		M[221].mat[1] = M[227].mat[11];
-		M[221].mat[2] = M[227].mat[17];
-
-		/* GravityCompensation1\JointBase1\InitialPos = GravityCompensation1\InitialJointPos[1]; */
-		P[68] = M[225].mat[0];
-
-		/* GravityCompensation1\Joint12\InitialPos = GravityCompensation1\InitialJointPos[2]; */
-		P[60] = M[225].mat[1];
-
-		/* GravityCompensation1\Joint23\InitialPos = GravityCompensation1\InitialJointPos[3]; */
-		P[62] = M[225].mat[2];
-
-		/* GravityCompensation1\Joint34\InitialPos = GravityCompensation1\InitialJointPos[4]; */
-		P[64] = M[225].mat[3];
-
-		/* GravityCompensation1\Joint45\InitialPos = GravityCompensation1\InitialJointPos[5]; */
-		P[66] = M[225].mat[4];
-
-	}
-
-	/* This function calculates the static equations of the model.
-	 * These equations are only dependent from parameters and constants
-	 */
-	void interaction_control::CalculateStatic (void)
-	{
-	  	/* C\p.e[1] = 0; */
-	M[0].mat[0] = 0.0;
-
-	/* C\p.e[2] = 0; */
-	M[0].mat[1] = 0.0;
-
-	/* C\p.e[3] = 0; */
-	M[0].mat[2] = 0.0;
-
-	/* CalculateJ\base_offset_H = homogeneous (eye (3), CalculateJ\baseoffset); */
-	XXMatrixEye (&M[263]);
-	XXMatrixHomogeneous (&M[47], &M[263], &M[6]);
-
-	/* CalculateJ\p1ref = CalculateJ\Linkdim[1:3,1]; */
-	M[29].mat[0] = M[4].mat[0];
-	M[29].mat[1] = M[4].mat[6];
-	M[29].mat[2] = M[4].mat[12];
-
-	/* CalculateJ\p21 = CalculateJ\Linkdim[1:3,2]; */
-	M[30].mat[0] = M[4].mat[1];
-	M[30].mat[1] = M[4].mat[7];
-	M[30].mat[2] = M[4].mat[13];
-
-	/* CalculateJ\p32 = CalculateJ\Linkdim[1:3,3]; */
-	M[31].mat[0] = M[4].mat[2];
-	M[31].mat[1] = M[4].mat[8];
-	M[31].mat[2] = M[4].mat[14];
-
-	/* CalculateJ\p43 = CalculateJ\Linkdim[1:3,4]; */
-	M[32].mat[0] = M[4].mat[3];
-	M[32].mat[1] = M[4].mat[9];
-	M[32].mat[2] = M[4].mat[15];
-
-	/* CalculateJ\p54 = CalculateJ\Linkdim[1:3,5]; */
-	M[33].mat[0] = M[4].mat[4];
-	M[33].mat[1] = M[4].mat[10];
-	M[33].mat[2] = M[4].mat[16];
-
-	/* CalculateJ\Rtip5 = eye (3); */
-	XXMatrixEye (&M[28]);
-
-	/* CalculateJ\ptip5 = CalculateJ\Linkdim[1:3,6]; */
-	M[34].mat[0] = M[4].mat[5];
-	M[34].mat[1] = M[4].mat[11];
-	M[34].mat[2] = M[4].mat[17];
-
-	/* CalculateJ\Htip5 = homogeneous (CalculateJ\Rtip5, CalculateJ\ptip5); */
-	XXMatrixHomogeneous (&M[41], &M[28], &M[34]);
-
-	/* CalculateJ\uTrzrefref[1:3] = CalculateJ\omegaz; */
-	M[15].mat[0] = M[9].mat[0];
-	M[15].mat[1] = M[9].mat[1];
-	M[15].mat[2] = M[9].mat[2];
-
-	/* CalculateJ\uTrzrefref[4:6] = 0; */
-	M[15].mat[3] = 0.0;
-	M[15].mat[4] = 0.0;
-	M[15].mat[5] = 0.0;
-
-	/* CalculateJ\uTryrefref[1:3] = 0; */
-	M[16].mat[0] = 0.0;
-	M[16].mat[1] = 0.0;
-	M[16].mat[2] = 0.0;
-
-	/* CalculateJ\uTryrefref[4:6] = CalculateJ\vy; */
-	M[16].mat[3] = M[8].mat[0];
-	M[16].mat[4] = M[8].mat[1];
-	M[16].mat[5] = M[8].mat[2];
-
-	/* CalculateJ\uTrxrefref[1:3] = 0; */
-	M[17].mat[0] = 0.0;
-	M[17].mat[1] = 0.0;
-	M[17].mat[2] = 0.0;
-
-	/* CalculateJ\uTrxrefref[4:6] = CalculateJ\vx; */
-	M[17].mat[3] = M[7].mat[0];
-	M[17].mat[4] = M[7].mat[1];
-	M[17].mat[5] = M[7].mat[2];
-
-	/* CalculateJ\uTr1refref[1:3] = CalculateJ\omega1; */
-	M[18].mat[0] = M[10].mat[0];
-	M[18].mat[1] = M[10].mat[1];
-	M[18].mat[2] = M[10].mat[2];
-
-	/* CalculateJ\uTr1refref[4:6] = skew (CalculateJ\Linkdim[1:3,1]) * CalculateJ\omega1; */
-	M[266].mat[0] = M[4].mat[0];
-	M[266].mat[1] = M[4].mat[6];
-	M[266].mat[2] = M[4].mat[12];
-	XXMatrixSkew (&M[265], &M[266]);
-	XXMatrixMul (&M[264], &M[265], &M[10]);
-	M[18].mat[3] = M[264].mat[0];
-	M[18].mat[4] = M[264].mat[1];
-	M[18].mat[5] = M[264].mat[2];
-
-	/* CalculateJ\uTr211[1:3] = CalculateJ\omega2; */
-	M[19].mat[0] = M[11].mat[0];
-	M[19].mat[1] = M[11].mat[1];
-	M[19].mat[2] = M[11].mat[2];
-
-	/* CalculateJ\uTr211[4:6] = skew (CalculateJ\Linkdim[1:3,2]) * CalculateJ\omega2; */
-	M[269].mat[0] = M[4].mat[1];
-	M[269].mat[1] = M[4].mat[7];
-	M[269].mat[2] = M[4].mat[13];
-	XXMatrixSkew (&M[268], &M[269]);
-	XXMatrixMul (&M[267], &M[268], &M[11]);
-	M[19].mat[3] = M[267].mat[0];
-	M[19].mat[4] = M[267].mat[1];
-	M[19].mat[5] = M[267].mat[2];
-
-	/* CalculateJ\uTr322[1:3] = CalculateJ\omega3; */
-	M[20].mat[0] = M[12].mat[0];
-	M[20].mat[1] = M[12].mat[1];
-	M[20].mat[2] = M[12].mat[2];
-
-	/* CalculateJ\uTr322[4:6] = skew (CalculateJ\Linkdim[1:3,3]) * CalculateJ\omega3; */
-	M[272].mat[0] = M[4].mat[2];
-	M[272].mat[1] = M[4].mat[8];
-	M[272].mat[2] = M[4].mat[14];
-	XXMatrixSkew (&M[271], &M[272]);
-	XXMatrixMul (&M[270], &M[271], &M[12]);
-	M[20].mat[3] = M[270].mat[0];
-	M[20].mat[4] = M[270].mat[1];
-	M[20].mat[5] = M[270].mat[2];
-
-	/* CalculateJ\uTr433[1:3] = CalculateJ\omega4; */
-	M[21].mat[0] = M[13].mat[0];
-	M[21].mat[1] = M[13].mat[1];
-	M[21].mat[2] = M[13].mat[2];
-
-	/* CalculateJ\uTr433[4:6] = skew (CalculateJ\Linkdim[1:3,4]) * CalculateJ\omega4; */
-	M[275].mat[0] = M[4].mat[3];
-	M[275].mat[1] = M[4].mat[9];
-	M[275].mat[2] = M[4].mat[15];
-	XXMatrixSkew (&M[274], &M[275]);
-	XXMatrixMul (&M[273], &M[274], &M[13]);
-	M[21].mat[3] = M[273].mat[0];
-	M[21].mat[4] = M[273].mat[1];
-	M[21].mat[5] = M[273].mat[2];
-
-	/* CalculateJ\uTr544[1:3] = CalculateJ\omega5; */
-	M[22].mat[0] = M[14].mat[0];
-	M[22].mat[1] = M[14].mat[1];
-	M[22].mat[2] = M[14].mat[2];
-
-	/* CalculateJ\uTr544[4:6] = skew (CalculateJ\Linkdim[1:3,5]) * CalculateJ\omega5; */
-	M[278].mat[0] = M[4].mat[4];
-	M[278].mat[1] = M[4].mat[10];
-	M[278].mat[2] = M[4].mat[16];
-	XXMatrixSkew (&M[277], &M[278]);
-	XXMatrixMul (&M[276], &M[277], &M[14]);
-	M[22].mat[3] = M[276].mat[0];
-	M[22].mat[4] = M[276].mat[1];
-	M[22].mat[5] = M[276].mat[2];
-
-	/* CtipControl\Wt[1:3] = 0; */
-	M[56].mat[0] = 0.0;
-	M[56].mat[1] = 0.0;
-	M[56].mat[2] = 0.0;
-
-	/* CtipControl\Wr[4:6] = 0; */
-	M[55].mat[3] = 0.0;
-	M[55].mat[4] = 0.0;
-	M[55].mat[5] = 0.0;
-
-	/* filter\BWrad = (filter\BW * 2) * 3.1415926536; */
-	V[501] = (P[44] * 2.0) * 3.1415926536;
-
-	/* GravityCompensation1\Base\AdHik1\d = GravityCompensation1\Base\AdHik1\COMdim; */
-	XXMatrixMov (&M[75], &M[74]);
-
-	/* GravityCompensation1\Base\AdHik1\R = eye (3); */
-	XXMatrixEye (&M[76]);
-
-	/* GravityCompensation1\Base\AdHik1\H = homogeneous (GravityCompensation1\Base\AdHik1\R, GravityCompensation1\Base\AdHik1\d); */
-	XXMatrixHomogeneous (&M[77], &M[76], &M[75]);
-
-	/* GravityCompensation1\Base\AdHik1\AdH = Adjoint (GravityCompensation1\Base\AdHik1\H); */
-	XXMatrixAdjoint (&M[78], &M[77]);
-
-	/* GravityCompensation1\Base\Gravity\effort = [0; 0; 0; 0; 0; -9.8 * GravityCompensation1\Base\Gravity\m]; */
-	M[79].mat[0] = 0.0;
-	M[79].mat[1] = 0.0;
-	M[79].mat[2] = 0.0;
-	M[79].mat[3] = 0.0;
-	M[79].mat[4] = 0.0;
-	M[79].mat[5] = -9.8 * P[48];
-
-	/* GravityCompensation1\Base\Hij\Hab = homogeneous (eye (3), GravityCompensation1\Base\Hij\dim); */
-	XXMatrixEye (&M[279]);
-	XXMatrixHomogeneous (&M[81], &M[279], &M[82]);
-
-	/* GravityCompensation1\Hfloor0\output = eye (4); */
-	XXMatrixEye (&M[86]);
-
-	/* GravityCompensation1\Joint12\Integrate\p = [0; 0; 0]; */
-	M[91].mat[0] = 0.0;
-	M[91].mat[1] = 0.0;
-	M[91].mat[2] = 0.0;
-
-	/* GravityCompensation1\Joint23\Integrate\p = [0; 0; 0]; */
-	M[99].mat[0] = 0.0;
-	M[99].mat[1] = 0.0;
-	M[99].mat[2] = 0.0;
-
-	/* GravityCompensation1\Joint34\Integrate\p = [0; 0; 0]; */
-	M[107].mat[0] = 0.0;
-	M[107].mat[1] = 0.0;
-	M[107].mat[2] = 0.0;
-
-	/* GravityCompensation1\Joint45\Integrate\p = [0; 0; 0]; */
-	M[115].mat[0] = 0.0;
-	M[115].mat[1] = 0.0;
-	M[115].mat[2] = 0.0;
-
-	/* GravityCompensation1\JointBase1\Integrate\p = [0; 0; 0]; */
-	M[123].mat[0] = 0.0;
-	M[123].mat[1] = 0.0;
-	M[123].mat[2] = 0.0;
-
-	/* GravityCompensation1\Link1\AdHik1\d = GravityCompensation1\Link1\AdHik1\COMdim; */
-	XXMatrixMov (&M[135], &M[134]);
-
-	/* GravityCompensation1\Link1\AdHik1\R = eye (3); */
-	XXMatrixEye (&M[136]);
-
-	/* GravityCompensation1\Link1\AdHik1\H = homogeneous (GravityCompensation1\Link1\AdHik1\R, GravityCompensation1\Link1\AdHik1\d); */
-	XXMatrixHomogeneous (&M[137], &M[136], &M[135]);
-
-	/* GravityCompensation1\Link1\AdHik1\AdH = Adjoint (GravityCompensation1\Link1\AdHik1\H); */
-	XXMatrixAdjoint (&M[138], &M[137]);
-
-	/* GravityCompensation1\Link1\Gravity\effort = [0; 0; 0; 0; 0; -9.8 * GravityCompensation1\Link1\Gravity\m]; */
-	M[139].mat[0] = 0.0;
-	M[139].mat[1] = 0.0;
-	M[139].mat[2] = 0.0;
-	M[139].mat[3] = 0.0;
-	M[139].mat[4] = 0.0;
-	M[139].mat[5] = -9.8 * P[72];
-
-	/* GravityCompensation1\Link1\Hij\Hab = homogeneous (eye (3), GravityCompensation1\Link1\Hij\dim); */
-	XXMatrixEye (&M[280]);
-	XXMatrixHomogeneous (&M[141], &M[280], &M[142]);
-
-	/* GravityCompensation1\Link2\AdHik1\d = GravityCompensation1\Link2\AdHik1\COMdim; */
-	XXMatrixMov (&M[154], &M[153]);
-
-	/* GravityCompensation1\Link2\AdHik1\R = eye (3); */
-	XXMatrixEye (&M[155]);
-
-	/* GravityCompensation1\Link2\AdHik1\H = homogeneous (GravityCompensation1\Link2\AdHik1\R, GravityCompensation1\Link2\AdHik1\d); */
-	XXMatrixHomogeneous (&M[156], &M[155], &M[154]);
-
-	/* GravityCompensation1\Link2\AdHik1\AdH = Adjoint (GravityCompensation1\Link2\AdHik1\H); */
-	XXMatrixAdjoint (&M[157], &M[156]);
-
-	/* GravityCompensation1\Link2\Gravity\effort = [0; 0; 0; 0; 0; -9.8 * GravityCompensation1\Link2\Gravity\m]; */
-	M[158].mat[0] = 0.0;
-	M[158].mat[1] = 0.0;
-	M[158].mat[2] = 0.0;
-	M[158].mat[3] = 0.0;
-	M[158].mat[4] = 0.0;
-	M[158].mat[5] = -9.8 * P[86];
-
-	/* GravityCompensation1\Link2\Hij\Hab = homogeneous (eye (3), GravityCompensation1\Link2\Hij\dim); */
-	XXMatrixEye (&M[281]);
-	XXMatrixHomogeneous (&M[160], &M[281], &M[161]);
-
-	/* GravityCompensation1\Link3\AdHik1\d = GravityCompensation1\Link3\AdHik1\COMdim; */
-	XXMatrixMov (&M[173], &M[172]);
-
-	/* GravityCompensation1\Link3\AdHik1\R = eye (3); */
-	XXMatrixEye (&M[174]);
-
-	/* GravityCompensation1\Link3\AdHik1\H = homogeneous (GravityCompensation1\Link3\AdHik1\R, GravityCompensation1\Link3\AdHik1\d); */
-	XXMatrixHomogeneous (&M[175], &M[174], &M[173]);
-
-	/* GravityCompensation1\Link3\AdHik1\AdH = Adjoint (GravityCompensation1\Link3\AdHik1\H); */
-	XXMatrixAdjoint (&M[176], &M[175]);
-
-	/* GravityCompensation1\Link3\Gravity\effort = [0; 0; 0; 0; 0; -9.8 * GravityCompensation1\Link3\Gravity\m]; */
-	M[177].mat[0] = 0.0;
-	M[177].mat[1] = 0.0;
-	M[177].mat[2] = 0.0;
-	M[177].mat[3] = 0.0;
-	M[177].mat[4] = 0.0;
-	M[177].mat[5] = -9.8 * P[100];
-
-	/* GravityCompensation1\Link3\Hij\Hab = homogeneous (eye (3), GravityCompensation1\Link3\Hij\dim); */
-	XXMatrixEye (&M[282]);
-	XXMatrixHomogeneous (&M[179], &M[282], &M[180]);
-
-	/* GravityCompensation1\Link4\AdHik1\d = GravityCompensation1\Link4\AdHik1\COMdim; */
-	XXMatrixMov (&M[192], &M[191]);
-
-	/* GravityCompensation1\Link4\AdHik1\R = eye (3); */
-	XXMatrixEye (&M[193]);
-
-	/* GravityCompensation1\Link4\AdHik1\H = homogeneous (GravityCompensation1\Link4\AdHik1\R, GravityCompensation1\Link4\AdHik1\d); */
-	XXMatrixHomogeneous (&M[194], &M[193], &M[192]);
-
-	/* GravityCompensation1\Link4\AdHik1\AdH = Adjoint (GravityCompensation1\Link4\AdHik1\H); */
-	XXMatrixAdjoint (&M[195], &M[194]);
-
-	/* GravityCompensation1\Link4\Gravity\effort = [0; 0; 0; 0; 0; -9.8 * GravityCompensation1\Link4\Gravity\m]; */
-	M[196].mat[0] = 0.0;
-	M[196].mat[1] = 0.0;
-	M[196].mat[2] = 0.0;
-	M[196].mat[3] = 0.0;
-	M[196].mat[4] = 0.0;
-	M[196].mat[5] = -9.8 * P[114];
-
-	/* GravityCompensation1\Link4\Hij\Hab = homogeneous (eye (3), GravityCompensation1\Link4\Hij\dim); */
-	XXMatrixEye (&M[283]);
-	XXMatrixHomogeneous (&M[198], &M[283], &M[199]);
-
-	/* GravityCompensation1\Link5\AdHik1\d = GravityCompensation1\Link5\AdHik1\COMdim; */
-	XXMatrixMov (&M[211], &M[210]);
-
-	/* GravityCompensation1\Link5\AdHik1\R = eye (3); */
-	XXMatrixEye (&M[212]);
-
-	/* GravityCompensation1\Link5\AdHik1\H = homogeneous (GravityCompensation1\Link5\AdHik1\R, GravityCompensation1\Link5\AdHik1\d); */
-	XXMatrixHomogeneous (&M[213], &M[212], &M[211]);
-
-	/* GravityCompensation1\Link5\AdHik1\AdH = Adjoint (GravityCompensation1\Link5\AdHik1\H); */
-	XXMatrixAdjoint (&M[214], &M[213]);
-
-	/* GravityCompensation1\Link5\Gravity\effort = [0; 0; 0; 0; 0; -9.8 * GravityCompensation1\Link5\Gravity\m]; */
-	M[215].mat[0] = 0.0;
-	M[215].mat[1] = 0.0;
-	M[215].mat[2] = 0.0;
-	M[215].mat[3] = 0.0;
-	M[215].mat[4] = 0.0;
-	M[215].mat[5] = -9.8 * P[128];
-
-	/* GravityCompensation1\Link5\Hij\Hab = homogeneous (eye (3), GravityCompensation1\Link5\Hij\dim); */
-	XXMatrixEye (&M[284]);
-	XXMatrixHomogeneous (&M[217], &M[284], &M[218]);
-
-	/* GravityCompensation1\Mux\port.e[1] = 0; */
-	M[222].mat[0] = 0.0;
-
-	/* GravityCompensation1\Mux\port.e[2] = 0; */
-	M[222].mat[1] = 0.0;
-
-	/* GravityCompensation1\Mux\port.e[3] = 0; */
-	M[222].mat[2] = 0.0;
-
-	/* GravityCompensation1\Wtip0\p.e = GravityCompensation1\Wtip0\effort; */
-	XXMatrixScalarMov (&M[223], P[140]);
-
-	/* GravityCompensation1\ZeroJunction\p1.f = 0; */
-	XXMatrixScalarMov (&M[224], 0.0);
-
-	/* R\R = diag (R\r); */
-	XXMatrixDiag (&M[247], &M[246]);
-
-	/* GravityCompensation1\Link5\AdHij\p1.e = transpose (Adjoint (GravityCompensation1\Link5\Hij\Hab)) * GravityCompensation1\Wtip0\p.e; */
-	XXMatrixAdjoint (&M[286], &M[217]);
-	XXMatrixTranspose (&M[285], &M[286]);
-	XXMatrixMul (&M[206], &M[285], &M[223]);
-
-	/* GravityCompensation1\Base\AdHij\p2.f = Adjoint (GravityCompensation1\Base\Hij\Hab) * GravityCompensation1\ZeroJunction\p1.f; */
-	XXMatrixAdjoint (&M[287], &M[81]);
-	XXMatrixMul (&M[71], &M[287], &M[224]);
-
-	/* GravityCompensation1\Base\AdHik1\p2.f = (1.0 / GravityCompensation1\Base\AdHik1\AdH) * GravityCompensation1\ZeroJunction\p1.f; */
-	XXScalarMatrixDiv (&M[288], 1.0, &M[78], workarray);
-	XXMatrixMul (&M[73], &M[288], &M[224]);
-
-	/* GravityCompensation1\Base\Hij\output = GravityCompensation1\Hfloor0\output * GravityCompensation1\Base\Hij\Hab; */
-	XXMatrixMul (&M[80], &M[86], &M[81]);
-
-	}
-
-	/* This function calculates the input equations of the model.
-	 * These equations are dynamic equations that must not change
-	 * in calls from the integration method (like random and delay).
-	 */
-	void interaction_control::CalculateInput (void)
-	{
-	  
-	}
-
-	/* This function calculates the dynamic equations of the model.
-	 * These equations are called from the integration method
-	 * to calculate the new model rates (that are then integrated).
-	 */
-	void interaction_control::CalculateDynamic (void)
-	{
-	  	/* additional code for filter\s1y; */
-	R[6] = s[0];
-	R[7] = s[1];
-	R[8] = s[2];
-	R[9] = s[3];
-	R[10] = s[4];
-	R[11] = s[5];
-
-	/* DemuxHW1\base.f = bond_to_base.v; */
-	XXMatrixMov (&M[58], &M[249]);
-
-	/* DemuxHW1\arm.f = bond_to_arm.omega; */
-	XXMatrixMov (&M[61], &M[251]);
-
-	/* MuxToControl1\arm = measured_angles_arm; */
-	XXMatrixMov (&M[240], &M[252]);
-
-	/* filter\u = xyzypr; */
-	XXMatrixMov (&M[62], &M[253]);
-
-	/* MuxToControl1\base = odometry_base; */
-	XXMatrixMov (&M[241], &M[254]);
-
-	/* DemuxHW1\control.f[1:3] = DemuxHW1\base.f; */
-	M[59].mat[0] = M[58].mat[0];
-	M[59].mat[1] = M[58].mat[1];
-	M[59].mat[2] = M[58].mat[2];
-
-	/* DemuxHW1\control.f[4:8] = DemuxHW1\arm.f; */
-	M[59].mat[3] = M[61].mat[0];
-	M[59].mat[4] = M[61].mat[1];
-	M[59].mat[5] = M[61].mat[2];
-	M[59].mat[6] = M[61].mat[3];
-	M[59].mat[7] = M[61].mat[4];
-
-	/* filter\s2y = filter\BWrad ^ 2 * (filter\u - filter\y) - (1.4142 * filter\BWrad) * filter\s1y; */
-	XXMatrixSub (&M[290], &M[62], &M[261]);
-	XXScalarMatrixMul (&M[289], (V[501] * V[501]), &M[290]);
-	XXScalarMatrixMul (&M[291], 1.4142 * V[501], &M[260]);
-	XXMatrixSub (&M[258], &M[289], &M[291]);
-
-	/* Gain\Rz = [cos (filter\y[4]), -sin (filter\y[4]), 0; sin (filter\y[4]), cos (filter\y[4]), 0; 0, 0, 1]; */
-	M[64].mat[0] = cos (M[261].mat[3]);
-	M[64].mat[1] = -(sin (M[261].mat[3]));
-	M[64].mat[2] = 0.0;
-	M[64].mat[3] = sin (M[261].mat[3]);
-	M[64].mat[4] = cos (M[261].mat[3]);
-	M[64].mat[5] = 0.0;
-	M[64].mat[6] = 0.0;
-	M[64].mat[7] = 0.0;
-	M[64].mat[8] = 1.0;
-
-	/* Gain\Ry = [cos (filter\y[5]), 0, sin (filter\y[5]); 0, 1, 0; -sin (filter\y[5]), 0, cos (filter\y[5])]; */
-	M[65].mat[0] = cos (M[261].mat[4]);
-	M[65].mat[1] = 0.0;
-	M[65].mat[2] = sin (M[261].mat[4]);
-	M[65].mat[3] = 0.0;
-	M[65].mat[4] = 1.0;
-	M[65].mat[5] = 0.0;
-	M[65].mat[6] = -(sin (M[261].mat[4]));
-	M[65].mat[7] = 0.0;
-	M[65].mat[8] = cos (M[261].mat[4]);
-
-	/* Gain\Rx = [1, 0, 0; 0, cos (filter\y[6]), -sin (filter\y[6]); 0, sin (filter\y[6]), cos (filter\y[6])]; */
-	M[66].mat[0] = 1.0;
-	M[66].mat[1] = 0.0;
-	M[66].mat[2] = 0.0;
-	M[66].mat[3] = 0.0;
-	M[66].mat[4] = cos (M[261].mat[5]);
-	M[66].mat[5] = -(sin (M[261].mat[5]));
-	M[66].mat[6] = 0.0;
-	M[66].mat[7] = sin (M[261].mat[5]);
-	M[66].mat[8] = cos (M[261].mat[5]);
-
-	/* Gain\H = homogeneous ((Gain\Rz * Gain\Ry) * Gain\Rx, filter\y[1:3]); */
-	XXMatrixMul (&M[293], &M[64], &M[65]);
-	XXMatrixMul (&M[292], &M[293], &M[66]);
-	M[294].mat[0] = M[261].mat[0];
-	M[294].mat[1] = M[261].mat[1];
-	M[294].mat[2] = M[261].mat[2];
-	XXMatrixHomogeneous (&M[63], &M[292], &M[294]);
-
-	/* MuxToControl1\control[4:8] = MuxToControl1\arm - (MuxToControl1\zero_angles * pi) / 180; */
-	XXMatrixScalarMul (&M[297], &M[242], C[24]);
-	XXMatrixScalarDiv (&M[296], &M[297], 180.0);
-	XXMatrixSub (&M[295], &M[240], &M[296]);
-	M[239].mat[3] = M[295].mat[0];
-	M[239].mat[4] = M[295].mat[1];
-	M[239].mat[5] = M[295].mat[2];
-	M[239].mat[6] = M[295].mat[3];
-	M[239].mat[7] = M[295].mat[4];
-
-	/* MuxToControl1\control[1:3] = MuxToControl1\base; */
-	M[239].mat[0] = M[241].mat[0];
-	M[239].mat[1] = M[241].mat[1];
-	M[239].mat[2] = M[241].mat[2];
-
-	/* C\p.e[4:8] = MuxToControl1\control[4:8] * C\c; */
-	M[299].mat[0] = M[239].mat[3];
-	M[299].mat[1] = M[239].mat[4];
-	M[299].mat[2] = M[239].mat[5];
-	M[299].mat[3] = M[239].mat[6];
-	M[299].mat[4] = M[239].mat[7];
-	XXMatrixScalarMul (&M[298], &M[299], P[0]);
-	M[0].mat[3] = M[298].mat[0];
-	M[0].mat[4] = M[298].mat[1];
-	M[0].mat[5] = M[298].mat[2];
-	M[0].mat[6] = M[298].mat[3];
-	M[0].mat[7] = M[298].mat[4];
-
-	/* CalculateJ\Rz = [cos (MuxToControl1\control[1]), -sin (MuxToControl1\control[1]), 0; sin (MuxToControl1\control[1]), cos (MuxToControl1\control[1]), 0; 0, 0, 1]; */
-	M[49].mat[0] = cos (M[239].mat[0]);
-	M[49].mat[1] = -(sin (M[239].mat[0]));
-	M[49].mat[2] = 0.0;
-	M[49].mat[3] = sin (M[239].mat[0]);
-	M[49].mat[4] = cos (M[239].mat[0]);
-	M[49].mat[5] = 0.0;
-	M[49].mat[6] = 0.0;
-	M[49].mat[7] = 0.0;
-	M[49].mat[8] = 1.0;
-
-	/* CalculateJ\Href0 = homogeneous (CalculateJ\Rz, [MuxToControl1\control[2]; MuxToControl1\control[3]; 0]) * CalculateJ\base_offset_H; */
-	M[301].mat[0] = M[239].mat[1];
-	M[301].mat[1] = M[239].mat[2];
-	M[301].mat[2] = 0.0;
-	XXMatrixHomogeneous (&M[300], &M[49], &M[301]);
-	XXMatrixMul (&M[35], &M[300], &M[47]);
-
-	/* CalculateJ\R1ref = [cos (-MuxToControl1\control[4]), -sin (-MuxToControl1\control[4]), 0; sin (-MuxToControl1\control[4]), cos (-MuxToControl1\control[4]), 0; 0, 0, 1]; */
-	M[23].mat[0] = cos (-M[239].mat[3]);
-	M[23].mat[1] = -(sin (-M[239].mat[3]));
-	M[23].mat[2] = 0.0;
-	M[23].mat[3] = sin (-M[239].mat[3]);
-	M[23].mat[4] = cos (-M[239].mat[3]);
-	M[23].mat[5] = 0.0;
-	M[23].mat[6] = 0.0;
-	M[23].mat[7] = 0.0;
-	M[23].mat[8] = 1.0;
-
-	/* CalculateJ\H1ref = homogeneous (CalculateJ\R1ref, CalculateJ\p1ref); */
-	XXMatrixHomogeneous (&M[36], &M[23], &M[29]);
-
-	/* CalculateJ\R21 = [cos (MuxToControl1\control[5]), 0, sin (MuxToControl1\control[5]); 0, 1, 0; -sin (MuxToControl1\control[5]), 0, cos (MuxToControl1\control[5])]; */
-	M[24].mat[0] = cos (M[239].mat[4]);
-	M[24].mat[1] = 0.0;
-	M[24].mat[2] = sin (M[239].mat[4]);
-	M[24].mat[3] = 0.0;
-	M[24].mat[4] = 1.0;
-	M[24].mat[5] = 0.0;
-	M[24].mat[6] = -(sin (M[239].mat[4]));
-	M[24].mat[7] = 0.0;
-	M[24].mat[8] = cos (M[239].mat[4]);
-
-	/* CalculateJ\H21 = homogeneous (CalculateJ\R21, CalculateJ\p21); */
-	XXMatrixHomogeneous (&M[37], &M[24], &M[30]);
-
-	/* CalculateJ\R32 = [cos (MuxToControl1\control[6]), 0, sin (MuxToControl1\control[6]); 0, 1, 0; -sin (MuxToControl1\control[6]), 0, cos (MuxToControl1\control[6])]; */
-	M[25].mat[0] = cos (M[239].mat[5]);
-	M[25].mat[1] = 0.0;
-	M[25].mat[2] = sin (M[239].mat[5]);
-	M[25].mat[3] = 0.0;
-	M[25].mat[4] = 1.0;
-	M[25].mat[5] = 0.0;
-	M[25].mat[6] = -(sin (M[239].mat[5]));
-	M[25].mat[7] = 0.0;
-	M[25].mat[8] = cos (M[239].mat[5]);
-
-	/* CalculateJ\H32 = homogeneous (CalculateJ\R32, CalculateJ\p32); */
-	XXMatrixHomogeneous (&M[38], &M[25], &M[31]);
-
-	/* CalculateJ\R43 = [cos (MuxToControl1\control[7]), 0, sin (MuxToControl1\control[7]); 0, 1, 0; -sin (MuxToControl1\control[7]), 0, cos (MuxToControl1\control[7])]; */
-	M[26].mat[0] = cos (M[239].mat[6]);
-	M[26].mat[1] = 0.0;
-	M[26].mat[2] = sin (M[239].mat[6]);
-	M[26].mat[3] = 0.0;
-	M[26].mat[4] = 1.0;
-	M[26].mat[5] = 0.0;
-	M[26].mat[6] = -(sin (M[239].mat[6]));
-	M[26].mat[7] = 0.0;
-	M[26].mat[8] = cos (M[239].mat[6]);
-
-	/* CalculateJ\H43 = homogeneous (CalculateJ\R43, CalculateJ\p43); */
-	XXMatrixHomogeneous (&M[39], &M[26], &M[32]);
-
-	/* CalculateJ\R54 = [cos (-MuxToControl1\control[8]), -sin (-MuxToControl1\control[8]), 0; sin (-MuxToControl1\control[8]), cos (-MuxToControl1\control[8]), 0; 0, 0, 1]; */
-	M[27].mat[0] = cos (-M[239].mat[7]);
-	M[27].mat[1] = -(sin (-M[239].mat[7]));
-	M[27].mat[2] = 0.0;
-	M[27].mat[3] = sin (-M[239].mat[7]);
-	M[27].mat[4] = cos (-M[239].mat[7]);
-	M[27].mat[5] = 0.0;
-	M[27].mat[6] = 0.0;
-	M[27].mat[7] = 0.0;
-	M[27].mat[8] = 1.0;
-
-	/* CalculateJ\H54 = homogeneous (CalculateJ\R54, CalculateJ\p54); */
-	XXMatrixHomogeneous (&M[40], &M[27], &M[33]);
-
-	/* CalculateJ\H10 = CalculateJ\Href0 * CalculateJ\H1ref; */
-	XXMatrixMul (&M[42], &M[35], &M[36]);
-
-	/* CalculateJ\H20 = CalculateJ\H10 * CalculateJ\H21; */
-	XXMatrixMul (&M[43], &M[42], &M[37]);
-
-	/* CalculateJ\H30 = CalculateJ\H20 * CalculateJ\H32; */
-	XXMatrixMul (&M[44], &M[43], &M[38]);
-
-	/* CalculateJ\H40 = CalculateJ\H30 * CalculateJ\H43; */
-	XXMatrixMul (&M[45], &M[44], &M[39]);
-
-	/* CalculateJ\H50 = CalculateJ\H40 * CalculateJ\H54; */
-	XXMatrixMul (&M[46], &M[45], &M[40]);
-
-	/* CalculateJ\Htip0 = CalculateJ\H50 * CalculateJ\Htip5; */
-	XXMatrixMul (&M[2], &M[46], &M[41]);
-
-	/* CalculateJ\controllableJ[1:6,1] = Adjoint (CalculateJ\Href0) * CalculateJ\uTrzrefref; */
-	XXMatrixAdjoint (&M[303], &M[35]);
-	XXMatrixMul (&M[302], &M[303], &M[15]);
-	M[1].mat[0] = M[302].mat[0];
-	M[1].mat[8] = M[302].mat[1];
-	M[1].mat[16] = M[302].mat[2];
-	M[1].mat[24] = M[302].mat[3];
-	M[1].mat[32] = M[302].mat[4];
-	M[1].mat[40] = M[302].mat[5];
-
-	/* CalculateJ\controllableJ[1:6,2] = Adjoint (CalculateJ\Href0) * CalculateJ\uTryrefref; */
-	XXMatrixAdjoint (&M[305], &M[35]);
-	XXMatrixMul (&M[304], &M[305], &M[16]);
-	M[1].mat[1] = M[304].mat[0];
-	M[1].mat[9] = M[304].mat[1];
-	M[1].mat[17] = M[304].mat[2];
-	M[1].mat[25] = M[304].mat[3];
-	M[1].mat[33] = M[304].mat[4];
-	M[1].mat[41] = M[304].mat[5];
-
-	/* CalculateJ\controllableJ[1:6,3] = Adjoint (CalculateJ\Href0) * CalculateJ\uTrxrefref; */
-	XXMatrixAdjoint (&M[307], &M[35]);
-	XXMatrixMul (&M[306], &M[307], &M[17]);
-	M[1].mat[2] = M[306].mat[0];
-	M[1].mat[10] = M[306].mat[1];
-	M[1].mat[18] = M[306].mat[2];
-	M[1].mat[26] = M[306].mat[3];
-	M[1].mat[34] = M[306].mat[4];
-	M[1].mat[42] = M[306].mat[5];
-
-	/* CalculateJ\controllableJ[1:6,4] = Adjoint (CalculateJ\Href0) * CalculateJ\uTr1refref; */
-	XXMatrixAdjoint (&M[309], &M[35]);
-	XXMatrixMul (&M[308], &M[309], &M[18]);
-	M[1].mat[3] = M[308].mat[0];
-	M[1].mat[11] = M[308].mat[1];
-	M[1].mat[19] = M[308].mat[2];
-	M[1].mat[27] = M[308].mat[3];
-	M[1].mat[35] = M[308].mat[4];
-	M[1].mat[43] = M[308].mat[5];
-
-	/* CalculateJ\controllableJ[1:6,5] = Adjoint (CalculateJ\H10) * CalculateJ\uTr211; */
-	XXMatrixAdjoint (&M[311], &M[42]);
-	XXMatrixMul (&M[310], &M[311], &M[19]);
-	M[1].mat[4] = M[310].mat[0];
-	M[1].mat[12] = M[310].mat[1];
-	M[1].mat[20] = M[310].mat[2];
-	M[1].mat[28] = M[310].mat[3];
-	M[1].mat[36] = M[310].mat[4];
-	M[1].mat[44] = M[310].mat[5];
-
-	/* CalculateJ\controllableJ[1:6,6] = Adjoint (CalculateJ\H20) * CalculateJ\uTr322; */
-	XXMatrixAdjoint (&M[313], &M[43]);
-	XXMatrixMul (&M[312], &M[313], &M[20]);
-	M[1].mat[5] = M[312].mat[0];
-	M[1].mat[13] = M[312].mat[1];
-	M[1].mat[21] = M[312].mat[2];
-	M[1].mat[29] = M[312].mat[3];
-	M[1].mat[37] = M[312].mat[4];
-	M[1].mat[45] = M[312].mat[5];
-
-	/* CalculateJ\controllableJ[1:6,7] = Adjoint (CalculateJ\H30) * CalculateJ\uTr433; */
-	XXMatrixAdjoint (&M[315], &M[44]);
-	XXMatrixMul (&M[314], &M[315], &M[21]);
-	M[1].mat[6] = M[314].mat[0];
-	M[1].mat[14] = M[314].mat[1];
-	M[1].mat[22] = M[314].mat[2];
-	M[1].mat[30] = M[314].mat[3];
-	M[1].mat[38] = M[314].mat[4];
-	M[1].mat[46] = M[314].mat[5];
-
-	/* CalculateJ\controllableJ[1:6,8] = Adjoint (CalculateJ\H40) * CalculateJ\uTr544; */
-	XXMatrixAdjoint (&M[317], &M[45]);
-	XXMatrixMul (&M[316], &M[317], &M[22]);
-	M[1].mat[7] = M[316].mat[0];
-	M[1].mat[15] = M[316].mat[1];
-	M[1].mat[23] = M[316].mat[2];
-	M[1].mat[31] = M[316].mat[3];
-	M[1].mat[39] = M[316].mat[4];
-	M[1].mat[47] = M[316].mat[5];
-
-		/* JointSoftLimits\tempstate = MuxToControl1\control; */
-		XXMatrixMov (&M[238], &M[239]);
-
-		/* JointSoftLimits\posdangerzones = [0; 0; 0; JointSoftLimits\MaxEndstopPos[1] - JointSoftLimits\dangerzone; JointSoftLimits\MaxEndstopPos[2] - JointSoftLimits\dangerzone; JointSoftLimits\MaxEndstopPos[3] - JointSoftLimits\dangerzone; JointSoftLimits\MaxEndstopPos[4] - JointSoftLimits\dangerzone; JointSoftLimits\MaxEndstopPos[5] - JointSoftLimits\dangerzone]; */
-		M[236].mat[0] = 0.0;
-		M[236].mat[1] = 0.0;
-		M[236].mat[2] = 0.0;
-		M[236].mat[3] = M[231].mat[0] - P[189];
-		M[236].mat[4] = M[231].mat[1] - P[189];
-		M[236].mat[5] = M[231].mat[2] - P[189];
-		M[236].mat[6] = M[231].mat[3] - P[189];
-		M[236].mat[7] = M[231].mat[4] - P[189];
-
-		/* JointSoftLimits\negdangerzones = [0; 0; 0; JointSoftLimits\MinEndstopPos[1] + JointSoftLimits\dangerzone; JointSoftLimits\MinEndstopPos[2] + JointSoftLimits\dangerzone; JointSoftLimits\MinEndstopPos[3] + JointSoftLimits\dangerzone; JointSoftLimits\MinEndstopPos[4] + JointSoftLimits\dangerzone; JointSoftLimits\MinEndstopPos[5] + JointSoftLimits\dangerzone]; */
-		M[237].mat[0] = 0.0;
-		M[237].mat[1] = 0.0;
-		M[237].mat[2] = 0.0;
-		M[237].mat[3] = M[232].mat[0] + P[189];
-		M[237].mat[4] = M[232].mat[1] + P[189];
-		M[237].mat[5] = M[232].mat[2] + P[189];
-		M[237].mat[6] = M[232].mat[3] + P[189];
-		M[237].mat[7] = M[232].mat[4] + P[189];
-
-		/* JointSoftLimits\ks[1] = 0; */
-		M[235].mat[0] = 0.0;
-
-		/* JointSoftLimits\ks[2] = 0; */
-		M[235].mat[1] = 0.0;
-
-		/* JointSoftLimits\ks[3] = 0; */
-		M[235].mat[2] = 0.0;
-
-		/* if (MuxToControl1\control[4] > JointSoftLimits\posdangerzones[4]) */
-		if (M[239].mat[3] > M[236].mat[3])
-		{
-			/* JointSoftLimits\ks[4] = JointSoftLimits\CendstopAvoidanceControl; */
-			M[235].mat[3] = P[188];
-
-			/* JointSoftLimits\tempstate[4] = (JointSoftLimits\posdangerzones[4] - MuxToControl1\control[4]); */
-			M[238].mat[3] = M[236].mat[3] - M[239].mat[3];
-		}
-		else
-		{
-			/* if (MuxToControl1\control[4] < JointSoftLimits\negdangerzones[4]) */
-			if (M[239].mat[3] < M[237].mat[3])
-			{
-				/* JointSoftLimits\ks[4] = JointSoftLimits\CendstopAvoidanceControl; */
-				M[235].mat[3] = P[188];
-
-				/* JointSoftLimits\tempstate[4] = (JointSoftLimits\negdangerzones[4] - MuxToControl1\control[4]); */
-				M[238].mat[3] = M[237].mat[3] - M[239].mat[3];
-			}
-			else
-			{
-				/* JointSoftLimits\ks[4] = 0; */
-				M[235].mat[3] = 0.0;
-			}
-		}
-
-		/* if (MuxToControl1\control[5] > JointSoftLimits\posdangerzones[5]) */
-		if (M[239].mat[4] > M[236].mat[4])
-		{
-			/* JointSoftLimits\ks[5] = JointSoftLimits\CendstopAvoidanceControl; */
-			M[235].mat[4] = P[188];
-
-			/* JointSoftLimits\tempstate[5] = (JointSoftLimits\posdangerzones[5] - MuxToControl1\control[5]); */
-			M[238].mat[4] = M[236].mat[4] - M[239].mat[4];
-		}
-		else
-		{
-			/* if (MuxToControl1\control[5] < JointSoftLimits\negdangerzones[5]) */
-			if (M[239].mat[4] < M[237].mat[4])
-			{
-				/* JointSoftLimits\ks[5] = JointSoftLimits\CendstopAvoidanceControl; */
-				M[235].mat[4] = P[188];
-
-				/* JointSoftLimits\tempstate[5] = (JointSoftLimits\negdangerzones[5] - MuxToControl1\control[5]); */
-				M[238].mat[4] = M[237].mat[4] - M[239].mat[4];
-			}
-			else
-			{
-				/* JointSoftLimits\ks[5] = 0; */
-				M[235].mat[4] = 0.0;
-			}
-		}
-
-		/* if (MuxToControl1\control[6] > JointSoftLimits\posdangerzones[6]) */
-		if (M[239].mat[5] > M[236].mat[5])
-		{
-			/* JointSoftLimits\ks[6] = JointSoftLimits\CendstopAvoidanceControl; */
-			M[235].mat[5] = P[188];
-
-			/* JointSoftLimits\tempstate[6] = (JointSoftLimits\posdangerzones[6] - MuxToControl1\control[6]); */
-			M[238].mat[5] = M[236].mat[5] - M[239].mat[5];
-		}
-		else
-		{
-			/* if (MuxToControl1\control[6] < JointSoftLimits\negdangerzones[6]) */
-			if (M[239].mat[5] < M[237].mat[5])
-			{
-				/* JointSoftLimits\ks[6] = JointSoftLimits\CendstopAvoidanceControl; */
-				M[235].mat[5] = P[188];
-
-				/* JointSoftLimits\tempstate[6] = (JointSoftLimits\negdangerzones[6] - MuxToControl1\control[6]); */
-				M[238].mat[5] = M[237].mat[5] - M[239].mat[5];
-			}
-			else
-			{
-				/* JointSoftLimits\ks[6] = 0; */
-				M[235].mat[5] = 0.0;
-			}
-		}
-
-		/* if (MuxToControl1\control[7] > JointSoftLimits\posdangerzones[7]) */
-		if (M[239].mat[6] > M[236].mat[6])
-		{
-			/* JointSoftLimits\ks[7] = JointSoftLimits\CendstopAvoidanceControl; */
-			M[235].mat[6] = P[188];
-
-			/* JointSoftLimits\tempstate[7] = (JointSoftLimits\posdangerzones[7] - MuxToControl1\control[7]); */
-			M[238].mat[6] = M[236].mat[6] - M[239].mat[6];
-		}
-		else
-		{
-			/* if (MuxToControl1\control[7] < JointSoftLimits\negdangerzones[7]) */
-			if (M[239].mat[6] < M[237].mat[6])
-			{
-				/* JointSoftLimits\ks[7] = JointSoftLimits\CendstopAvoidanceControl; */
-				M[235].mat[6] = P[188];
-
-				/* JointSoftLimits\tempstate[7] = (JointSoftLimits\negdangerzones[7] - MuxToControl1\control[7]); */
-				M[238].mat[6] = M[237].mat[6] - M[239].mat[6];
-			}
-			else
-			{
-				/* JointSoftLimits\ks[7] = 0; */
-				M[235].mat[6] = 0.0;
-			}
-		}
-
-		/* if (MuxToControl1\control[8] > JointSoftLimits\posdangerzones[8]) */
-		if (M[239].mat[7] > M[236].mat[7])
-		{
-			/* JointSoftLimits\ks[8] = JointSoftLimits\CendstopAvoidanceControl; */
-			M[235].mat[7] = P[188];
-
-			/* JointSoftLimits\tempstate[8] = (JointSoftLimits\posdangerzones[8] - MuxToControl1\control[8]); */
-			M[238].mat[7] = M[236].mat[7] - M[239].mat[7];
-		}
-		else
-		{
-			/* if (MuxToControl1\control[8] < JointSoftLimits\negdangerzones[8]) */
-			if (M[239].mat[7] < M[237].mat[7])
-			{
-				/* JointSoftLimits\ks[8] = JointSoftLimits\CendstopAvoidanceControl; */
-				M[235].mat[7] = P[188];
-
-				/* JointSoftLimits\tempstate[8] = (JointSoftLimits\negdangerzones[8] - MuxToControl1\control[8]); */
-				M[238].mat[7] = M[237].mat[7] - M[239].mat[7];
-			}
-			else
-			{
-				/* JointSoftLimits\ks[8] = 0; */
-				M[235].mat[7] = 0.0;
-			}
-		}
-
-		/* JointSoftLimits\K = diag (JointSoftLimits\ks); */
-		XXMatrixDiag (&M[234], &M[235]);
-
-		/* JointSoftLimits\p.e = (diag (JointSoftLimits\forceMap) * JointSoftLimits\K) * JointSoftLimits\tempstate; */
-		XXMatrixDiag (&M[319], &M[233]);
-		XXMatrixMul (&M[318], &M[319], &M[234]);
-		XXMatrixMul (&M[229], &M[318], &M[238]);
-
-	/* C\x_dot = DemuxHW1\control.f[1:3]; */
-	M[255].mat[0] = M[59].mat[0];
-	M[255].mat[1] = M[59].mat[1];
-	M[255].mat[2] = M[59].mat[2];
-
-	/* CtipControl\state = inverse (Gain\H) * CalculateJ\Htip0; */
-	XXMatrixInverse (&M[320], &M[63], workarray);
-	XXMatrixMul (&M[53], &M[320], &M[2]);
-
-	/* CtipControl\temp = (trace (CtipControl\state[1:3,1:3]) - 1) / 2; */
-	M[322].mat[0] = M[53].mat[0];
-	M[322].mat[1] = M[53].mat[1];
-	M[322].mat[2] = M[53].mat[2];
-	M[322].mat[3] = M[53].mat[4];
-	M[322].mat[4] = M[53].mat[5];
-	M[322].mat[5] = M[53].mat[6];
-	M[322].mat[6] = M[53].mat[8];
-	M[322].mat[7] = M[53].mat[9];
-	M[322].mat[8] = M[53].mat[10];
-	M[321].mat[0] = XXMatrixTrace (&M[322]);
-	V[469] = (XXMatrixTrace (&M[322]) - 1.0) / 2.0;
-
-	/* if (CtipControl\temp < -1) */
-	if (V[469] < -1.0)
-	{
-		/* CtipControl\temp = -1; */
-		V[469] = -1.0;
-	}
-
-	/* if (CtipControl\temp > 1) */
-	if (V[469] > 1.0)
-	{
-		/* CtipControl\temp = 1; */
-		V[469] = 1.0;
-	}
-
-	/* CtipControl\theta = arccos (CtipControl\temp); */
-	V[453] = acos (V[469]);
-
-	/* if (CtipControl\theta == 0) */
-	if (V[453] == 0.0)
-	{
-		/* CtipControl\omega = 0; */
-		XXMatrixScalarMov (&M[54], 0.0);
-	}
-	else
-	{
-		/* CtipControl\omega = (1 / (2 * sin (CtipControl\theta))) * [CtipControl\state[3,2] - CtipControl\state[2,3]; CtipControl\state[1,3] - CtipControl\state[3,1]; CtipControl\state[2,1] - CtipControl\state[1,2]]; */
-		M[325].mat[0] = M[53].mat[9] - M[53].mat[6];
-		M[325].mat[1] = M[53].mat[2] - M[53].mat[8];
-		M[325].mat[2] = M[53].mat[4] - M[53].mat[1];
-		XXScalarMatrixMul (&M[54], (1.0 / (2.0 * sin (V[453]))), &M[325]);
-	}
-
-	/* CtipControl\Wt[4:6] = (CtipControl\state[1:3,4] / CtipControl\CtipControl); */
-	M[327].mat[0] = M[53].mat[3];
-	M[327].mat[1] = M[53].mat[7];
-	M[327].mat[2] = M[53].mat[11];
-	XXMatrixScalarDiv (&M[326], &M[327], P[43]);
-	M[56].mat[3] = M[326].mat[0];
-	M[56].mat[4] = M[326].mat[1];
-	M[56].mat[5] = M[326].mat[2];
-
-	/* CtipControl\optimizationCriteria_dot = transpose (CtipControl\state[1:3,4]) * CtipControl\state[1:3,4]; */
-	M[329].mat[0] = M[53].mat[3];
-	M[329].mat[1] = M[53].mat[7];
-	M[329].mat[2] = M[53].mat[11];
-	XXMatrixTranspose (&M[328], &M[329]);
-	M[330].mat[0] = M[53].mat[3];
-	M[330].mat[1] = M[53].mat[7];
-	M[330].mat[2] = M[53].mat[11];
-	XXScalarMatrixMatrixMul (&R[15], &M[328], &M[330]);
-
-	/* CtipControl\Wr[1:3] = (CtipControl\theta * CtipControl\omega) / (CtipControl\CtipControl * 15); */
-	XXScalarMatrixMul (&M[332], V[453], &M[54]);
-	XXMatrixScalarDiv (&M[331], &M[332], (P[43] * 15.0));
-	M[55].mat[0] = M[331].mat[0];
-	M[55].mat[1] = M[331].mat[1];
-	M[55].mat[2] = M[331].mat[2];
-
-	/* CtipControl\p.e = inverse (transpose (Adjoint (Gain\H))) * (CtipControl\Wt + CtipControl\Wr); */
-	XXMatrixAdjoint (&M[335], &M[63]);
-	XXMatrixTranspose (&M[334], &M[335]);
-	XXMatrixInverse (&M[333], &M[334], workarray);
-	XXMatrixAdd (&M[336], &M[56], &M[55]);
-	XXMatrixMul (&M[52], &M[333], &M[336]);
-
-		/* GravityCompensation1\Base\AdHi0\onlyRotH = GravityCompensation1\Hfloor0\output; */
-		XXMatrixMov (&M[69], &M[86]);
-
-		/* GravityCompensation1\Base\AdHi0\onlyRotH[1,4] = 0; */
-		M[69].mat[3] = 0.0;
-
-		/* GravityCompensation1\Base\AdHi0\onlyRotH[2,4] = 0; */
-		M[69].mat[7] = 0.0;
-
-		/* GravityCompensation1\Base\AdHi0\onlyRotH[3,4] = 0; */
-		M[69].mat[11] = 0.0;
-
-		/* GravityCompensation1\Base\AdHi0\p2.e = transpose (Adjoint (GravityCompensation1\Base\AdHi0\onlyRotH)) * GravityCompensation1\Base\Gravity\effort; */
-		XXMatrixAdjoint (&M[338], &M[69]);
-		XXMatrixTranspose (&M[337], &M[338]);
-		XXMatrixMul (&M[68], &M[337], &M[79]);
-
-		/* GravityCompensation1\Base\AdHi0\p1.f = Adjoint (GravityCompensation1\Base\AdHi0\onlyRotH) * GravityCompensation1\Base\AdHik1\p2.f; */
-		XXMatrixAdjoint (&M[339], &M[69]);
-		XXMatrixMul (&M[67], &M[339], &M[73]);
-
-	/* GravityCompensation1\Submodel13\port1 = MuxToControl1\control[4]; */
-	V[1879] = M[239].mat[3];
-
-	/* GravityCompensation1\Submodel13\port2 = MuxToControl1\control[5]; */
-	V[1880] = M[239].mat[4];
-
-	/* GravityCompensation1\Submodel13\port3 = MuxToControl1\control[6]; */
-	V[1881] = M[239].mat[5];
-
-	/* GravityCompensation1\Submodel13\port4 = MuxToControl1\control[7]; */
-	V[1882] = M[239].mat[6];
-
-	/* GravityCompensation1\Submodel13\port5 = MuxToControl1\control[8]; */
-	V[1883] = M[239].mat[7];
-
-	/* R\p.e = R\R * DemuxHW1\control.f; */
-	XXMatrixMul (&M[245], &M[247], &M[59]);
-
-	/* OneJunction\p2.e = -CtipControl\p.e; */
-	XXMatrixInv (&M[243], &M[52]);
-
-	/* ControllableJ\joints.e = transpose (CalculateJ\controllableJ) * OneJunction\p2.e; */
-	XXMatrixTranspose (&M[340], &M[1]);
-	XXMatrixMul (&M[50], &M[340], &M[243]);
-
-	/* GravityCompensation1\Joint12\Integrate\R = [cos (GravityCompensation1\Submodel13\port2), 0, sin (GravityCompensation1\Submodel13\port2); 0, 1, 0; -sin (GravityCompensation1\Submodel13\port2), 0, cos (GravityCompensation1\Submodel13\port2)]; */
-	M[90].mat[0] = cos (V[1880]);
-	M[90].mat[1] = 0.0;
-	M[90].mat[2] = sin (V[1880]);
-	M[90].mat[3] = 0.0;
-	M[90].mat[4] = 1.0;
-	M[90].mat[5] = 0.0;
-	M[90].mat[6] = -(sin (V[1880]));
-	M[90].mat[7] = 0.0;
-	M[90].mat[8] = cos (V[1880]);
-
-	/* GravityCompensation1\Joint12\Integrate\output = homogeneous (GravityCompensation1\Joint12\Integrate\R, GravityCompensation1\Joint12\Integrate\p); */
-	XXMatrixHomogeneous (&M[89], &M[90], &M[91]);
-
-	/* GravityCompensation1\Joint23\Integrate\R = [cos (GravityCompensation1\Submodel13\port3), 0, sin (GravityCompensation1\Submodel13\port3); 0, 1, 0; -sin (GravityCompensation1\Submodel13\port3), 0, cos (GravityCompensation1\Submodel13\port3)]; */
-	M[98].mat[0] = cos (V[1881]);
-	M[98].mat[1] = 0.0;
-	M[98].mat[2] = sin (V[1881]);
-	M[98].mat[3] = 0.0;
-	M[98].mat[4] = 1.0;
-	M[98].mat[5] = 0.0;
-	M[98].mat[6] = -(sin (V[1881]));
-	M[98].mat[7] = 0.0;
-	M[98].mat[8] = cos (V[1881]);
-
-	/* GravityCompensation1\Joint23\Integrate\output = homogeneous (GravityCompensation1\Joint23\Integrate\R, GravityCompensation1\Joint23\Integrate\p); */
-	XXMatrixHomogeneous (&M[97], &M[98], &M[99]);
-
-	/* GravityCompensation1\Joint34\Integrate\R = [cos (GravityCompensation1\Submodel13\port4), 0, sin (GravityCompensation1\Submodel13\port4); 0, 1, 0; -sin (GravityCompensation1\Submodel13\port4), 0, cos (GravityCompensation1\Submodel13\port4)]; */
-	M[106].mat[0] = cos (V[1882]);
-	M[106].mat[1] = 0.0;
-	M[106].mat[2] = sin (V[1882]);
-	M[106].mat[3] = 0.0;
-	M[106].mat[4] = 1.0;
-	M[106].mat[5] = 0.0;
-	M[106].mat[6] = -(sin (V[1882]));
-	M[106].mat[7] = 0.0;
-	M[106].mat[8] = cos (V[1882]);
-
-	/* GravityCompensation1\Joint34\Integrate\output = homogeneous (GravityCompensation1\Joint34\Integrate\R, GravityCompensation1\Joint34\Integrate\p); */
-	XXMatrixHomogeneous (&M[105], &M[106], &M[107]);
-
-	/* GravityCompensation1\Joint45\Integrate\R = [cos (-GravityCompensation1\Submodel13\port5), -sin (-GravityCompensation1\Submodel13\port5), 0; sin (-GravityCompensation1\Submodel13\port5), cos (-GravityCompensation1\Submodel13\port5), 0; 0, 0, 1]; */
-	M[114].mat[0] = cos (-V[1883]);
-	M[114].mat[1] = -(sin (-V[1883]));
-	M[114].mat[2] = 0.0;
-	M[114].mat[3] = sin (-V[1883]);
-	M[114].mat[4] = cos (-V[1883]);
-	M[114].mat[5] = 0.0;
-	M[114].mat[6] = 0.0;
-	M[114].mat[7] = 0.0;
-	M[114].mat[8] = 1.0;
-
-	/* GravityCompensation1\Joint45\Integrate\output = homogeneous (GravityCompensation1\Joint45\Integrate\R, GravityCompensation1\Joint45\Integrate\p); */
-	XXMatrixHomogeneous (&M[113], &M[114], &M[115]);
-
-	/* GravityCompensation1\JointBase1\Integrate\R = [cos (-GravityCompensation1\Submodel13\port1), -sin (-GravityCompensation1\Submodel13\port1), 0; sin (-GravityCompensation1\Submodel13\port1), cos (-GravityCompensation1\Submodel13\port1), 0; 0, 0, 1]; */
-	M[122].mat[0] = cos (-V[1879]);
-	M[122].mat[1] = -(sin (-V[1879]));
-	M[122].mat[2] = 0.0;
-	M[122].mat[3] = sin (-V[1879]);
-	M[122].mat[4] = cos (-V[1879]);
-	M[122].mat[5] = 0.0;
-	M[122].mat[6] = 0.0;
-	M[122].mat[7] = 0.0;
-	M[122].mat[8] = 1.0;
-
-	/* GravityCompensation1\JointBase1\Integrate\output = homogeneous (GravityCompensation1\JointBase1\Integrate\R, GravityCompensation1\JointBase1\Integrate\p); */
-	XXMatrixHomogeneous (&M[121], &M[122], &M[123]);
-
-	/* GravityCompensation1\JointBase1\MatrixMul\output = GravityCompensation1\Base\Hij\output * GravityCompensation1\JointBase1\Integrate\output; */
-	XXMatrixMul (&M[124], &M[80], &M[121]);
-
-	/* GravityCompensation1\Link1\Hij\output = GravityCompensation1\JointBase1\MatrixMul\output * GravityCompensation1\Link1\Hij\Hab; */
-	XXMatrixMul (&M[140], &M[124], &M[141]);
-
-	/* GravityCompensation1\Joint12\MatrixMul\output = GravityCompensation1\Link1\Hij\output * GravityCompensation1\Joint12\Integrate\output; */
-	XXMatrixMul (&M[92], &M[140], &M[89]);
-
-		/* GravityCompensation1\Link1\AdHi0\onlyRotH = GravityCompensation1\JointBase1\MatrixMul\output; */
-		XXMatrixMov (&M[129], &M[124]);
-
-		/* GravityCompensation1\Link1\AdHi0\onlyRotH[1,4] = 0; */
-		M[129].mat[3] = 0.0;
-
-		/* GravityCompensation1\Link1\AdHi0\onlyRotH[2,4] = 0; */
-		M[129].mat[7] = 0.0;
-
-		/* GravityCompensation1\Link1\AdHi0\onlyRotH[3,4] = 0; */
-		M[129].mat[11] = 0.0;
-
-		/* GravityCompensation1\Link1\AdHi0\p2.e = transpose (Adjoint (GravityCompensation1\Link1\AdHi0\onlyRotH)) * GravityCompensation1\Link1\Gravity\effort; */
-		XXMatrixAdjoint (&M[342], &M[129]);
-		XXMatrixTranspose (&M[341], &M[342]);
-		XXMatrixMul (&M[128], &M[341], &M[139]);
-
-		/* GravityCompensation1\Link1\AdHi0\p1.f = Adjoint (GravityCompensation1\Link1\AdHi0\onlyRotH) * GravityCompensation1\Link1\AdHik1\p2.f; */
-		XXMatrixAdjoint (&M[343], &M[129]);
-		XXMatrixMul (&M[127], &M[343], &M[133]);
-
-	/* GravityCompensation1\Link2\Hij\output = GravityCompensation1\Joint12\MatrixMul\output * GravityCompensation1\Link2\Hij\Hab; */
-	XXMatrixMul (&M[159], &M[92], &M[160]);
-
-	/* GravityCompensation1\Link1\AdHik1\p1.e = (1.0 / transpose (GravityCompensation1\Link1\AdHik1\AdH)) * GravityCompensation1\Link1\AdHi0\p2.e; */
-	XXMatrixTranspose (&M[345], &M[138]);
-	XXScalarMatrixDiv (&M[344], 1.0, &M[345], workarray);
-	XXMatrixMul (&M[132], &M[344], &M[128]);
-
-	/* GravityCompensation1\Joint23\MatrixMul\output = GravityCompensation1\Link2\Hij\output * GravityCompensation1\Joint23\Integrate\output; */
-	XXMatrixMul (&M[100], &M[159], &M[97]);
-
-	/* GravityCompensation1\Link3\Hij\output = GravityCompensation1\Joint23\MatrixMul\output * GravityCompensation1\Link3\Hij\Hab; */
-	XXMatrixMul (&M[178], &M[100], &M[179]);
-
-		/* GravityCompensation1\Link2\AdHi0\onlyRotH = GravityCompensation1\Joint12\MatrixMul\output; */
-		XXMatrixMov (&M[148], &M[92]);
-
-		/* GravityCompensation1\Link2\AdHi0\onlyRotH[1,4] = 0; */
-		M[148].mat[3] = 0.0;
-
-		/* GravityCompensation1\Link2\AdHi0\onlyRotH[2,4] = 0; */
-		M[148].mat[7] = 0.0;
-
-		/* GravityCompensation1\Link2\AdHi0\onlyRotH[3,4] = 0; */
-		M[148].mat[11] = 0.0;
-
-		/* GravityCompensation1\Link2\AdHi0\p2.e = transpose (Adjoint (GravityCompensation1\Link2\AdHi0\onlyRotH)) * GravityCompensation1\Link2\Gravity\effort; */
-		XXMatrixAdjoint (&M[347], &M[148]);
-		XXMatrixTranspose (&M[346], &M[347]);
-		XXMatrixMul (&M[147], &M[346], &M[158]);
-
-		/* GravityCompensation1\Link2\AdHi0\p1.f = Adjoint (GravityCompensation1\Link2\AdHi0\onlyRotH) * GravityCompensation1\Link2\AdHik1\p2.f; */
-		XXMatrixAdjoint (&M[348], &M[148]);
-		XXMatrixMul (&M[146], &M[348], &M[152]);
-
-	/* GravityCompensation1\Joint34\MatrixMul\output = GravityCompensation1\Link3\Hij\output * GravityCompensation1\Joint34\Integrate\output; */
-	XXMatrixMul (&M[108], &M[178], &M[105]);
-
-	/* GravityCompensation1\Link2\AdHik1\p1.e = (1.0 / transpose (GravityCompensation1\Link2\AdHik1\AdH)) * GravityCompensation1\Link2\AdHi0\p2.e; */
-	XXMatrixTranspose (&M[350], &M[157]);
-	XXScalarMatrixDiv (&M[349], 1.0, &M[350], workarray);
-	XXMatrixMul (&M[151], &M[349], &M[147]);
-
-	/* GravityCompensation1\Link4\Hij\output = GravityCompensation1\Joint34\MatrixMul\output * GravityCompensation1\Link4\Hij\Hab; */
-	XXMatrixMul (&M[197], &M[108], &M[198]);
-
-	/* GravityCompensation1\Joint45\MatrixMul\output = GravityCompensation1\Link4\Hij\output * GravityCompensation1\Joint45\Integrate\output; */
-	XXMatrixMul (&M[116], &M[197], &M[113]);
-
-		/* GravityCompensation1\Link3\AdHi0\onlyRotH = GravityCompensation1\Joint23\MatrixMul\output; */
-		XXMatrixMov (&M[167], &M[100]);
-
-		/* GravityCompensation1\Link3\AdHi0\onlyRotH[1,4] = 0; */
-		M[167].mat[3] = 0.0;
-
-		/* GravityCompensation1\Link3\AdHi0\onlyRotH[2,4] = 0; */
-		M[167].mat[7] = 0.0;
-
-		/* GravityCompensation1\Link3\AdHi0\onlyRotH[3,4] = 0; */
-		M[167].mat[11] = 0.0;
-
-		/* GravityCompensation1\Link3\AdHi0\p2.e = transpose (Adjoint (GravityCompensation1\Link3\AdHi0\onlyRotH)) * GravityCompensation1\Link3\Gravity\effort; */
-		XXMatrixAdjoint (&M[352], &M[167]);
-		XXMatrixTranspose (&M[351], &M[352]);
-		XXMatrixMul (&M[166], &M[351], &M[177]);
-
-		/* GravityCompensation1\Link3\AdHi0\p1.f = Adjoint (GravityCompensation1\Link3\AdHi0\onlyRotH) * GravityCompensation1\Link3\AdHik1\p2.f; */
-		XXMatrixAdjoint (&M[353], &M[167]);
-		XXMatrixMul (&M[165], &M[353], &M[171]);
-
-	/* GravityCompensation1\Link3\AdHik1\p1.e = (1.0 / transpose (GravityCompensation1\Link3\AdHik1\AdH)) * GravityCompensation1\Link3\AdHi0\p2.e; */
-	XXMatrixTranspose (&M[355], &M[176]);
-	XXScalarMatrixDiv (&M[354], 1.0, &M[355], workarray);
-	XXMatrixMul (&M[170], &M[354], &M[166]);
-
-		/* GravityCompensation1\Link4\AdHi0\onlyRotH = GravityCompensation1\Joint34\MatrixMul\output; */
-		XXMatrixMov (&M[186], &M[108]);
-
-		/* GravityCompensation1\Link4\AdHi0\onlyRotH[1,4] = 0; */
-		M[186].mat[3] = 0.0;
-
-		/* GravityCompensation1\Link4\AdHi0\onlyRotH[2,4] = 0; */
-		M[186].mat[7] = 0.0;
-
-		/* GravityCompensation1\Link4\AdHi0\onlyRotH[3,4] = 0; */
-		M[186].mat[11] = 0.0;
-
-		/* GravityCompensation1\Link4\AdHi0\p2.e = transpose (Adjoint (GravityCompensation1\Link4\AdHi0\onlyRotH)) * GravityCompensation1\Link4\Gravity\effort; */
-		XXMatrixAdjoint (&M[357], &M[186]);
-		XXMatrixTranspose (&M[356], &M[357]);
-		XXMatrixMul (&M[185], &M[356], &M[196]);
-
-		/* GravityCompensation1\Link4\AdHi0\p1.f = Adjoint (GravityCompensation1\Link4\AdHi0\onlyRotH) * GravityCompensation1\Link4\AdHik1\p2.f; */
-		XXMatrixAdjoint (&M[358], &M[186]);
-		XXMatrixMul (&M[184], &M[358], &M[190]);
-
-	/* GravityCompensation1\Link4\AdHik1\p1.e = (1.0 / transpose (GravityCompensation1\Link4\AdHik1\AdH)) * GravityCompensation1\Link4\AdHi0\p2.e; */
-	XXMatrixTranspose (&M[360], &M[195]);
-	XXScalarMatrixDiv (&M[359], 1.0, &M[360], workarray);
-	XXMatrixMul (&M[189], &M[359], &M[185]);
-
-		/* GravityCompensation1\Link5\AdHi0\onlyRotH = GravityCompensation1\Joint45\MatrixMul\output; */
-		XXMatrixMov (&M[205], &M[116]);
-
-		/* GravityCompensation1\Link5\AdHi0\onlyRotH[1,4] = 0; */
-		M[205].mat[3] = 0.0;
-
-		/* GravityCompensation1\Link5\AdHi0\onlyRotH[2,4] = 0; */
-		M[205].mat[7] = 0.0;
-
-		/* GravityCompensation1\Link5\AdHi0\onlyRotH[3,4] = 0; */
-		M[205].mat[11] = 0.0;
-
-		/* GravityCompensation1\Link5\AdHi0\p2.e = transpose (Adjoint (GravityCompensation1\Link5\AdHi0\onlyRotH)) * GravityCompensation1\Link5\Gravity\effort; */
-		XXMatrixAdjoint (&M[362], &M[205]);
-		XXMatrixTranspose (&M[361], &M[362]);
-		XXMatrixMul (&M[204], &M[361], &M[215]);
-
-		/* GravityCompensation1\Link5\AdHi0\p1.f = Adjoint (GravityCompensation1\Link5\AdHi0\onlyRotH) * GravityCompensation1\Link5\AdHik1\p2.f; */
-		XXMatrixAdjoint (&M[363], &M[205]);
-		XXMatrixMul (&M[203], &M[363], &M[209]);
-
-	/* GravityCompensation1\Link5\AdHik1\p1.e = (1.0 / transpose (GravityCompensation1\Link5\AdHik1\AdH)) * GravityCompensation1\Link5\AdHi0\p2.e; */
-	XXMatrixTranspose (&M[365], &M[214]);
-	XXScalarMatrixDiv (&M[364], 1.0, &M[365], workarray);
-	XXMatrixMul (&M[208], &M[364], &M[204]);
-
-	/* GravityCompensation1\Link5\Ta0i\p2.e = GravityCompensation1\Link5\AdHik1\p1.e + GravityCompensation1\Link5\AdHij\p1.e; */
-	XXMatrixAdd (&M[219], &M[208], &M[206]);
-
-	/* GravityCompensation1\Joint45\AdHji\p1.e = (1.0 / transpose (Adjoint (GravityCompensation1\Joint45\Integrate\output))) * GravityCompensation1\Link5\Ta0i\p2.e; */
-	XXMatrixAdjoint (&M[368], &M[113]);
-	XXMatrixTranspose (&M[367], &M[368]);
-	XXScalarMatrixDiv (&M[366], 1.0, &M[367], workarray);
-	XXMatrixMul (&M[111], &M[366], &M[219]);
-
-	/* GravityCompensation1\Joint45\uTbai\p1.e = GravityCompensation1\Joint45\AdHji\p1.e[3]; */
-	V[984] = M[111].mat[2];
-
-	/* GravityCompensation1\Link4\AdHij\p1.e = transpose (Adjoint (GravityCompensation1\Link4\Hij\Hab)) * GravityCompensation1\Joint45\AdHji\p1.e; */
-	XXMatrixAdjoint (&M[370], &M[198]);
-	XXMatrixTranspose (&M[369], &M[370]);
-	XXMatrixMul (&M[187], &M[369], &M[111]);
-
-	/* GravityCompensation1\Link4\Ta0i\p2.e = GravityCompensation1\Link4\AdHik1\p1.e + GravityCompensation1\Link4\AdHij\p1.e; */
-	XXMatrixAdd (&M[200], &M[189], &M[187]);
-
-	/* GravityCompensation1\Mux\port.e[8] = GravityCompensation1\Joint45\uTbai\p1.e * GravityCompensation1\Mux\calibartion; */
-	M[222].mat[7] = V[984] * P[139];
-
-	/* GravityCompensation1\Joint34\AdHji\p1.e = (1.0 / transpose (Adjoint (GravityCompensation1\Joint34\Integrate\output))) * GravityCompensation1\Link4\Ta0i\p2.e; */
-	XXMatrixAdjoint (&M[373], &M[105]);
-	XXMatrixTranspose (&M[372], &M[373]);
-	XXScalarMatrixDiv (&M[371], 1.0, &M[372], workarray);
-	XXMatrixMul (&M[103], &M[371], &M[200]);
-
-	/* GravityCompensation1\Joint34\uTbai\p1.e = GravityCompensation1\Joint34\AdHji\p1.e[2]; */
-	V[915] = M[103].mat[1];
-
-	/* GravityCompensation1\Link3\AdHij\p1.e = transpose (Adjoint (GravityCompensation1\Link3\Hij\Hab)) * GravityCompensation1\Joint34\AdHji\p1.e; */
-	XXMatrixAdjoint (&M[375], &M[179]);
-	XXMatrixTranspose (&M[374], &M[375]);
-	XXMatrixMul (&M[168], &M[374], &M[103]);
-
-	/* GravityCompensation1\Link3\Ta0i\p2.e = GravityCompensation1\Link3\AdHik1\p1.e + GravityCompensation1\Link3\AdHij\p1.e; */
-	XXMatrixAdd (&M[181], &M[170], &M[168]);
-
-	/* GravityCompensation1\Mux\port.e[7] = GravityCompensation1\Joint34\uTbai\p1.e * GravityCompensation1\Mux\calibartion; */
-	M[222].mat[6] = V[915] * P[139];
-
-	/* GravityCompensation1\Joint23\AdHji\p1.e = (1.0 / transpose (Adjoint (GravityCompensation1\Joint23\Integrate\output))) * GravityCompensation1\Link3\Ta0i\p2.e; */
-	XXMatrixAdjoint (&M[378], &M[97]);
-	XXMatrixTranspose (&M[377], &M[378]);
-	XXScalarMatrixDiv (&M[376], 1.0, &M[377], workarray);
-	XXMatrixMul (&M[95], &M[376], &M[181]);
-
-	/* GravityCompensation1\Joint23\uTbai\p1.e = GravityCompensation1\Joint23\AdHji\p1.e[2]; */
-	V[846] = M[95].mat[1];
-
-	/* GravityCompensation1\Link2\AdHij\p1.e = transpose (Adjoint (GravityCompensation1\Link2\Hij\Hab)) * GravityCompensation1\Joint23\AdHji\p1.e; */
-	XXMatrixAdjoint (&M[380], &M[160]);
-	XXMatrixTranspose (&M[379], &M[380]);
-	XXMatrixMul (&M[149], &M[379], &M[95]);
-
-	/* GravityCompensation1\Link2\Ta0i\p2.e = GravityCompensation1\Link2\AdHik1\p1.e + GravityCompensation1\Link2\AdHij\p1.e; */
-	XXMatrixAdd (&M[162], &M[151], &M[149]);
-
-	/* GravityCompensation1\Mux\port.e[6] = GravityCompensation1\Joint23\uTbai\p1.e * GravityCompensation1\Mux\calibartion; */
-	M[222].mat[5] = V[846] * P[139];
-
-	/* GravityCompensation1\Joint12\AdHji\p1.e = (1.0 / transpose (Adjoint (GravityCompensation1\Joint12\Integrate\output))) * GravityCompensation1\Link2\Ta0i\p2.e; */
-	XXMatrixAdjoint (&M[383], &M[89]);
-	XXMatrixTranspose (&M[382], &M[383]);
-	XXScalarMatrixDiv (&M[381], 1.0, &M[382], workarray);
-	XXMatrixMul (&M[87], &M[381], &M[162]);
-
-	/* GravityCompensation1\Joint12\uTbai\p1.e = GravityCompensation1\Joint12\AdHji\p1.e[2]; */
-	V[777] = M[87].mat[1];
-
-	/* GravityCompensation1\Link1\AdHij\p1.e = transpose (Adjoint (GravityCompensation1\Link1\Hij\Hab)) * GravityCompensation1\Joint12\AdHji\p1.e; */
-	XXMatrixAdjoint (&M[385], &M[141]);
-	XXMatrixTranspose (&M[384], &M[385]);
-	XXMatrixMul (&M[130], &M[384], &M[87]);
-
-	/* GravityCompensation1\Link1\Ta0i\p2.e = GravityCompensation1\Link1\AdHik1\p1.e + GravityCompensation1\Link1\AdHij\p1.e; */
-	XXMatrixAdd (&M[143], &M[132], &M[130]);
-
-	/* GravityCompensation1\Mux\port.e[5] = GravityCompensation1\Joint12\uTbai\p1.e * GravityCompensation1\Mux\calibartion; */
-	M[222].mat[4] = V[777] * P[139];
-
-	/* GravityCompensation1\JointBase1\AdHji\p1.e = (1.0 / transpose (Adjoint (GravityCompensation1\JointBase1\Integrate\output))) * GravityCompensation1\Link1\Ta0i\p2.e; */
-	XXMatrixAdjoint (&M[388], &M[121]);
-	XXMatrixTranspose (&M[387], &M[388]);
-	XXScalarMatrixDiv (&M[386], 1.0, &M[387], workarray);
-	XXMatrixMul (&M[119], &M[386], &M[143]);
-
-	/* GravityCompensation1\JointBase1\uTbai\p1.e = GravityCompensation1\JointBase1\AdHji\p1.e[3]; */
-	V[1053] = M[119].mat[2];
-
-	/* GravityCompensation1\Mux\port.e[4] = GravityCompensation1\JointBase1\uTbai\p1.e * GravityCompensation1\Mux\calibartion; */
-	M[222].mat[3] = V[1053] * P[139];
-
-	/* OneJunction2\p2.e = (ControllableJ\joints.e + GravityCompensation1\Mux\port.e) - ((C\p.e + R\p.e) + JointSoftLimits\p.e); */
-	XXMatrixAdd (&M[389], &M[50], &M[222]);
-	XXMatrixAdd (&M[391], &M[0], &M[245]);
-	XXMatrixAdd (&M[390], &M[391], &M[229]);
-	XXMatrixSub (&M[244], &M[389], &M[390]);
-
-	/* DemuxHW1\base.e = OneJunction2\p2.e[1:3]; */
-	M[57].mat[0] = M[244].mat[0];
-	M[57].mat[1] = M[244].mat[1];
-	M[57].mat[2] = M[244].mat[2];
-
-	/* DemuxHW1\arm.e = OneJunction2\p2.e[4:8]; */
-	M[60].mat[0] = M[244].mat[3];
-	M[60].mat[1] = M[244].mat[4];
-	M[60].mat[2] = M[244].mat[5];
-	M[60].mat[3] = M[244].mat[6];
-	M[60].mat[4] = M[244].mat[7];
-
-	/* bond_to_base.F = DemuxHW1\base.e; */
-	XXMatrixMov (&M[248], &M[57]);
-
-	/* bond_to_arm.T = DemuxHW1\arm.e; */
-	XXMatrixMov (&M[250], &M[60]);
-
-	}
-
-	/* This function calculates the output equations of the model.
-	 * These equations are not needed for calculation of the rates
-	 * and are kept separate to make the dynamic set of equations smaller.
-	 * These dynamic equations are called often more than one time for each
-	 * integration step that is taken. This makes model computation much faster.
-	 */
-	void interaction_control::CalculateOutput (void)
-	{
-	  	/* ControllableJ\tip.f = CalculateJ\controllableJ * DemuxHW1\control.f; */
-	XXMatrixMul (&M[51], &M[1], &M[59]);
-
-	/* CtipControl\stenght = sqrt (transpose (CtipControl\Wt) * CtipControl\Wt); */
-	XXMatrixTranspose (&M[393], &M[56]);
-	XXScalarMatrixMatrixMul (M[392].mat, &M[393], &M[56]);
-	V[470] = sqrt (M[392].mat[0]);
-
-	/* GravityCompensation1\Base\AdHik1\p1.e = (1.0 / transpose (GravityCompensation1\Base\AdHik1\AdH)) * GravityCompensation1\Base\AdHi0\p2.e; */
-	XXMatrixTranspose (&M[395], &M[78]);
-	XXScalarMatrixDiv (&M[394], 1.0, &M[395], workarray);
-	XXMatrixMul (&M[72], &M[394], &M[68]);
-
-	/* GravityCompensation1\Mux\port5.f = DemuxHW1\control.f[4]; */
-	V[1874] = M[59].mat[3];
-
-	/* GravityCompensation1\Mux\port6.f = DemuxHW1\control.f[5]; */
-	V[1875] = M[59].mat[4];
-
-	/* GravityCompensation1\Mux\port7.f = DemuxHW1\control.f[6]; */
-	V[1876] = M[59].mat[5];
-
-	/* GravityCompensation1\Mux\port8.f = DemuxHW1\control.f[7]; */
-	V[1877] = M[59].mat[6];
-
-	/* GravityCompensation1\Mux\port9.f = DemuxHW1\control.f[8]; */
-	V[1878] = M[59].mat[7];
-
-	/* GravityCompensation1\Joint12\uTbai\p2.f = [0; GravityCompensation1\Mux\port6.f; 0; 0; 0; 0]; */
-	M[93].mat[0] = 0.0;
-	M[93].mat[1] = V[1875];
-	M[93].mat[2] = 0.0;
-	M[93].mat[3] = 0.0;
-	M[93].mat[4] = 0.0;
-	M[93].mat[5] = 0.0;
-
-	/* GravityCompensation1\Joint23\uTbai\p2.f = [0; GravityCompensation1\Mux\port7.f; 0; 0; 0; 0]; */
-	M[101].mat[0] = 0.0;
-	M[101].mat[1] = V[1876];
-	M[101].mat[2] = 0.0;
-	M[101].mat[3] = 0.0;
-	M[101].mat[4] = 0.0;
-	M[101].mat[5] = 0.0;
-
-	/* GravityCompensation1\Joint34\uTbai\p2.f = [0; GravityCompensation1\Mux\port8.f; 0; 0; 0; 0]; */
-	M[109].mat[0] = 0.0;
-	M[109].mat[1] = V[1877];
-	M[109].mat[2] = 0.0;
-	M[109].mat[3] = 0.0;
-	M[109].mat[4] = 0.0;
-	M[109].mat[5] = 0.0;
-
-	/* GravityCompensation1\Joint45\uTbai\p2.f = [0; 0; GravityCompensation1\Mux\port9.f; 0; 0; 0]; */
-	M[117].mat[0] = 0.0;
-	M[117].mat[1] = 0.0;
-	M[117].mat[2] = V[1878];
-	M[117].mat[3] = 0.0;
-	M[117].mat[4] = 0.0;
-	M[117].mat[5] = 0.0;
-
-	/* GravityCompensation1\JointBase1\uTbai\p2.f = [0; 0; GravityCompensation1\Mux\port5.f; 0; 0; 0]; */
-	M[125].mat[0] = 0.0;
-	M[125].mat[1] = 0.0;
-	M[125].mat[2] = V[1874];
-	M[125].mat[3] = 0.0;
-	M[125].mat[4] = 0.0;
-	M[125].mat[5] = 0.0;
-
-	/* GravityCompensation1\JointBase1\Wbai\p1.f = GravityCompensation1\Base\AdHij\p2.f - GravityCompensation1\JointBase1\uTbai\p2.f; */
-	XXMatrixSub (&M[126], &M[71], &M[125]);
-
-	/* GravityCompensation1\JointBase1\AdHji\p2.f = (1.0 / Adjoint (GravityCompensation1\JointBase1\Integrate\output)) * GravityCompensation1\JointBase1\Wbai\p1.f; */
-	XXMatrixAdjoint (&M[397], &M[121]);
-	XXScalarMatrixDiv (&M[396], 1.0, &M[397], workarray);
-	XXMatrixMul (&M[120], &M[396], &M[126]);
-
-	/* GravityCompensation1\Link1\AdHij\p2.f = Adjoint (GravityCompensation1\Link1\Hij\Hab) * GravityCompensation1\JointBase1\AdHji\p2.f; */
-	XXMatrixAdjoint (&M[398], &M[141]);
-	XXMatrixMul (&M[131], &M[398], &M[120]);
-
-	/* GravityCompensation1\Link1\AdHik1\p2.f = (1.0 / GravityCompensation1\Link1\AdHik1\AdH) * GravityCompensation1\JointBase1\AdHji\p2.f; */
-	XXScalarMatrixDiv (&M[399], 1.0, &M[138], workarray);
-	XXMatrixMul (&M[133], &M[399], &M[120]);
-
-	/* GravityCompensation1\Joint12\Wbai\p3.f = GravityCompensation1\Link1\AdHij\p2.f - GravityCompensation1\Joint12\uTbai\p2.f; */
-	XXMatrixSub (&M[94], &M[131], &M[93]);
-
-	/* GravityCompensation1\Joint12\AdHji\p2.f = (1.0 / Adjoint (GravityCompensation1\Joint12\Integrate\output)) * GravityCompensation1\Joint12\Wbai\p3.f; */
-	XXMatrixAdjoint (&M[401], &M[89]);
-	XXScalarMatrixDiv (&M[400], 1.0, &M[401], workarray);
-	XXMatrixMul (&M[88], &M[400], &M[94]);
-
-	/* GravityCompensation1\Link2\AdHij\p2.f = Adjoint (GravityCompensation1\Link2\Hij\Hab) * GravityCompensation1\Joint12\AdHji\p2.f; */
-	XXMatrixAdjoint (&M[402], &M[160]);
-	XXMatrixMul (&M[150], &M[402], &M[88]);
-
-	/* GravityCompensation1\Link2\AdHik1\p2.f = (1.0 / GravityCompensation1\Link2\AdHik1\AdH) * GravityCompensation1\Joint12\AdHji\p2.f; */
-	XXScalarMatrixDiv (&M[403], 1.0, &M[157], workarray);
-	XXMatrixMul (&M[152], &M[403], &M[88]);
-
-	/* GravityCompensation1\Joint23\Wbai\p3.f = GravityCompensation1\Link2\AdHij\p2.f - GravityCompensation1\Joint23\uTbai\p2.f; */
-	XXMatrixSub (&M[102], &M[150], &M[101]);
-
-	/* GravityCompensation1\Joint23\AdHji\p2.f = (1.0 / Adjoint (GravityCompensation1\Joint23\Integrate\output)) * GravityCompensation1\Joint23\Wbai\p3.f; */
-	XXMatrixAdjoint (&M[405], &M[97]);
-	XXScalarMatrixDiv (&M[404], 1.0, &M[405], workarray);
-	XXMatrixMul (&M[96], &M[404], &M[102]);
-
-	/* GravityCompensation1\Link3\AdHij\p2.f = Adjoint (GravityCompensation1\Link3\Hij\Hab) * GravityCompensation1\Joint23\AdHji\p2.f; */
-	XXMatrixAdjoint (&M[406], &M[179]);
-	XXMatrixMul (&M[169], &M[406], &M[96]);
-
-	/* GravityCompensation1\Link3\AdHik1\p2.f = (1.0 / GravityCompensation1\Link3\AdHik1\AdH) * GravityCompensation1\Joint23\AdHji\p2.f; */
-	XXScalarMatrixDiv (&M[407], 1.0, &M[176], workarray);
-	XXMatrixMul (&M[171], &M[407], &M[96]);
-
-	/* GravityCompensation1\Joint34\Wbai\p3.f = GravityCompensation1\Link3\AdHij\p2.f - GravityCompensation1\Joint34\uTbai\p2.f; */
-	XXMatrixSub (&M[110], &M[169], &M[109]);
-
-	/* GravityCompensation1\Joint34\AdHji\p2.f = (1.0 / Adjoint (GravityCompensation1\Joint34\Integrate\output)) * GravityCompensation1\Joint34\Wbai\p3.f; */
-	XXMatrixAdjoint (&M[409], &M[105]);
-	XXScalarMatrixDiv (&M[408], 1.0, &M[409], workarray);
-	XXMatrixMul (&M[104], &M[408], &M[110]);
-
-	/* GravityCompensation1\Link5\Hij\output = GravityCompensation1\Joint45\MatrixMul\output * GravityCompensation1\Link5\Hij\Hab; */
-	XXMatrixMul (&M[216], &M[116], &M[217]);
-
-	/* GravityCompensation1\Link4\AdHij\p2.f = Adjoint (GravityCompensation1\Link4\Hij\Hab) * GravityCompensation1\Joint34\AdHji\p2.f; */
-	XXMatrixAdjoint (&M[410], &M[198]);
-	XXMatrixMul (&M[188], &M[410], &M[104]);
-
-	/* GravityCompensation1\Link4\AdHik1\p2.f = (1.0 / GravityCompensation1\Link4\AdHik1\AdH) * GravityCompensation1\Joint34\AdHji\p2.f; */
-	XXScalarMatrixDiv (&M[411], 1.0, &M[195], workarray);
-	XXMatrixMul (&M[190], &M[411], &M[104]);
-
-	/* GravityCompensation1\Joint45\Wbai\p1.f = GravityCompensation1\Link4\AdHij\p2.f - GravityCompensation1\Joint45\uTbai\p2.f; */
-	XXMatrixSub (&M[118], &M[188], &M[117]);
-
-	/* GravityCompensation1\Joint45\AdHji\p2.f = (1.0 / Adjoint (GravityCompensation1\Joint45\Integrate\output)) * GravityCompensation1\Joint45\Wbai\p1.f; */
-	XXMatrixAdjoint (&M[413], &M[113]);
-	XXScalarMatrixDiv (&M[412], 1.0, &M[413], workarray);
-	XXMatrixMul (&M[112], &M[412], &M[118]);
-
-	/* GravityCompensation1\Link5\AdHij\p2.f = Adjoint (GravityCompensation1\Link5\Hij\Hab) * GravityCompensation1\Joint45\AdHji\p2.f; */
-	XXMatrixAdjoint (&M[414], &M[217]);
-	XXMatrixMul (&M[207], &M[414], &M[112]);
-
-	/* GravityCompensation1\Link5\AdHik1\p2.f = (1.0 / GravityCompensation1\Link5\AdHik1\AdH) * GravityCompensation1\Joint45\AdHji\p2.f; */
-	XXScalarMatrixDiv (&M[415], 1.0, &M[214], workarray);
-	XXMatrixMul (&M[209], &M[415], &M[112]);
-
-	/* GravityCompensation1\Base\AdHij\p1.e = transpose (Adjoint (GravityCompensation1\Base\Hij\Hab)) * GravityCompensation1\JointBase1\AdHji\p1.e; */
-	XXMatrixAdjoint (&M[417], &M[81]);
-	XXMatrixTranspose (&M[416], &M[417]);
-	XXMatrixMul (&M[70], &M[416], &M[119]);
-
-	/* GravityCompensation1\Base\Ta0i\p2.e = GravityCompensation1\Base\AdHik1\p1.e + GravityCompensation1\Base\AdHij\p1.e; */
-	XXMatrixAdd (&M[83], &M[72], &M[70]);
-
-	  	}
-
-	/* This function calculates the final equations of the model.
-	 * These equations are calculated after all the calculations
-	 * are performed
-	 */
-	void interaction_control::CalculateFinal (void)
-	{
-	  
-	}
-
-	void interaction_control::setupParametersAndStates()
-	{
-		using namespace boost;
-
-			TiXmlDocument doc(XXsim_config_xml);
-			if (!doc.LoadFile()) {
-				log(Error) << "File not found: " << XXsim_config_xml << endlog();
-				return;
-			}
-
-			TiXmlHandle hdoc(&doc);
-			TiXmlElement* pElem;
-			TiXmlHandle hRoot(0);
-			TiXmlNode* tNode(NULL);
-
-			hRoot = TiXmlHandle(hdoc.FirstChildElement().Element());
-			pElem = hRoot.FirstChild("modelVariables").FirstChild().Element();
-
-			if (pElem) {
-
-				do {
-					log(Debug) << "Begin of processing the tag" << endlog();
-					log(Debug) << "Read all relevant fields" << endlog();
-					const char * kind =
-							(tNode = pElem->FirstChild("kind")) == NULL ?
-									NULL : tNode->ToElement()->GetText();
-					const char * name =
-							(tNode = pElem->FirstChild("name")) == NULL ?
-									NULL : tNode->ToElement()->GetText();
-					const char * description =
-							(tNode = pElem->FirstChild("description")) == NULL ?
-									" " : tNode->ToElement()->GetText();
-					description =
-							description == NULL || description == "" ?
-									" " : description;
-					const char * container =
-							(tNode = pElem->FirstChild("storage")) == NULL ?
-									NULL :
-									tNode->FirstChild("name")->ToElement()->GetText();
-					const char * strIndex =
-							(tNode = pElem->FirstChild("storage")) == NULL ?
-									NULL :
-									tNode->FirstChild("index")->ToElement()->GetText();
-					const char * strRows =
-							(tNode = pElem->FirstChild("size")) == NULL ?
-									NULL :
-									tNode->FirstChild("rows")->ToElement()->GetText();
-					const char * strColumns =
-							(tNode = pElem->FirstChild("size")) == NULL ?
-									NULL :
-									tNode->FirstChild("columns")->ToElement()->GetText();
-					const char * type =
-							(tNode = pElem->FirstChild("type")) == NULL ?
-									NULL : tNode->ToElement()->GetText();
-
-					log(Debug) << " strings to numbers" << endlog();
-					int index, rows, columns;
-					if (strIndex == NULL)
-					{
-						log(Debug)
-								<< "Processing : "
-								<< XXsim_config_xml
-								<< " Link to 20 sim variables incorrectly defined: Index =null \n"
-								<< " The node will be not processed" << endlog();
-						continue;
-					}
-					index = atoi(strIndex);
-					rows = strRows == NULL ? 1 : atoi(strRows);
-					columns = strColumns == NULL ? 1 : atoi(strColumns);
-
-					log(Debug) << "Name: " << name << " Disc: " << description
-							<< " Index: " << index << " Kind: " << kind << " Type: "
-							<< type << endlog();
-
-					common20sim::XVMatrix* tempXVMatrix;
-					log(Debug) << " Selecting source of data for this node" << endlog();
-					if (boost::equals(container, "V")) {
-						tempXVMatrix=new common20sim::XVMatrix(V+index, rows, columns);
-					} else if (boost::equals(container, "C")) {
-						tempXVMatrix=new common20sim::XVMatrix(C+index, rows, columns);
-					} else if (boost::equals(container, "P")) {
-						tempXVMatrix=new common20sim::XVMatrix(P+index, rows, columns);
-					} else if (boost::equals(container, "I")) {
-						tempXVMatrix=new common20sim::XVMatrix(I+index, rows, columns);
-					} else if (boost::equals(container, "s")) {
-						tempXVMatrix=new common20sim::XVMatrix(s+index, rows, columns);
-					} else if (boost::equals(container, "R")) {
-						tempXVMatrix=new common20sim::XVMatrix(R+index, rows, columns);
-					} else if (boost::equals(container, "M")) {
-						tempXVMatrix=new common20sim::XVMatrix(M[index]);
-					} else if (boost::equals(container, "U")) {
-						tempXVMatrix=new common20sim::XVMatrix(U+index, rows, columns);
-					} else if (boost::equals(container, "workarray")) {
-						tempXVMatrix=new common20sim::XVMatrix(workarray+index, rows, columns);
-					} else {
-						log(Debug) << "Processing : " << XXsim_config_xml
-								<< " Link to 20 sim variables incorrectly defined: "
-								<< container << " The node will be not processed"
-								<< endlog();
-						continue;
-					}
-
-
-					log(Debug)<<"select the action based o kind of parameter"<<endlog();
-
-					if (boost::equals(kind, "parameter")) {
-						// create port decorator
-						//RTT::Property<RTT::types::carray<double> >* p_rttPort; //TODO: Fix me!
-
-						Adapter20Sim<RTT::Property<RTT::types::carray<double> > > p_20simport(
-								string(name), string(description), tempXVMatrix, NULL);
-
-						// check if the property should be hierarchical folded
-						RTT::PropertyBag* p_bag(NULL);
-						p_bag = createHierarchicalPropertyBags(name);
-
-						p_bag->addProperty(p_20simport.getShortName(), p_20simport.getLink()->getCArray());
-						// save the link for updates
-						propertyPorts.push_back(p_20simport);
-
-					} else if (boost::equals(kind, "state")) {
-
-
-					} else if (boost::equals(kind, "variable")) {
-						//not implemented yet :)
-						log(Debug)<<"Variables are not exhibited to out side of the component"<<endlog();
-						// Recommend update is to show Interesting variables
-					} else if (boost::equals(kind, "input")) {
-						// create port decorator
-						RTT::InputPort<flat_matrix_t> * p_rttPort = new RTT::InputPort<flat_matrix_t>;
-
-						Adapter20Sim<RTT::InputPort<flat_matrix_t> > p_20simport(
-								string(name), string(description), tempXVMatrix, p_rttPort);
-
-						// create a port
-						this->addPort(p_20simport.getFullName(), *p_rttPort).doc(
-								p_20simport.getDescription());
-						//save link for updates
-
-						inputPorts.push_back(p_20simport);
-
-					} else if (boost::equals(kind, "output")) {
-						// create port decorator
-						RTT::OutputPort<flat_matrix_t> * p_rttPort = new RTT::OutputPort<flat_matrix_t>;
-
-						Adapter20Sim<RTT::OutputPort<flat_matrix_t> > p_20simport(
-								string(name), string(description), tempXVMatrix, p_rttPort);
-
-						// create a port
-						this->addPort(p_20simport.getFullName(), *p_rttPort).doc(
-								p_20simport.getDescription());
-
-						outputPorts.push_back(p_20simport);
-
-					} else {
-						log(Debug) << XXsim_config_xml << " token kind not recognized("
-								<< kind << ")" << endlog();
-						continue;
-					}
-					log(Debug) << "End of processing the tag" << endlog();
-				} while ( (pElem = pElem->NextSiblingElement()) != NULL);
-				log(Debug) << "End of processing the xml" << endlog();
-			}
-	}
-
-
-	RTT::PropertyBag* interaction_control::createHierarchicalPropertyBags(const char * name) {
-		using namespace boost;
-		RTT::PropertyBag* p_bag(NULL);
-		string cleaned_name;
-
-		typedef split_iterator<const char*> ssi;
-		ssi end;
-		for (ssi it = make_split_iterator(name, first_finder("\\", is_iequal()));
-				it != end;) {
-			cleaned_name = replaceIllegalCharacter(
-					copy_range<std::string>(*it));
-
-			// Are we at the end already?
-			if (++it == end) {
-				break; // last name of the string is the name of the property.
-			}
-
-			if (p_bag == NULL)
-			{
-				RTT::Property<PropertyBag>* ppb = dynamic_cast<RTT::Property<
-						PropertyBag>*>(this->getProperty(cleaned_name));
-				if(ppb == NULL)
-				{
-					p_bag = new RTT::PropertyBag;
-					this->addProperty(cleaned_name, *p_bag).doc("Submodel parameters");
-				}
-				else
-				{
-					p_bag = &(ppb->value());
-				}
-			}
-				else
-				{
-					RTT::Property<PropertyBag>* ppb = dynamic_cast<RTT::Property<PropertyBag>*>(p_bag->getProperty(cleaned_name));
-					RTT::PropertyBag* ptmp(NULL);
-					if(ppb == NULL)
-					{
-						ptmp = new RTT::PropertyBag;
-						p_bag->addProperty(cleaned_name, *ptmp).doc("Submodel parameters");
-					}
-					else
-					{
-						ptmp = &(ppb->value());
-					}
-					p_bag = ptmp;
-				}
-			}
-		if (p_bag != NULL)
-		{
-			return p_bag;
-		} else {
-			return this->properties();
-
-		}
-	}
-	void interaction_control::cleanupPropertyBags(RTT::PropertyBag* p)
-	{
-		RTT::PropertyBag::iterator it(p->begin());
-		RTT::PropertyBag::iterator end(p->end());
-
-		RTT::Property<PropertyBag>* ppb(NULL);
-
-		for(;it != end; ++it)
-		{
-			ppb = dynamic_cast<RTT::Property<PropertyBag>*>(*it);
-
-			if(ppb != NULL)
-			{
-				PropertyBag* ptmp = &(ppb->value());
-				cleanupPropertyBags(ptmp);
-				delete ptmp;
-			}
-		}
-	}
-
-	bool interaction_control::setPeriod(RTT::Seconds s)
-	{
-		if(TaskContext::setPeriod(s))
-		{
-			step_size = s;
-			return true;
-		}
-		else
-		{
-			return false;
-		}
+		return initialize;
 	}
 }
 

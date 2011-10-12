@@ -5,8 +5,11 @@
 #include "string"
 #include "XVMatrix.h"
 #include <std_msgs/Float64MultiArray.h>
+#include <rtt/RTT.hpp>
 
 namespace common20sim {
+
+	using namespace RTT;
 
 	typedef std_msgs::Float64MultiArray flat_matrix_t;
 	typedef std_msgs::Float64MultiArray::_data_type flat_matrix_internal_t;
@@ -17,94 +20,92 @@ namespace common20sim {
 	 * use things as '.' to access sub-properties.
 	 */
 	std::string replaceIllegalCharacter(std::string str);
+	std::string makeShortName(std::string str);
 
 	//TODO redefine =operators
 	template<class T>
 	class Adapter20Sim {
 
 	private:
-		T* _port;
-		std::string _fullName;
-		std::string _shortName;
-		std::string _description;
-		flat_matrix_t _data;
-		XVMatrix* _link;
+		T* m_port;
+		std::string m_fullName;
+		std::string m_shortName;
+		std::string m_description;
+		flat_matrix_t m_data;
+		XVMatrix* m_link;
 
 	public:
 		Adapter20Sim(std::string name, std::string desc, XVMatrix* link, T* port) :
-			_port(port), _description(desc), _link(link)
+			m_port(port), m_description(desc), m_link(link)
 		{
-			_fullName = replaceIllegalCharacter(name);
-			_shortName = makeShortName(name);
+			m_fullName = replaceIllegalCharacter(name);
+			m_shortName = makeShortName(name);
 
-			// setup/resize _data
+			// setup/resize m_data
+			if(link != NULL)
+			{
+				m_data.data.resize(link->getColumns() * link->getRows(), 0);
+			}
+			else
+			{
+				log(Warning) << "XVMatrix unknown -> m_data size unknown." << endlog();
+			}
+
 			// setup the port
 		}
 
 		Adapter20Sim(const Adapter20Sim& copy)
 		{
-			_port = copy._port;
-			_fullName = copy._fullName;
-			_shortName = copy._shortName;
-			_description = copy._description;
-			_data = copy._data;
-			_link = copy._link;
+			m_port = copy.m_port;
+			m_fullName = copy.m_fullName;
+			m_shortName = copy.m_shortName;
+			m_description = copy.m_description;
+			m_data = copy.m_data;
+			m_link = copy.m_link;
 		}
 
 		virtual ~Adapter20Sim()
 		{
 		}
 
+		Adapter20Sim& operator=(const Adapter20Sim& ass)
+		{
+			log(Info) << "Assignment operator not implemented." << endlog();
+			return *this;
+		}
+
 		std::string getFullName()
 		{
-			return _fullName;
+			return m_fullName;
 		}
 		std::string getShortName()
 		{
-			return _shortName;
+			return m_shortName;
 		}
 		std::string getDescription()
 		{
-			return _description;
+			return m_description;
 		}
 		XVMatrix* getLink()
 		{
-			return _link;
+			return m_link;
 		}
 
 		flat_matrix_t& getValue()
 		{
-			_data.data.assign(_link->getCArray().address(),_link->getCArray().address()+_link->getCArray().count());
-			return _data;
+			m_data.data.assign(m_link->getCArray().address(),m_link->getCArray().address()+m_link->getCArray().count());
+			return m_data;
 		}
 
 		T* getPort()
 		{
-			return _port;
+			return m_port;
 		}
 
 		void setValue(flat_matrix_t& rsh)
 		{
-			_data.data.assign( rsh.data.begin(),rsh.data.end());
-			_link->setValues(_data.data);
-		}
-
-	private:
-		std::string makeShortName(std::string str)
-		{
-//			using namespace boost;
-			size_t pos;
-			pos=str.find_last_of("\\");
-			if (pos != std::string::npos)
-			{
-				std::string temp;
-				temp=str.substr(pos+1,temp.length()-pos-1);
-				return temp;
-			}
-			else
-			{
-				return str;
-			}
+			m_data.data.assign( rsh.data.begin(),rsh.data.end());
+			m_link->setValues(m_data.data);
 		}
 
 	};

@@ -33,11 +33,15 @@ namespace common20sim
 		std::size_t size() const;
 		std::size_t capacity() const;
 
+		XVMatrix& operator=(const XVMatrix& ass);
+
 		double operator() (std::size_t row, std::size_t column) const;
 		double& operator() (std::size_t row, std::size_t column);
 		void setValues(std::vector<double>& inputs);
 		void setValues(RTT::types::carray<double>& inputs);
 		void setValues(double& inputs,std::size_t size);
+		double at(std::size_t position) const;
+		double& at(std::size_t postion);
 		//Only used to fake vector<vector> behaviour
 		// the values can not be changed
 		// it returns the copy of the vector
@@ -47,6 +51,9 @@ namespace common20sim
 
 	};
 
+}
+namespace RTT{
+std::ostream& operator<<(std::ostream& os, common20sim::XVMatrix& input);
 }
 
 
