@@ -13,6 +13,7 @@
 #include <rtt/Time.hpp>
 
 #include "YouBotTypes.hpp"
+#include <youbot/EthercatMasterWithoutThread.hpp>
 
 enum arm_settings {NR_OF_ARM_SLAVES=5};
 enum base_settings {NR_OF_BASE_SLAVES=4};
@@ -41,6 +42,8 @@ namespace YouBot
 	        vector<OperationCaller<void(void)> > update_ops;
 	        vector<OperationCaller<void(void)> > stop_ops;
 	        vector<OperationCaller<void(void)> > cleanup_ops;
+
+	        youbot::EthercatMaster* m_ec_master;
 
 	};
 }

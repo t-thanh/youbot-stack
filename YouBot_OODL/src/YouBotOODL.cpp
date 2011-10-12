@@ -1,6 +1,6 @@
 #include "YouBotOODL.hpp"
 #include "YouBotBaseService.hpp"
-#include "YouBotManipulatorService.hpp"
+#include "YouBotArmService.hpp"
 #include "YouBotHelpers.hpp"
 
 #include <ocl/Component.hpp>
@@ -10,7 +10,6 @@
 
 #include <vector>
 
-#include <youbot/EthercatMaster.hpp>
 #include <generic/Logger.hpp>
 #include <rtt/Logger.hpp>
 
@@ -22,7 +21,7 @@ namespace YouBot
 
 	YouBotOODL::YouBotOODL(const string& name) : TaskContext(name, PreOperational)
 	{
-//		youbot::Logger::logginLevel = youbot::fatal;
+		youbot::Logger::logginLevel = youbot::info;
 		RTT::Logger* ins = RTT::Logger::Instance();
 		ins->setLogLevel(RTT::Logger::Info);
 	}
@@ -35,7 +34,9 @@ namespace YouBot
 		unsigned int nr_slaves = 0;
 		try
 		{
-			nr_slaves = EthercatMaster::getInstance("/youbot-ethercat.cfg", OODL_YOUBOT_CONFIG_DIR).getNumberOfSlaves();
+			m_ec_master = &(EthercatMaster::getInstance("/youbot-ethercat.cfg", OODL_YOUBOT_CONFIG_DIR));
+
+			nr_slaves = m_ec_master->getNumberOfSlaves();
 		}
 		catch (std::exception& e)
 		{
@@ -60,7 +61,7 @@ namespace YouBot
 		log(Info) << "Detected youbot base, loading Base service" << endlog();
 
 		// Arm 1
-		this->provides()->addService(Service::shared_ptr( new YouBotManipulatorService("Manipulator1",this, 1) ) );
+		this->provides()->addService(Service::shared_ptr( new YouBotArmService("Manipulator1",this, 1) ) );
 		update_ops.push_back(this->provides("Manipulator1")->getOperation("update"));
 		calibrate_ops.push_back(this->provides("Manipulator1")->getOperation("calibrate"));
 		start_ops.push_back(this->provides("Manipulator1")->getOperation("start"));
@@ -70,7 +71,7 @@ namespace YouBot
 
 		if(nr_slaves == NR_OF_BASE_SLAVES + 2*NR_OF_ARM_SLAVES) // Arm 2
 		{
-			this->provides()->addService(Service::shared_ptr( new YouBotManipulatorService("Manipulator2",this, 1 + NR_OF_ARM_SLAVES) ) );
+			this->provides()->addService(Service::shared_ptr( new YouBotArmService("Manipulator2",this, 1 + NR_OF_ARM_SLAVES) ) );
 			update_ops.push_back(this->provides("Manipulator2")->getOperation("update"));
 			calibrate_ops.push_back(this->provides("Manipulator2")->getOperation("calibrate"));
 			start_ops.push_back(this->provides("Manipulator2")->getOperation("start"));
@@ -131,11 +132,12 @@ namespace YouBot
 
 	void YouBotOODL::updateHook()
 	{
-//		log(Info) << "updateHook for " << update_ops.size() << endlog();
+		m_ec_master->sendAndReceiveProcessData();
+
+		// The mailbox messages are send/received immediatly
 
         for(unsigned int i=0;i<update_ops.size();++i)
         {
-//        	log(Info) << "Doing " << i << endlog();
             if(update_ops[i].ready())
             {
                 update_ops[i]();
@@ -143,8 +145,6 @@ namespace YouBot
         }
 
         TaskContext::updateHook();
-
-//        log(Info) << "updateHook done." << endlog();
 	}
 
 	void YouBotOODL::stopHook()

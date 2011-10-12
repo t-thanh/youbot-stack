@@ -11,7 +11,7 @@ SET(YOUBOT_OODL_libs
 	YouBot_OODL_plugin
 )
 
-SET(YOUBOT_OODL_FILES YouBotManipulatorService.cpp YouBotBaseService.cpp YouBotOODL.cpp)
+SET(YOUBOT_OODL_FILES YouBotArmService.cpp YouBotBaseService.cpp YouBotOODL.cpp)
 
 INCLUDE_DIRECTORIES(${YOUBOT_OODL_INCLUDE_DIR})
 
