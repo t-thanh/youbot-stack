@@ -1,5 +1,6 @@
 //import(""); //importing addpaters and control_test should be in same directory
 kickStart("20sim_deploy.xml")
+runScript("ros_connection.ops")
 import("YouBot_OODL")
 require("print")
 displayComponentTypes;

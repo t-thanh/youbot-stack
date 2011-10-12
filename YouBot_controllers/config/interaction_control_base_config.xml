@@ -612,7 +612,7 @@
 		</modelVariable>
 		<modelVariable id="39">
 			<name>CalculateJ\H10</name>
-			<kind>variable</kind>
+			<kind>output</kind>
 			<type>real</type>
 			<value>0.0, 0.0, 0.0, 0.0; 0.0, 0.0, 0.0, 0.0; 0.0, 0.0, 0.0, 0.0; 0.0, 0.0, 0.0, 0.0</value>
 			<size>
@@ -627,7 +627,7 @@
 		</modelVariable>
 		<modelVariable id="40">
 			<name>CalculateJ\H20</name>
-			<kind>variable</kind>
+			<kind>output</kind>
 			<type>real</type>
 			<value>0.0, 0.0, 0.0, 0.0; 0.0, 0.0, 0.0, 0.0; 0.0, 0.0, 0.0, 0.0; 0.0, 0.0, 0.0, 0.0</value>
 			<size>
@@ -642,7 +642,7 @@
 		</modelVariable>
 		<modelVariable id="41">
 			<name>CalculateJ\H30</name>
-			<kind>variable</kind>
+			<kind>output</kind>
 			<type>real</type>
 			<value>0.0, 0.0, 0.0, 0.0; 0.0, 0.0, 0.0, 0.0; 0.0, 0.0, 0.0, 0.0; 0.0, 0.0, 0.0, 0.0</value>
 			<size>
@@ -657,7 +657,7 @@
 		</modelVariable>
 		<modelVariable id="42">
 			<name>CalculateJ\H40</name>
-			<kind>variable</kind>
+			<kind>output</kind>
 			<type>real</type>
 			<value>0.0, 0.0, 0.0, 0.0; 0.0, 0.0, 0.0, 0.0; 0.0, 0.0, 0.0, 0.0; 0.0, 0.0, 0.0, 0.0</value>
 			<size>
@@ -672,7 +672,7 @@
 		</modelVariable>
 		<modelVariable id="43">
 			<name>CalculateJ\H50</name>
-			<kind>variable</kind>
+			<kind>output</kind>
 			<type>real</type>
 			<value>0.0, 0.0, 0.0, 0.0; 0.0, 0.0, 0.0, 0.0; 0.0, 0.0, 0.0, 0.0; 0.0, 0.0, 0.0, 0.0</value>
 			<size>
@@ -912,7 +912,7 @@ code
 		<modelVariable id="57">
 			<name>CtipControl\Htip0</name>
 			<aliasOf>CalculateJ\Htip0</aliasOf>
-			<kind>variable</kind>
+			<kind>output</kind>
 			<type>real</type>
 			<value>0.0, 0.0, 0.0, 0.0; 0.0, 0.0, 0.0, 0.0; 0.0, 0.0, 0.0, 0.0; 0.0, 0.0, 0.0, 0.0</value>
 			<description></description>

@@ -5,5 +5,5 @@
 	<node name="H40" pkg="YouBot_adapters" type="HomogeneousToTF" args="/H40" />
 	<node name="H50" pkg="YouBot_adapters" type="HomogeneousToTF" args="/H50" />
 	<node name="Htip0" pkg="YouBot_adapters" type="HomogeneousToTF" args="/Htip0" />
-	<node name="rviz" pkg="rviz" type="rviz" />
+	<node name="Hvp0" pkg="YouBot_adapters" type="HomogeneousToTF" args="/Hvp0" />
 </launch>
