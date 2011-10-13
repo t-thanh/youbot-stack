@@ -1,6 +1,7 @@
 #pragma once
 
 #include "YouBotTypes.hpp"
+#include "YouBotOODL.hpp"
 #include <vector>
 #include <iostream>
 
@@ -30,8 +31,7 @@ namespace YouBot
 {
 	std::string ctrl_modes_tostring(const ctrl_modes& cd);
 
-	// joint_status is the superset of joint_error
-	std::string joint_status_tostring(const joint_status& cd);
+	std::string motor_status_tostring(const motor_status& cd);
 
 	struct CtrlModesTypeInfo : public RTT::types::TemplateTypeInfo<ctrl_modes, true>
 	{

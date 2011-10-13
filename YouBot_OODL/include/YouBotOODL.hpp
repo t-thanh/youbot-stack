@@ -29,12 +29,18 @@ namespace YouBot
 			YouBotOODL(const string& name);
 			virtual ~YouBotOODL();
 
+			void emitEvent(std::string message);
+			void emitEvent(unsigned int joint, std::string message);
+			void emitEvent(unsigned int joint, std::string message, bool condition);
+
 		protected:
 			virtual bool configureHook();
 			virtual bool startHook();
 			virtual void updateHook();
 			virtual void stopHook();
 			virtual void cleanupHook();
+
+			OutputPort<YouBot_OODL::driver_event> events;
 
 		private:
 	        vector<OperationCaller<bool(void)> > calibrate_ops;
@@ -45,5 +51,12 @@ namespace YouBot
 
 	        youbot::EthercatMaster* m_ec_master;
 
+	        YouBot_OODL::driver_event m_events;
 	};
+
+	void check_edge(YouBotOODL* oodl, const motor_status ref_cond, const std::string outp_message, bool* cond_states,
+			unsigned int joint, motor_status current);
+
+	void check_level(YouBotOODL* oodl, const motor_status ref_cond, const std::string outp_message,
+				unsigned int joint, motor_status current);
 }

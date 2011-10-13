@@ -11,29 +11,32 @@ namespace YouBot
 	using namespace RTT::types;
 	using namespace std;
 
+	extern unsigned int non_errors;
+
 	YouBotBaseService::YouBotBaseService(const string& name, TaskContext* parent, unsigned int min_slave_nr) :
 		Service(name,parent),
 		m_tmp_joint_angles(NR_OF_BASE_SLAVES, JointSensedAngle(0*radian)),
 		m_tmp_joint_velocities(NR_OF_BASE_SLAVES, JointSensedVelocity(0*radian_per_second)),
 		m_tmp_joint_torques(NR_OF_BASE_SLAVES, JointSensedTorque(0*newton_meter)),
 
-		m_joint_statuses(NR_OF_BASE_SLAVES, 0),
 		m_joint_ctrl_modes(NR_OF_BASE_SLAVES, MOTOR_STOP),
 		// Set the commands to zero depending on the number of joints
 		m_calibrated(false),
 		m_min_slave_nr(min_slave_nr)
 	{
-		m_joint_states.position.assign(NR_OF_ARM_SLAVES,0);
-		m_joint_states.velocity.assign(NR_OF_ARM_SLAVES,0);
-		m_joint_states.effort.assign(NR_OF_ARM_SLAVES,0);
+		m_joint_states.position.assign(NR_OF_BASE_SLAVES,0);
+		m_joint_states.velocity.assign(NR_OF_BASE_SLAVES,0);
+		m_joint_states.effort.assign(NR_OF_BASE_SLAVES,0);
 
-		m_joint_cmd_angles.positions.assign(NR_OF_ARM_SLAVES,0);
-		m_joint_cmd_velocities.velocities.assign(NR_OF_ARM_SLAVES,0);
-		m_joint_cmd_torques.efforts.assign(NR_OF_ARM_SLAVES,0);
+		m_joint_cmd_angles.positions.assign(NR_OF_BASE_SLAVES,0);
+		m_joint_cmd_velocities.velocities.assign(NR_OF_BASE_SLAVES,0);
+		m_joint_cmd_torques.efforts.assign(NR_OF_BASE_SLAVES,0);
+
+		m_motor_statuses.flags.resize(NR_OF_BASE_SLAVES, 0);
 
 		this->addPort("joint_states",joint_states).doc("Joint states");
 
-		this->addPort("joint_statuses",joint_statuses).doc("Joint statuses");
+		this->addPort("motor_statuses",motor_statuses).doc("Motor statuses");
 
 		this->addPort("joint_cmd_angles",joint_cmd_angles).doc("Command joint angles");
 		this->addPort("joint_cmd_velocities",joint_cmd_velocities).doc("Command joint velocities");
@@ -55,13 +58,13 @@ namespace YouBot
 
 		this->addOperation("setControlModes",&YouBotBaseService::setControlModes,this, OwnThread);
 		this->addOperation("getControlModes",&YouBotBaseService::getControlModes,this, OwnThread);
-		this->addOperation("displayJointStatuses",&YouBotBaseService::displayJointStatuses,this, OwnThread);
+		this->addOperation("displayMotorStatuses",&YouBotBaseService::displayMotorStatuses,this, OwnThread);
 
 		this->addOperation("check_error",&YouBotBaseService::check_error,this);
 
 		// Pre-allocate port memory for outputs
         joint_states.setDataSample( m_joint_states );
-        joint_statuses.setDataSample(m_joint_statuses);
+        motor_statuses.setDataSample(m_motor_statuses);
 	}
 
 	YouBotBaseService::~YouBotBaseService()
@@ -230,8 +233,8 @@ namespace YouBot
 		bool found_error(false);
 		for(unsigned int i = 0; i < NR_OF_BASE_SLAVES; ++i)
 		{
-			m_joints[i]->getStatus(m_joint_statuses[i]);
-			if(m_joint_statuses[i] != 0)
+			m_joints[i]->getStatus(m_motor_statuses.flags[i]);
+			if(m_motor_statuses.flags[i] != 0)
 			{
 				found_error = true;
 			}
@@ -239,7 +242,7 @@ namespace YouBot
 
 		if(found_error)
 		{
-			joint_statuses.write(m_joint_statuses);
+			motor_statuses.write(m_motor_statuses);
 		}
 		//emit errors via port.
 		return found_error;
@@ -264,11 +267,11 @@ namespace YouBot
 		m_calibrated = false;
 	}
 
-	void YouBotBaseService::displayJointStatuses()
+	void YouBotBaseService::displayMotorStatuses()
 	{
-		for(unsigned int i = 0; i < m_joint_statuses.size(); ++i)
+		for(unsigned int i = 0; i < m_motor_statuses.flags.size(); ++i)
 		{
-			log(Info) << "Joint[" << i+1 << "] is " << joint_status_tostring(m_joint_statuses[i]) << endlog();
+			log(Info) << "Joint[" << i+1 << "] is " << motor_status_tostring(m_motor_statuses.flags[i]) << endlog();
 		}
 	}
 

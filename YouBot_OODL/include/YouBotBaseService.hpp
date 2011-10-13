@@ -32,12 +32,12 @@ namespace YouBot
 
 			void setControlModes(vector<ctrl_modes>& all);
 			vector<ctrl_modes> getControlModes();
-			void displayJointStatuses();
+			void displayMotorStatuses();
 
 		private:
 			OutputPort<sensor_msgs::JointState> joint_states;
 
-			OutputPort<vector<joint_status> > joint_statuses;
+			OutputPort<YouBot_OODL::motor_statuses > motor_statuses;
 
 			InputPort<motion_control_msgs::JointVelocities> joint_cmd_velocities;
 			InputPort<motion_control_msgs::JointPositions> joint_cmd_angles;
@@ -64,7 +64,7 @@ namespace YouBot
 			vector<JointSensedVelocity> m_tmp_joint_velocities;
 			vector<JointSensedTorque> m_tmp_joint_torques;
 
-			vector<joint_status> m_joint_statuses;
+			YouBot_OODL::motor_statuses m_motor_statuses;
 			vector<ctrl_modes> m_joint_ctrl_modes;
 
 			JointAngleSetpoint m_tmp_joint_cmd_angle;

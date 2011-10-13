@@ -42,8 +42,6 @@ namespace YouBot
 
 //			void displayGripperStatus();
 
-			static unsigned int non_errors;
-
 		protected:
 			// Gripper
 			InputPort<motion_control_msgs::JointPositions> gripper_cmd_position;

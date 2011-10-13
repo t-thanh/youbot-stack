@@ -12,8 +12,6 @@ namespace YouBot
 	using namespace RTT::types;
 	using namespace std;
 
-	unsigned int YouBotGripperService::non_errors = MOTOR_HALTED | PWM_MODE_ACTIVE | VELOCITY_MODE | POSITION_MODE | TORQUE_MODE | POSITION_REACHED | INITIALIZED;
-
 	YouBotGripperService::YouBotGripperService(const string& name, TaskContext* parent, unsigned int min_slave_nr) :
 			Service(name, parent),
 //			m_joint_states(NR_OF_ARM_SLAVES),

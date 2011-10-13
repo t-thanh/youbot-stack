@@ -14,12 +14,12 @@ namespace RTT
 		using namespace RTT;
 
 		std::ostream& operator<<(std::ostream& os, const ctrl_modes& cd) {
-			log(Info) << "O operator<< ctrl_modes" << endlog();
+//			log(Info) << "O operator<< ctrl_modes" << endlog();
 			return os << ctrl_modes_tostring(cd);
 		}
 
 		std::ostream& operator<<(std::ostream& os, const std::vector<ctrl_modes>& cd) {
-			log(Info) << "O operator<< vector<ctrl_modes>" << endlog();
+//			log(Info) << "O operator<< vector<ctrl_modes>" << endlog();
 			for(unsigned int i = 0; i < cd.size(); ++i)
 			{
 				os << cd[i];
@@ -28,7 +28,7 @@ namespace RTT
 		}
 
 		std::istream& operator>>(std::istream& is, std::vector<ctrl_modes>& cd) {
-			log(Info) <<  "I operator>> vector<ctrl_modes>" << endlog();
+//			log(Info) <<  "I operator>> vector<ctrl_modes>" << endlog();
 			char c;
 			for(unsigned int i = 0; i < cd.size(); ++i)
 			{
@@ -38,7 +38,7 @@ namespace RTT
 		}
 
 		std::istream& operator>>(std::istream& is, ctrl_modes& cd) {
-			log(Info) <<  "I operator>> ctrl_modes" << endlog();
+//			log(Info) <<  "I operator>> ctrl_modes" << endlog();
 			return is >> cd;
 		}
 	}
@@ -71,7 +71,7 @@ namespace YouBot
 		}
 	}
 
-	std::string joint_status_tostring(const joint_status& cd)
+	std::string motor_status_tostring(const motor_status& cd)
 	{
 		std::stringstream errors;
 

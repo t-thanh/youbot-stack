@@ -26,13 +26,13 @@ bool loadRTTPlugin( RTT::TaskContext* t )
 	RTT::types::Types()->addType( new SequenceTypeInfo<std::vector<ctrl_modes> >("std.vector<ctrl_modes>") );
 
 //		RTT::types::Types()->addType( new JointStatusTypeInfo );
-	RTT::types::Types()->addType( new SequenceTypeInfo<std::vector<joint_status> >("std.vector<joint_status>") );
+//	RTT::types::Types()->addType( new SequenceTypeInfo<std::vector<joint_status> >("std.vector<joint_status>") );
 
 	GlobalsRepository::shared_ptr globals = GlobalsRepository::Instance();
-	globals->setValue( new Constant<ctrl_modes>("PLANE_ANGLE",PLANE_ANGLE) );
-	globals->setValue( new Constant<ctrl_modes>("ANGULAR_VELOCITY",ANGULAR_VELOCITY) );
-	globals->setValue( new Constant<ctrl_modes>("TORQUE",TORQUE) );
-	globals->setValue( new Constant<ctrl_modes>("MOTOR_STOP",MOTOR_STOP) );
+	globals->setValue( new Constant<ctrl_modes>("PLANE_ANGLE",YouBot::PLANE_ANGLE) );
+	globals->setValue( new Constant<ctrl_modes>("ANGULAR_VELOCITY",YouBot::ANGULAR_VELOCITY) );
+	globals->setValue( new Constant<ctrl_modes>("TORQUE",YouBot::TORQUE) );
+	globals->setValue( new Constant<ctrl_modes>("MOTOR_STOP",YouBot::MOTOR_STOP) );
     return true;
 }
 

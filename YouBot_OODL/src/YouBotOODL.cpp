@@ -3,12 +3,16 @@
 #include "YouBotArmService.hpp"
 #include "YouBotHelpers.hpp"
 
+#include <youbot/ProtocolDefinitions.hpp>
+
 #include <ocl/Component.hpp>
 
 #include <rtt/types/SequenceTypeInfo.hpp>
 #include <rtt/types/GlobalsRepository.hpp>
 
 #include <vector>
+
+#include <boost/lexical_cast.hpp>
 
 #include <generic/Logger.hpp>
 #include <rtt/Logger.hpp>
@@ -18,6 +22,8 @@ namespace YouBot
 	using namespace RTT;
 	using namespace RTT::types;
 	using namespace std;
+
+	unsigned int non_errors = ::MOTOR_HALTED | ::PWM_MODE_ACTIVE | ::VELOCITY_MODE | ::POSITION_MODE | ::TORQUE_MODE | ::POSITION_REACHED | ::INITIALIZED;
 
 	YouBotOODL::YouBotOODL(const string& name) : TaskContext(name, PreOperational)
 	{
@@ -62,23 +68,23 @@ namespace YouBot
 		log(Info) << "Detected youbot base, loading Base service" << endlog();
 
 		// Arm 1
-		this->provides()->addService(Service::shared_ptr( new YouBotArmService("Manipulator1",this, 1) ) );
-		update_ops.push_back(this->provides("Manipulator1")->getOperation("update"));
-		calibrate_ops.push_back(this->provides("Manipulator1")->getOperation("calibrate"));
-		start_ops.push_back(this->provides("Manipulator1")->getOperation("start"));
-		stop_ops.push_back(this->provides("Manipulator1")->getOperation("stop"));
-		cleanup_ops.push_back(this->provides("Manipulator1")->getOperation("cleanup"));
-		log(Info) << "Detected youbot arm, loading Manipulator1 service" << endlog();
+		this->provides()->addService(Service::shared_ptr( new YouBotArmService("Arm1",this, 1) ) );
+		update_ops.push_back(this->provides("Arm1")->getOperation("update"));
+		calibrate_ops.push_back(this->provides("Arm1")->getOperation("calibrate"));
+		start_ops.push_back(this->provides("Arm1")->getOperation("start"));
+		stop_ops.push_back(this->provides("Arm1")->getOperation("stop"));
+		cleanup_ops.push_back(this->provides("Arm1")->getOperation("cleanup"));
+		log(Info) << "Detected youbot arm, loading Arm1 service" << endlog();
 
 		if(nr_slaves == NR_OF_BASE_SLAVES + 2*NR_OF_ARM_SLAVES) // Arm 2
 		{
-			this->provides()->addService(Service::shared_ptr( new YouBotArmService("Manipulator2",this, 1 + NR_OF_ARM_SLAVES) ) );
-			update_ops.push_back(this->provides("Manipulator2")->getOperation("update"));
-			calibrate_ops.push_back(this->provides("Manipulator2")->getOperation("calibrate"));
-			start_ops.push_back(this->provides("Manipulator2")->getOperation("start"));
-			stop_ops.push_back(this->provides("Manipulator2")->getOperation("stop"));
-			cleanup_ops.push_back(this->provides("Manipulator2")->getOperation("cleanup"));
-			log(Info) << "Detected youbot arm, loading Manipulator2 service" << endlog();
+			this->provides()->addService(Service::shared_ptr( new YouBotArmService("Arm2",this, 1 + NR_OF_ARM_SLAVES) ) );
+			update_ops.push_back(this->provides("Arm2")->getOperation("update"));
+			calibrate_ops.push_back(this->provides("Arm2")->getOperation("calibrate"));
+			start_ops.push_back(this->provides("Arm2")->getOperation("start"));
+			stop_ops.push_back(this->provides("Arm2")->getOperation("stop"));
+			cleanup_ops.push_back(this->provides("Arm2")->getOperation("cleanup"));
+			log(Info) << "Detected youbot arm, loading Arm2 service" << endlog();
 		}
 
 		Seconds period = this->getPeriod();
@@ -182,6 +188,45 @@ namespace YouBot
         }
 
         TaskContext::cleanupHook();
+	}
+
+	void YouBotOODL::emitEvent(std::string message)
+	{
+		m_events.driver_event = message;
+		events.write(m_events);
+	}
+
+	void YouBotOODL::emitEvent(unsigned int joint, std::string message)
+	{
+		m_events.driver_event = "jnt" + boost::lexical_cast<string>(joint) + "." + message;
+		events.write(m_events);
+	}
+
+	void YouBotOODL::emitEvent(unsigned int joint, std::string message, bool condition)
+	{
+		m_events.driver_event = "jnt" + boost::lexical_cast<string>(joint) + "." + message + "_" + (condition ? "true" : "false");
+		events.write(m_events);
+	}
+
+	void check_edge(YouBotOODL* oodl, const motor_status ref_cond, const std::string outp_message, bool* cond_states, unsigned int joint, motor_status current)
+	{
+		if((ref_cond & current) != 0 && !cond_states[joint])
+		{
+			oodl->emitEvent(joint, outp_message, true);
+		}
+		else if(cond_states[joint] && (ref_cond & current) == 0)
+		{
+			oodl->emitEvent(joint, outp_message, false);
+		}
+	}
+
+	void check_level(YouBotOODL* oodl, const motor_status ref_cond, const std::string outp_message,
+			unsigned int joint, motor_status current)
+	{
+		if((ref_cond & current) != 0)
+		{
+			oodl->emitEvent(joint, outp_message);
+		}
 	}
 }
 

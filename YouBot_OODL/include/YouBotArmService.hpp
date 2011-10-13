@@ -12,6 +12,7 @@
 
 #include <sensor_msgs/typekit/Types.h>
 #include <motion_control_msgs/typekit/Types.h>
+#include <boost/bind.hpp>
 
 namespace YouBot
 {
@@ -33,21 +34,20 @@ namespace YouBot
 			void setControlModes(vector<ctrl_modes>& all);
 			void getControlModes(vector<ctrl_modes>& all);
 
-			void displayJointStatuses();
-
-			static unsigned int non_errors;
+			void displayMotorStatuses();
 
 		protected:
 			// Joints
 			OutputPort<sensor_msgs::JointState> joint_states;
-
-			OutputPort<vector<joint_status> > joint_statuses;
 
 			InputPort<motion_control_msgs::JointPositions> joint_cmd_angles;
 			InputPort<motion_control_msgs::JointVelocities> joint_cmd_velocities;
 			InputPort<motion_control_msgs::JointEfforts> joint_cmd_torques;
 
 			InputPort<vector<ctrl_modes> > joint_ctrl_modes;
+
+			OutputPort<YouBot_OODL::driver_event> events;
+			OutputPort<YouBot_OODL::motor_statuses> motor_statuses;
 
 		private:
 			bool calibrate();
@@ -56,9 +56,9 @@ namespace YouBot
 			void cleanup();
 			void stop();
 
-			void updateJointSetpoint(unsigned int joint_nr);
-
-			bool check_error();
+			void readJointStates();
+			void updateJointSetpoints();
+			void checkForErrors();
 
 	        motion_control_msgs::JointVelocities m_joint_cmd_velocities;
 	        motion_control_msgs::JointPositions  m_joint_cmd_angles;
@@ -71,12 +71,19 @@ namespace YouBot
 
 			vector<JointLimits> m_joint_limits;
 
-			vector<joint_status> m_joint_statuses;
 			vector<ctrl_modes> m_joint_ctrl_modes;
 
 			JointAngleSetpoint m_tmp_joint_cmd_angle;
 			JointVelocitySetpoint m_tmp_joint_cmd_velocity;
 			JointTorqueSetpoint m_tmp_joint_cmd_torque;
+
+			YouBot_OODL::motor_statuses m_motor_statuses;
+			YouBot_OODL::driver_event m_events;
+
+			typedef boost::function<void(unsigned int, motor_status current)> check_fp;
+			std::vector<check_fp> m_event_checks;
+			bool m_overcurrent[NR_OF_ARM_SLAVES];
+			bool m_undervoltage[NR_OF_ARM_SLAVES];
 
 			YouBotManipulator* m_manipulator;
 			YouBotJoint* m_joints[NR_OF_ARM_SLAVES];
