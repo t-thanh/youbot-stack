@@ -16,10 +16,10 @@ namespace YouBot
 	using namespace boost::units::si;
 
 	BaseControllerMockup::BaseControllerMockup(const string& name) :
-			TaskContext(name, PreOperational),
+			TaskContext(name, PreOperational)
 //			m_joint_velocities(NR_OF_BASE_SLAVES, quantity<si::angular_velocity>(0*radian_per_second)),
 //			m_joint_torques(NR_OF_BASE_SLAVES, quantity<si::torque>(0*newton_meter)),
-			m_joint_statuses(NR_OF_BASE_SLAVES, 0)
+//			m_joint_statuses(NR_OF_BASE_SLAVES, 0)
 //			m_modes(NR_OF_BASE_SLAVES, PLANE_ANGLE),
 			// Set the commands to zero depending on the number of joints
 //			m_joint_cmd_velocities(NR_OF_BASE_SLAVES, quantity<si::angular_velocity>(0*radian_per_second)),

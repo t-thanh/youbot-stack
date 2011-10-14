@@ -13,7 +13,7 @@ var std.vector<ctrl_modes>  arm_ctrl_modes=std.vector<ctrl_modes>(5,TORQUE)
 loadComponent("youbot","YouBot::YouBotOODL");
 
 //set periods
-youbot.setPeriod(0.001);
+setActivity("youbot", 0.001, HighestPriority, ORO_SCHED_RT);
 // configure all componetns
 youbot.configure;
 control.configure;

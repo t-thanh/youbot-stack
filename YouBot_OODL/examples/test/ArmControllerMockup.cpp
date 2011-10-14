@@ -24,7 +24,7 @@ namespace YouBot
 			TaskContext(name, PreOperational),
 //			m_joint_velocities(NR_OF_ARM_SLAVES, quantity<si::angular_velocity>(0*radian_per_second)),
 //			m_joint_torques(NR_OF_ARM_SLAVES, quantity<si::torque>(0*newton_meter)),
-			m_joint_statuses(NR_OF_ARM_SLAVES, 0),
+//			m_joint_statuses(NR_OF_ARM_SLAVES, 0),
 			m_modes(NR_OF_ARM_SLAVES, MOTOR_STOP)
 			// Set the commands to zero depending on the number of joints
 //			m_joint_cmd_velocities(NR_OF_ARM_SLAVES, quantity<si::angular_velocity>(0*radian_per_second)),

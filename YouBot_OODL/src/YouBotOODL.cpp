@@ -30,6 +30,8 @@ namespace YouBot
 		youbot::Logger::logginLevel = youbot::fatal;
 		RTT::Logger* ins = RTT::Logger::Instance();
 		ins->setLogLevel(RTT::Logger::Info);
+
+		m_events.driver_event.assign(50, ' '); //@TODO: Fix me
 	}
 
 	YouBotOODL::~YouBotOODL() {}
@@ -57,6 +59,8 @@ namespace YouBot
 			log(Error) << "Not a proper amount of Ethercat slaves, got:" << nr_slaves << endlog();
 			return false;
 		}
+
+		this->addPort("events",events).doc("OODL events");
 
 		// Base
 		this->provides()->addService(Service::shared_ptr( new YouBotBaseService("Base",this, 1) ) );
@@ -192,40 +196,47 @@ namespace YouBot
 
 	void YouBotOODL::emitEvent(std::string message)
 	{
+		m_events.stamp = ros::Time::now();
 		m_events.driver_event = message;
 		events.write(m_events);
 	}
 
 	void YouBotOODL::emitEvent(unsigned int joint, std::string message)
 	{
+		m_events.stamp = ros::Time::now();
 		m_events.driver_event = "jnt" + boost::lexical_cast<string>(joint) + "." + message;
 		events.write(m_events);
 	}
 
 	void YouBotOODL::emitEvent(unsigned int joint, std::string message, bool condition)
 	{
+		m_events.stamp = ros::Time::now();
 		m_events.driver_event = "jnt" + boost::lexical_cast<string>(joint) + "." + message + "_" + (condition ? "true" : "false");
 		events.write(m_events);
 	}
 
-	void check_edge(YouBotOODL* oodl, const motor_status ref_cond, const std::string outp_message, bool* cond_states, unsigned int joint, motor_status current)
+	// Joints from 0 to N-1
+	void YouBotOODL::check_edge(const motor_status ref_cond, const std::string outp_message, bool* const cond_state,
+			unsigned int joint, motor_status current)
 	{
-		if((ref_cond & current) != 0 && !cond_states[joint])
+		if((ref_cond & current) != 0 && !(cond_state[joint]) )
 		{
-			oodl->emitEvent(joint, outp_message, true);
+			cond_state[joint] = true;
+			emitEvent(joint+1, outp_message, true);
 		}
-		else if(cond_states[joint] && (ref_cond & current) == 0)
+		else if(cond_state[joint] && (ref_cond & current) == 0)
 		{
-			oodl->emitEvent(joint, outp_message, false);
+			cond_state[joint] = false;
+			emitEvent(joint+1, outp_message, false);
 		}
 	}
 
-	void check_level(YouBotOODL* oodl, const motor_status ref_cond, const std::string outp_message,
+	void YouBotOODL::check_level(const motor_status ref_cond, const std::string outp_message,
 			unsigned int joint, motor_status current)
 	{
 		if((ref_cond & current) != 0)
 		{
-			oodl->emitEvent(joint, outp_message);
+			emitEvent(joint, outp_message);
 		}
 	}
 }

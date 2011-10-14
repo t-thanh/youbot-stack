@@ -1,0 +1,63 @@
+import("YouBot_OODL")
+import("rtt_ros_integration_sensor_msgs");
+import("rtt_ros_integration_std_msgs");
+import("rtt_motion_control_msgs");
+
+displayComponentTypes;
+
+loadComponent("ArmController","YouBot::ArmControllerMockup");
+loadComponent("OODL","YouBot::YouBotOODL");
+loadComponent("EventLogger", "YouBot::EventLogger");
+
+ArmController.configure;
+ArmController.setPeriod(0.01);
+setActivity("OODL", 0.001, HighestPriority, ORO_SCHED_RT);
+OODL.configure;
+
+var ConnPolicy cp_1;
+cp_1.type = DATA;  // Use ''BUFFER'' or ''DATA''
+cp_1.lock_policy = LOCK_FREE; // Use  ''LOCKED'', ''LOCK_FREE'' or ''UNSYNC''
+
+connectPeers("OODL", "ArmController")
+connect("OODL.Arm1.joint_states","ArmController.joint_states",cp_1)
+connect("OODL.Arm1.motor_statuses","ArmController.joint_statuses",cp_1)
+connect("ArmController.joint_cmd_angles","OODL.Arm1.joint_cmd_angles",cp_1)
+connect("ArmController.joint_ctrl_modes", "OODL.Arm1.joint_ctrl_modes", cp_1);
+
+var ConnPolicy cp_2;
+cp_2.type = BUFFER;
+cp_2.lock_policy = LOCK_FREE;
+cp_2.size = 20;
+
+connectPeers("OODL", "EventLogger");
+connect("OODL.events", "EventLogger.events", cp_2);
+
+#
+# ROS output
+#
+
+var ConnPolicy cp_r;
+cp_r.transport = 3;
+cp_r.name_id = "/debug/joint_states";
+stream("OODL.Arm1.joint_states", cp_r);
+
+cp_r.name_id = "/debug/motor_statuses";
+stream("OODL.Arm1.motor_statuses", cp_r);
+
+cp_r.name_id = "/debug/joint_cmd_angles";
+stream("ArmController.joint_cmd_angles", cp_r);
+
+cp_r.name_id = "/debug/events";
+stream("OODL.events", cp_r);
+
+# 
+# Start running
+# 
+
+EventLogger.start;
+OODL.start;
+ArmController.start;
+
+OODL.Arm1.clearControllerTimeouts;
+
+ArmController.unfoldManipulator();

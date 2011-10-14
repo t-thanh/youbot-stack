@@ -44,11 +44,10 @@ namespace YouBot
 		m_joint_cmd_torques.efforts.assign(NR_OF_ARM_SLAVES,0);
 
 		m_motor_statuses.flags.resize(NR_OF_ARM_SLAVES, 0);
-		m_events.driver_event.assign(50, ' '); //@TODO: Fix me
 
 		this->addPort("joint_states",joint_states).doc("Joint states");
 		this->addPort("motor_statuses",motor_statuses).doc("Motor statuses");
-		this->addPort("events", events).doc("Joint events");
+//		this->addPort("events", events).doc("Joint events");
 
 		this->addPort("joint_cmd_angles",joint_cmd_angles).doc("Command joint angles");
 		this->addPort("joint_cmd_velocities",joint_cmd_velocities).doc("Command joint velocities");
@@ -65,6 +64,7 @@ namespace YouBot
         this->addOperation("setControlModes",&YouBotArmService::setControlModes,this, OwnThread);
         this->addOperation("getControlModes",&YouBotArmService::getControlModes,this, OwnThread);
         this->addOperation("displayMotorStatuses",&YouBotArmService::displayMotorStatuses,this, OwnThread);
+        this->addOperation("clearControllerTimeouts",&YouBotArmService::clearControllerTimeouts,this, OwnThread);
 
         // Pre-allocate port memory for outputs
         joint_states.setDataSample( m_joint_states );
@@ -72,15 +72,56 @@ namespace YouBot
 
         YouBotOODL* oodl = dynamic_cast<YouBotOODL*>(parent);
 
+        if(oodl == NULL)
+        {
+        	log(Error) << "OODL pointer MUST NOT be null." << endlog();
+        	return;
+        }
+
+		memset(m_overcurrent, 0, NR_OF_ARM_SLAVES); // set to false
+		memset(m_undervoltage, 0, NR_OF_ARM_SLAVES);
+		memset(m_overvoltage, 0, NR_OF_ARM_SLAVES);
+		memset(m_overtemperature, 0, NR_OF_ARM_SLAVES);
+		memset(m_connectionlost, 0, NR_OF_ARM_SLAVES);
+		memset(m_i2texceeded, 0, NR_OF_ARM_SLAVES);
+
         // edge events
-        check_fp cond = boost::bind(&check_edge, oodl, ::OVER_CURRENT, "e_OVERCURRENT", m_overcurrent, _1, _2);
+        check_fp cond(NULL);
+        cond = boost::bind(boost::mem_fn(&YouBotOODL::check_edge), oodl, ::OVER_CURRENT, "e_OVERCURRENT", m_overcurrent, _1, _2);
         m_event_checks.push_back(cond);
-        cond = boost::bind(&check_edge, oodl, ::UNDER_VOLTAGE, "e_UNDERVOLTAGE", m_undervoltage, _1, _2);
+
+        cond = boost::bind(boost::mem_fn(&YouBotOODL::check_edge), oodl, ::UNDER_VOLTAGE, "e_UNDERVOLTAGE", m_undervoltage, _1, _2);
 		m_event_checks.push_back(cond);
 
-		// level events
-		cond = boost::bind(&check_level, oodl, ::TIMEOUT, "e_EC_TIMEOUT", _1, _2);
+		cond = boost::bind(boost::mem_fn(&YouBotOODL::check_edge), oodl, ::OVER_VOLTAGE, "e_OVERVOLTAGE", m_overvoltage, _1, _2);
 		m_event_checks.push_back(cond);
+
+		cond = boost::bind(boost::mem_fn(&YouBotOODL::check_edge), oodl, ::OVER_TEMPERATURE, "e_OVERTEMP", m_overtemperature, _1, _2);
+		m_event_checks.push_back(cond);
+
+//		cond = boost::bind(boost::mem_fn(&YouBotOODL::check_edge), oodl, , "e_EC_CONN_LOST_", m_connectionlost, _1, _2);
+//		m_event_checks.push_back(cond);
+
+		cond = boost::bind(boost::mem_fn(&YouBotOODL::check_edge), oodl, ::I2T_EXCEEDED, "e_I2T_EXCEEDED", m_i2texceeded, _1, _2);
+		m_event_checks.push_back(cond);
+
+
+
+		// level events
+		cond = boost::bind(boost::mem_fn(&YouBotOODL::check_level), oodl, ::HALL_SENSOR_ERROR, "e_HALL_ERR", _1, _2);
+		m_event_checks.push_back(cond);
+
+//		cond = boost::bind(boost::mem_fn(&YouBotOODL::check_level), oodl, ::ENCODER_ERROR, "e_ENCODER_ERR", _1, _2);
+//		m_event_checks.push_back(cond);
+
+//		cond = boost::bind(boost::mem_fn(&YouBotOODL::check_level), oodl, , "e_SINE_COMM_INIT_ERR", _1, _2);
+//		m_event_checks.push_back(cond);
+
+//		cond = boost::bind(boost::mem_fn(&YouBotOODL::check_level), oodl, ::EMERGENCY_STOP, "e_EMERGENCY_STOP", _1, _2);
+//		m_event_checks.push_back(cond);
+
+//		cond = boost::bind(boost::mem_fn(&YouBotOODL::check_level), oodl, ::TIMEOUT, "e_EC_TIMEOUT", _1, _2);
+//		m_event_checks.push_back(cond);
 	}
 
 	YouBotArmService::~YouBotArmService()
@@ -108,7 +149,28 @@ namespace YouBot
 
 	bool YouBotArmService::start()
 	{
-		return m_calibrated;
+		if(m_calibrated)
+		{
+			clearControllerTimeouts();
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+	}
+
+	void YouBotArmService::clearControllerTimeouts()
+	{
+		for(unsigned int i = 0; i < NR_OF_ARM_SLAVES; ++i)
+		{
+			m_joints[i]->getStatus(m_motor_statuses.flags[i]);
+			if( m_motor_statuses.flags[i] & ::TIMEOUT )
+			{
+				ClearMotorControllerTimeoutFlag clearTimeoutFlag;
+				m_joints[i]->setConfigurationParameter(clearTimeoutFlag);
+			}
+		}
 	}
 
 	void YouBotArmService::readJointStates()
@@ -196,16 +258,13 @@ namespace YouBot
 
 	void YouBotArmService::checkForErrors()
 	{
-		motor_status tmp(0);
 		for(unsigned int i = 0; i < NR_OF_ARM_SLAVES; ++i)
 		{
 			m_joints[i]->getStatus(m_motor_statuses.flags[i]);
 
-			tmp = m_motor_statuses.flags[i] & !non_errors; //filter non errors!
-
-			for(unsigned int j = 0; i < m_event_checks.size(); ++j)
+			for(unsigned int j = 0; j < m_event_checks.size(); ++j)
 			{
-				m_event_checks[j](i, tmp);
+				m_event_checks[j](i, m_motor_statuses.flags[i]);
 			}
 		}
 
@@ -214,9 +273,9 @@ namespace YouBot
 
 	void YouBotArmService::update()
 	{
-		readJointStates();
-
 		updateJointSetpoints();
+
+		readJointStates();
 
 		checkForErrors();
 	}

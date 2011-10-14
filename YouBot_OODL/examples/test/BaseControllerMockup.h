@@ -47,14 +47,14 @@ namespace YouBot
 
 			InputPort< sensor_msgs::JointState > joint_states;
 
-			InputPort< vector<joint_status> > joint_statuses;
+			InputPort< YouBot_OODL::motor_statuses > joint_statuses;
 
 			OutputPort< motion_control_msgs::JointPositions > joint_cmd_angles;
 			OutputPort< vector<ctrl_modes> > joint_ctrl_modes;
 
 			sensor_msgs::JointState m_joint_states;
 
-			vector<joint_status> m_joint_statuses;
+			YouBot_OODL::motor_statuses m_joint_statuses;
 			vector<ctrl_modes> m_modes;
 
 			motion_control_msgs::JointPositions m_joint_cmd_angles;
