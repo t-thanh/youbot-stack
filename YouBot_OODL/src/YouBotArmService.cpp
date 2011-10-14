@@ -87,40 +87,41 @@ namespace YouBot
 
         // edge events
         check_fp cond(NULL);
-        cond = boost::bind(boost::mem_fn(&YouBotOODL::check_edge), oodl, ::OVER_CURRENT, "e_OVERCURRENT", m_overcurrent, _1, _2);
+        cond = boost::bind(boost::mem_fn(&YouBotOODL::check_edge), oodl, ::OVER_CURRENT, E_OVERCURRENT, m_overcurrent, _1, _2);
         m_event_checks.push_back(cond);
 
-        cond = boost::bind(boost::mem_fn(&YouBotOODL::check_edge), oodl, ::UNDER_VOLTAGE, "e_UNDERVOLTAGE", m_undervoltage, _1, _2);
+        cond = boost::bind(boost::mem_fn(&YouBotOODL::check_edge), oodl, ::UNDER_VOLTAGE, E_UNDERVOLTAGE, m_undervoltage, _1, _2);
 		m_event_checks.push_back(cond);
 
-		cond = boost::bind(boost::mem_fn(&YouBotOODL::check_edge), oodl, ::OVER_VOLTAGE, "e_OVERVOLTAGE", m_overvoltage, _1, _2);
+		cond = boost::bind(boost::mem_fn(&YouBotOODL::check_edge), oodl, ::OVER_VOLTAGE, E_OVERVOLTAGE, m_overvoltage, _1, _2);
 		m_event_checks.push_back(cond);
 
-		cond = boost::bind(boost::mem_fn(&YouBotOODL::check_edge), oodl, ::OVER_TEMPERATURE, "e_OVERTEMP", m_overtemperature, _1, _2);
+		cond = boost::bind(boost::mem_fn(&YouBotOODL::check_edge), oodl, ::OVER_TEMPERATURE, E_OVERTEMP, m_overtemperature, _1, _2);
 		m_event_checks.push_back(cond);
 
-//		cond = boost::bind(boost::mem_fn(&YouBotOODL::check_edge), oodl, , "e_EC_CONN_LOST_", m_connectionlost, _1, _2);
+//		cond = boost::bind(boost::mem_fn(&YouBotOODL::check_edge), oodl, , E_EC_CON_LOST, m_connectionlost, _1, _2);
 //		m_event_checks.push_back(cond);
 
-		cond = boost::bind(boost::mem_fn(&YouBotOODL::check_edge), oodl, ::I2T_EXCEEDED, "e_I2T_EXCEEDED", m_i2texceeded, _1, _2);
+		cond = boost::bind(boost::mem_fn(&YouBotOODL::check_edge), oodl, ::I2T_EXCEEDED, E_I2T_EXCEEDED, m_i2texceeded, _1, _2);
 		m_event_checks.push_back(cond);
 
 
 
 		// level events
-		cond = boost::bind(boost::mem_fn(&YouBotOODL::check_level), oodl, ::HALL_SENSOR_ERROR, "e_HALL_ERR", _1, _2);
+		cond = boost::bind(boost::mem_fn(&YouBotOODL::check_level), oodl, ::HALL_SENSOR_ERROR, E_HALL_ERR, _1, _2);
 		m_event_checks.push_back(cond);
 
-//		cond = boost::bind(boost::mem_fn(&YouBotOODL::check_level), oodl, ::ENCODER_ERROR, "e_ENCODER_ERR", _1, _2);
+//		cond = boost::bind(boost::mem_fn(&YouBotOODL::check_level), oodl, ::ENCODER_ERROR, E_ENCODER_ERR, _1, _2);
 //		m_event_checks.push_back(cond);
 
-//		cond = boost::bind(boost::mem_fn(&YouBotOODL::check_level), oodl, , "e_SINE_COMM_INIT_ERR", _1, _2);
+//		cond = boost::bind(boost::mem_fn(&YouBotOODL::check_level), oodl, , E_SINE_COMM_INIT_ERR, _1, _2);
 //		m_event_checks.push_back(cond);
 
-//		cond = boost::bind(boost::mem_fn(&YouBotOODL::check_level), oodl, ::EMERGENCY_STOP, "e_EMERGENCY_STOP", _1, _2);
+//		cond = boost::bind(boost::mem_fn(&YouBotOODL::check_level), oodl, ::EMERGENCY_STOP, E_EMERGENCY_STOP, _1, _2);
 //		m_event_checks.push_back(cond);
 
-//		cond = boost::bind(boost::mem_fn(&YouBotOODL::check_level), oodl, ::TIMEOUT, "e_EC_TIMEOUT", _1, _2);
+		//TODO: FIX ME: Second startup creates lots of timeout's.
+//		cond = boost::bind(boost::mem_fn(&YouBotOODL::check_level), oodl, ::TIMEOUT, E_EC_TIMEOUT, _1, _2);
 //		m_event_checks.push_back(cond);
 	}
 
