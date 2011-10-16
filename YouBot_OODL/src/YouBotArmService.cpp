@@ -250,7 +250,7 @@ namespace YouBot
 				}
 				default:
 				{
-					log(Error) << "Case not recognized." << endlog();
+					log(Error) << "ctrl_mode not recognized." << endlog();
 					break;
 				}
 			}
@@ -366,6 +366,7 @@ namespace YouBot
 		{
 			log(Error) << e.what();
 			m_manipulator = NULL;
+			this->getOwner()->error();
 			return false;
 		}
 

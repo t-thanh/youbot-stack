@@ -59,9 +59,4 @@ namespace YouBot
 	        YouBot_OODL::driver_event m_events;
 	};
 
-	void check_edge(YouBotOODL* const oodl, const motor_status ref_cond, const std::string outp_message, bool const* cond_states,
-			unsigned int joint, motor_status current);
-
-	void check_level(YouBotOODL* const oodl, const motor_status ref_cond, const std::string outp_message,
-				unsigned int joint, motor_status current);
 }
