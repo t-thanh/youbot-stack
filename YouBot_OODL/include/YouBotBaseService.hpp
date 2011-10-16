@@ -11,6 +11,7 @@
 #include <nav_msgs/typekit/Types.h>
 #include <geometry_msgs/typekit/Types.h>
 
+#include "YouBotService.hpp"
 #include "YouBotTypes.hpp"
 #include "YouBotOODL.hpp"
 
@@ -20,7 +21,7 @@ namespace YouBot
 	using namespace std;
 	using namespace youbot;
 
-    class YouBotBaseService : public Service {
+    class YouBotBaseService : public YouBotService {
 
 		public:
 			YouBotBaseService(const string& name, TaskContext* parent, unsigned int min_slave_nr);
@@ -28,8 +29,10 @@ namespace YouBot
 
 			void setControlModes(vector<ctrl_modes>& all);
 			void getControlModes(vector<ctrl_modes>& all);
+
 			void displayMotorStatuses();
 
+			void clearControllerTimeouts();
 		private:
 			OutputPort<sensor_msgs::JointState> joint_states;
 			OutputPort<nav_msgs::Odometry> odometry_state;
@@ -43,6 +46,8 @@ namespace YouBot
 			InputPort<geometry_msgs::Twist> cmd_twist;
 
 			void setupComponentInterface();
+			void setupEventChecks();
+
 			bool calibrate();
 			bool start();
 			void update();
@@ -55,7 +60,7 @@ namespace YouBot
 			void setJointSetpoints();
 			void setTwistSetpoints();
 
-			void check_error();
+			void checkMotorStatuses();
 
 	        motion_control_msgs::JointVelocities m_joint_cmd_velocities;
 	        motion_control_msgs::JointPositions  m_joint_cmd_angles;
@@ -79,6 +84,14 @@ namespace YouBot
 			YouBotBase* m_base;
 			YouBotJoint* m_joints[NR_OF_BASE_SLAVES];
 			FourSwedishWheelOmniBaseKinematic m_kinematics;
+
+			std::vector<check_fp> m_event_checks;
+			bool m_overcurrent[NR_OF_ARM_SLAVES];
+			bool m_undervoltage[NR_OF_ARM_SLAVES];
+			bool m_overvoltage[NR_OF_ARM_SLAVES];
+			bool m_overtemperature[NR_OF_ARM_SLAVES];
+			bool m_connectionlost[NR_OF_ARM_SLAVES];
+			bool m_i2texceeded[NR_OF_ARM_SLAVES];
 
 			bool m_calibrated;
 

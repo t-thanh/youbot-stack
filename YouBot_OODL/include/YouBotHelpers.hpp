@@ -40,7 +40,6 @@ namespace YouBot
 	const std::string E_EMERGENCY_STOP = "e_EMERGENCY_STOP";
 	const std::string E_EC_TIMEOUT = "e_EC_TIMEOUT";
 
-
 	std::string ctrl_modes_tostring(const ctrl_modes& cd);
 
 	std::string motor_status_tostring(const motor_status& cd);

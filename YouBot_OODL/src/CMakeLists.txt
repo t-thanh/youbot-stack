@@ -12,7 +12,7 @@ SET(YOUBOT_OODL_libs
 	rtt-ros-YouBot_OODL-typekit
 )
 
-SET(YOUBOT_OODL_FILES YouBotArmService.cpp YouBotBaseService.cpp YouBotOODL.cpp)
+SET(YOUBOT_OODL_FILES YouBotService.cpp YouBotArmService.cpp YouBotBaseService.cpp YouBotOODL.cpp)
 
 INCLUDE_DIRECTORIES(${YOUBOT_OODL_INCLUDE_DIR})
 

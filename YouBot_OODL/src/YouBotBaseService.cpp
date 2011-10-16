@@ -16,7 +16,7 @@ namespace YouBot
 	extern unsigned int non_errors;
 
 	YouBotBaseService::YouBotBaseService(const string& name, TaskContext* parent, unsigned int min_slave_nr) :
-		Service(name,parent),
+		YouBotService(name,parent),
 		m_tmp_joint_angles(NR_OF_BASE_SLAVES, JointSensedAngle(0*radian)),
 		m_tmp_joint_velocities(NR_OF_BASE_SLAVES, JointSensedVelocity(0*radian_per_second)),
 		m_tmp_joint_torques(NR_OF_BASE_SLAVES, JointSensedTorque(0*newton_meter)),
@@ -60,11 +60,26 @@ namespace YouBot
         m_odometry_state.twist.twist.angular.y = 0;
         m_odometry_state.twist.twist.angular.z = 0;
 
+		memset(m_overcurrent, 0, NR_OF_ARM_SLAVES); // set to false
+		memset(m_undervoltage, 0, NR_OF_ARM_SLAVES);
+		memset(m_overvoltage, 0, NR_OF_ARM_SLAVES);
+		memset(m_overtemperature, 0, NR_OF_ARM_SLAVES);
+		memset(m_connectionlost, 0, NR_OF_ARM_SLAVES);
+		memset(m_i2texceeded, 0, NR_OF_ARM_SLAVES);
+
         setupComponentInterface();
+        setupEventChecks();
+	}
+
+	YouBotBaseService::~YouBotBaseService()
+	{
+		delete m_base;
 	}
 
 	void YouBotBaseService::setupComponentInterface()
 	{
+		YouBotService::setupComponentInterface();
+
 		this->addPort("joint_states",joint_states).doc("Joint states");
 		this->addPort("odometry_state",odometry_state).doc("Base odometry");
 
@@ -86,11 +101,48 @@ namespace YouBot
 		this->addOperation("getControlModes",&YouBotBaseService::getControlModes,this, OwnThread);
 
 		this->addOperation("displayMotorStatuses",&YouBotBaseService::displayMotorStatuses,this, OwnThread);
+		this->addOperation("clearControllerTimeouts",&YouBotBaseService::clearControllerTimeouts,this, OwnThread);
 	}
 
-	YouBotBaseService::~YouBotBaseService()
+	void YouBotBaseService::setupEventChecks()
 	{
-		delete m_base;
+		// edge events
+		check_fp cond(NULL);
+		cond = boost::bind(&check_event_edge, this, ::OVER_CURRENT, E_OVERCURRENT, m_overcurrent, _1, _2);
+		m_event_checks.push_back(cond);
+
+		cond = boost::bind(&check_event_edge, this, ::UNDER_VOLTAGE, E_UNDERVOLTAGE, m_undervoltage, _1, _2);
+		m_event_checks.push_back(cond);
+
+		cond = boost::bind(&check_event_edge, this, ::OVER_VOLTAGE, E_OVERVOLTAGE, m_overvoltage, _1, _2);
+		m_event_checks.push_back(cond);
+
+		cond = boost::bind(&check_event_edge, this, ::OVER_TEMPERATURE, E_OVERTEMP, m_overtemperature, _1, _2);
+		m_event_checks.push_back(cond);
+
+	//		cond = boost::bind(&check_event_edge, this, , E_EC_CON_LOST, m_connectionlost, _1, _2);
+	//		m_event_checks.push_back(cond);
+
+		cond = boost::bind(&check_event_edge, this, ::I2T_EXCEEDED, E_I2T_EXCEEDED, m_i2texceeded, _1, _2);
+		m_event_checks.push_back(cond);
+
+
+		// level events
+		cond = boost::bind(&check_event_level, this, ::HALL_SENSOR_ERROR, E_HALL_ERR, _1, _2);
+		m_event_checks.push_back(cond);
+
+	//		cond = boost::bind(&check_event_level, this, ::ENCODER_ERROR, E_ENCODER_ERR, _1, _2);
+	//		m_event_checks.push_back(cond);
+
+	//		cond = boost::bind(&check_event_level, this, , E_SINE_COMM_INIT_ERR, _1, _2);
+	//		m_event_checks.push_back(cond);
+
+	//		cond = boost::bind(&check_event_level, this, ::EMERGENCY_STOP, E_EMERGENCY_STOP, _1, _2);
+	//		m_event_checks.push_back(cond);
+
+		//TODO: FIX ME: Second startup creates lots of timeout's.
+	//		cond = boost::bind(&check_event_level, this, ::TIMEOUT, E_EC_TIMEOUT, _1, _2);
+	//		m_event_checks.push_back(cond);
 	}
 
 	void YouBotBaseService::getControlModes(vector<ctrl_modes>& all)
@@ -284,16 +336,19 @@ namespace YouBot
 		}
 
 		// Check for errors -> events
-		check_error();
+		checkMotorStatuses();
 	}
 
-	void YouBotBaseService::check_error()
+	void YouBotBaseService::checkMotorStatuses()
 	{
 		for(unsigned int i = 0; i < NR_OF_BASE_SLAVES; ++i)
 		{
 			m_joints[i]->getStatus(m_motor_statuses.flags[i]);
 
-			//TODO: Emit events
+			for(unsigned int j = 0; j < m_event_checks.size(); ++j)
+			{
+				m_event_checks[j](i, m_motor_statuses.flags[i]);
+			}
 		}
 
 		motor_statuses.write(m_motor_statuses);
@@ -361,6 +416,19 @@ namespace YouBot
 		for(unsigned int i = 0; i < m_motor_statuses.flags.size(); ++i)
 		{
 			log(Info) << "Joint[" << i+1 << "] is " << motor_status_tostring(m_motor_statuses.flags[i]) << endlog();
+		}
+	}
+
+	void YouBotBaseService::clearControllerTimeouts()
+	{
+		for(unsigned int i = 0; i < NR_OF_ARM_SLAVES; ++i)
+		{
+			m_joints[i]->getStatus(m_motor_statuses.flags[i]);
+			if( m_motor_statuses.flags[i] & ::TIMEOUT )
+			{
+				ClearMotorControllerTimeoutFlag clearTimeoutFlag;
+				m_joints[i]->setConfigurationParameter(clearTimeoutFlag);
+			}
 		}
 	}
 
