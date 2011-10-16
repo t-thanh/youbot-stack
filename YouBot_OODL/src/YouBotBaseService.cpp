@@ -60,12 +60,12 @@ namespace YouBot
         m_odometry_state.twist.twist.angular.y = 0;
         m_odometry_state.twist.twist.angular.z = 0;
 
-		memset(m_overcurrent, 0, NR_OF_ARM_SLAVES); // set to false
-		memset(m_undervoltage, 0, NR_OF_ARM_SLAVES);
-		memset(m_overvoltage, 0, NR_OF_ARM_SLAVES);
-		memset(m_overtemperature, 0, NR_OF_ARM_SLAVES);
-		memset(m_connectionlost, 0, NR_OF_ARM_SLAVES);
-		memset(m_i2texceeded, 0, NR_OF_ARM_SLAVES);
+		memset(m_overcurrent, 0, NR_OF_BASE_SLAVES); // set to false
+		memset(m_undervoltage, 0, NR_OF_BASE_SLAVES);
+		memset(m_overvoltage, 0, NR_OF_BASE_SLAVES);
+		memset(m_overtemperature, 0, NR_OF_BASE_SLAVES);
+		memset(m_connectionlost, 0, NR_OF_BASE_SLAVES);
+		memset(m_i2texceeded, 0, NR_OF_BASE_SLAVES);
 
         setupComponentInterface();
         setupEventChecks();
@@ -421,7 +421,7 @@ namespace YouBot
 
 	void YouBotBaseService::clearControllerTimeouts()
 	{
-		for(unsigned int i = 0; i < NR_OF_ARM_SLAVES; ++i)
+		for(unsigned int i = 0; i < NR_OF_BASE_SLAVES; ++i)
 		{
 			m_joints[i]->getStatus(m_motor_statuses.flags[i]);
 			if( m_motor_statuses.flags[i] & ::TIMEOUT )
