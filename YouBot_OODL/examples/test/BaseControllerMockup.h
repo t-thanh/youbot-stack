@@ -45,14 +45,15 @@ namespace YouBot
 			virtual void cleanupHook();
 
 		private:
+			// Ports to and from OODL
 			InputPort< sensor_msgs::JointState > joint_states;
-
 			InputPort< YouBot_OODL::motor_statuses > joint_statuses;
-
 			OutputPort< motion_control_msgs::JointPositions > joint_cmd_angles;
 
-			sensor_msgs::JointState m_joint_states;
+			// Ports to a setpoint generating device (e.g. joystick)
+			InputPort< vector<double> > setpoint;
 
+			sensor_msgs::JointState m_joint_states;
 			YouBot_OODL::motor_statuses m_joint_statuses;
 			vector<ctrl_modes> m_modes;
 
