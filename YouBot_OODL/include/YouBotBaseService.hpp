@@ -83,7 +83,6 @@ namespace YouBot
 
 			YouBotBase* m_base;
 			YouBotJoint* m_joints[NR_OF_BASE_SLAVES];
-			FourSwedishWheelOmniBaseKinematic m_kinematics;
 
 			std::vector<check_fp> m_event_checks;
 			bool m_overcurrent[NR_OF_ARM_SLAVES];

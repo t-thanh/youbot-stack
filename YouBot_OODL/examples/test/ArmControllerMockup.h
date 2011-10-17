@@ -44,8 +44,6 @@ namespace YouBot
 
 			OutputPort< motion_control_msgs::JointPositions > joint_cmd_angles;
 
-			OutputPort< vector<ctrl_modes> > joint_ctrl_modes;
-
 			sensor_msgs::JointState m_joint_states;
 
 			YouBot_OODL::motor_statuses m_joint_statuses;
@@ -54,6 +52,8 @@ namespace YouBot
 			motion_control_msgs::JointPositions m_joint_cmd_angles;
 //			vector<quantity<si::angular_velocity> > m_joint_cmd_velocities;
 //			vector<quantity<si::torque> > m_joint_cmd_torques;
+
+			OperationCaller<void(vector<ctrl_modes>) > op_setControlModes;
 
 	};
 }

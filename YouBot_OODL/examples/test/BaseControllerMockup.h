@@ -29,11 +29,13 @@ namespace YouBot
 		BaseControllerMockup(const string& name);
 		virtual ~BaseControllerMockup();
 
-		void getBasePosition(double& longitudinalPosition, double& transversalPosition, double& orientation);
-		void setBasePosition(double& longitudinalPosition, double& transversalPosition, double& orientation);
+//		void getBasePosition(double& longitudinalPosition, double& transversalPosition, double& orientation);
+//		void setBasePosition(double& longitudinalPosition, double& transversalPosition, double& orientation);
+//
+//		void getBaseVelocity(double& longitudinalVelocity, double& transversalVelocity, double& angularVelocity);
+//		void setBaseVelocity(double& longitudinalVelocity, double& transversalVelocity, double& angularVelocity);
 
-		void getBaseVelocity(double& longitudinalVelocity, double& transversalVelocity, double& angularVelocity);
-		void setBaseVelocity(double& longitudinalVelocity, double& transversalVelocity, double& angularVelocity);
+		void setJointAngles(vector< double >& angles, double epsilon);
 
 		protected:
 			virtual bool configureHook();
@@ -43,14 +45,11 @@ namespace YouBot
 			virtual void cleanupHook();
 
 		private:
-			void setJointAngles(vector< double >& angles, double epsilon);
-
 			InputPort< sensor_msgs::JointState > joint_states;
 
 			InputPort< YouBot_OODL::motor_statuses > joint_statuses;
 
 			OutputPort< motion_control_msgs::JointPositions > joint_cmd_angles;
-			OutputPort< vector<ctrl_modes> > joint_ctrl_modes;
 
 			sensor_msgs::JointState m_joint_states;
 
@@ -61,10 +60,12 @@ namespace YouBot
 //			vector<quantity<si::angular_velocity> > m_joint_cmd_velocities;
 //			vector<quantity<si::torque> > m_joint_cmd_torques;
 
-			OperationCaller<void(quantity<si::length>& longitudinalPosition, quantity<si::length>& transversalPosition, quantity<plane_angle>& orientation)> op_getBasePosition;
-			OperationCaller<void(quantity<si::length>& longitudinalPosition, quantity<si::length>& transversalPosition, quantity<plane_angle>& orientation)> op_setBasePosition;
+			OperationCaller<void(vector<ctrl_modes>) > op_setControlModes;
 
-			OperationCaller<void(quantity<velocity>& longitudinalPosition, quantity<velocity>& transversalPosition, quantity<angular_velocity>& orientation)> op_setBaseVelocity;
+//			OperationCaller<void(quantity<si::length>& longitudinalPosition, quantity<si::length>& transversalPosition, quantity<plane_angle>& orientation)> op_getBasePosition;
+//			OperationCaller<void(quantity<si::length>& longitudinalPosition, quantity<si::length>& transversalPosition, quantity<plane_angle>& orientation)> op_setBasePosition;
+//
+//			OperationCaller<void(quantity<velocity>& longitudinalPosition, quantity<velocity>& transversalPosition, quantity<angular_velocity>& orientation)> op_setBaseVelocity;
 
 	};
 }

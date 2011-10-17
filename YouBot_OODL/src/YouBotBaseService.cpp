@@ -2,6 +2,7 @@
 
 #include <cassert>
 #include <youbot/ProtocolDefinitions.hpp>
+#include <base-kinematic/FourSwedishWheelOmniBaseKinematicConfiguration.hpp>
 
 #include "YouBotHelpers.hpp"
 
@@ -193,15 +194,17 @@ namespace YouBot
 		quantity<si::velocity> transversalVelocity = m_cmd_twist.linear.y * si::meter_per_second;
 		quantity<si::angular_velocity> angularVelocity = m_cmd_twist.angular.z * si::radian_per_second;
 
-		std::vector<quantity<angular_velocity> > wheelVelocities(NR_OF_BASE_SLAVES, 0);
+		m_base->setBaseVelocity(longitudinalVelocity, transversalVelocity, angularVelocity);
 
-		m_kinematics.cartesianVelocityToWheelVelocities(longitudinalVelocity, transversalVelocity, angularVelocity, wheelVelocities);
-
-		for(unsigned int joint_nr = 0; joint_nr < NR_OF_BASE_SLAVES; ++joint_nr)
-		{
-			m_tmp_joint_cmd_velocity.angularVelocity = wheelVelocities[joint_nr];
-			m_joints[joint_nr]->setData(m_tmp_joint_cmd_velocity);
-		}
+//		std::vector<quantity<angular_velocity> > wheelVelocities(NR_OF_BASE_SLAVES, 0);
+//
+//		m_kinematics.cartesianVelocityToWheelVelocities(longitudinalVelocity, transversalVelocity, angularVelocity, wheelVelocities);
+//
+//		for(unsigned int joint_nr = 0; joint_nr < NR_OF_BASE_SLAVES; ++joint_nr)
+//		{
+//			m_tmp_joint_cmd_velocity.angularVelocity = wheelVelocities[joint_nr];
+//			m_joints[joint_nr]->setData(m_tmp_joint_cmd_velocity);
+//		}
 	}
 
 	void YouBotBaseService::setJointSetpoints()
@@ -285,7 +288,9 @@ namespace YouBot
 		quantity<si::velocity> transversalVelocity;
 		quantity<angular_velocity> angularVelocity;
 
-		m_kinematics.wheelVelocitiesToCartesianVelocity(wheelVelocities, longitudinalVelocity, transversalVelocity, angularVelocity);
+		m_base->getBaseVelocity(longitudinalVelocity, transversalVelocity, angularVelocity);
+
+//		m_kinematics.wheelVelocitiesToCartesianVelocity(wheelVelocities, longitudinalVelocity, transversalVelocity, angularVelocity);
 
 		m_odometry_state.twist.twist.linear.x = longitudinalVelocity.value();
 		m_odometry_state.twist.twist.linear.y = transversalVelocity.value();
@@ -294,17 +299,20 @@ namespace YouBot
 //		m_odometry_state.twist.twist.angular.y = 0;
 		m_odometry_state.twist.twist.angular.z = angularVelocity.value();
 
-		std::vector<quantity<plane_angle> > wheelPositions;
-		for(unsigned int i = 0; i < NR_OF_BASE_SLAVES; ++i)
-		{
-			wheelPositions[i] = m_tmp_joint_angles[i].angle;
-		}
+//		std::vector<quantity<plane_angle> > wheelPositions;
+//		for(unsigned int i = 0; i < NR_OF_BASE_SLAVES; ++i)
+//		{
+//			wheelPositions[i] = m_tmp_joint_angles[i].angle;
+//		}
 
 		quantity<si::length> longitudinalPosition;
 		quantity<si::length> transversalPosition;
 		quantity<plane_angle> orientation; //yaw
 
-		m_kinematics.wheelPositionsToCartesianPosition(wheelPositions, longitudinalPosition, transversalPosition, orientation);
+//		m_kinematics.wheelPositionsToCartesianPosition(wheelPositions, longitudinalPosition, transversalPosition, orientation);
+
+		m_base->getBasePosition(longitudinalPosition, transversalPosition, orientation);
+
 		m_odometry_state.pose.pose.position.x = longitudinalPosition.value();
 		m_odometry_state.pose.pose.position.y = transversalPosition.value();
 //		m_odometry_state.pose.pose.position.z = 0;

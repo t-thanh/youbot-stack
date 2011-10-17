@@ -47,7 +47,8 @@ namespace YouBot
 
 	        youbot::EthercatMaster* m_ec_master;
 
-	        YouBot_OODL::driver_event m_events;
+	        unsigned int m_communication_errors;
+	        unsigned int m_max_communication_errors;
 	};
 
 }

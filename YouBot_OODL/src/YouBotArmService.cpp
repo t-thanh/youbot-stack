@@ -341,13 +341,15 @@ namespace YouBot
 				if(invMov2) //@todo: strange!!
 				{
 					quantity<plane_angle> tmp = m_joint_limits[i].min_angle;
-					m_joint_limits[i].min_angle = -m_joint_limits[i].max_angle;
-					m_joint_limits[i].max_angle = -tmp;
+					m_joint_limits[i].min_angle = -m_joint_limits[i].max_angle * 1.001;
+					m_joint_limits[i].max_angle = -tmp * 0.999;
 				}
-
-				// OODL uses value < max/min instead of <=
-				m_joint_limits[i].min_angle *= 0.999;
-				m_joint_limits[i].max_angle *= 1.001;
+				else
+				{
+					// OODL uses value < max/min instead of <=
+					m_joint_limits[i].min_angle *= 0.999;
+					m_joint_limits[i].max_angle *= 1.001;
+				}
 
 				log(Info) << "Min angle: " << m_joint_limits[i].min_angle << " Max angle: " << m_joint_limits[i].max_angle << endlog();
 

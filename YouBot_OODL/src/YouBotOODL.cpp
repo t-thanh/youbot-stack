@@ -23,13 +23,13 @@ namespace YouBot
 
 	unsigned int non_errors = ::MOTOR_HALTED | ::PWM_MODE_ACTIVE | ::VELOCITY_MODE | ::POSITION_MODE | ::TORQUE_MODE | ::POSITION_REACHED | ::INITIALIZED;
 
-	YouBotOODL::YouBotOODL(const string& name) : TaskContext(name, PreOperational)
+	YouBotOODL::YouBotOODL(const string& name) : TaskContext(name, PreOperational), m_communication_errors(0)
 	{
 		youbot::Logger::logginLevel = youbot::fatal;
 		RTT::Logger* ins = RTT::Logger::Instance();
 		ins->setLogLevel(RTT::Logger::Info);
 
-		m_events.driver_event.assign(50, ' '); //@TODO: Fix me
+		m_max_communication_errors = 100;
 	}
 
 	YouBotOODL::~YouBotOODL() {}
@@ -151,7 +151,25 @@ namespace YouBot
 
 	void YouBotOODL::updateHook()
 	{
-		m_ec_master->sendAndReceiveProcessData();
+		if(!m_ec_master->receiveProcessData())
+		{
+			++m_communication_errors;
+			if(m_communication_errors > m_max_communication_errors)
+			{
+				log(Error) << "Lost EtherCAT connection";
+				this->error();
+			}
+		}
+		else
+		{
+			m_communication_errors = 0;
+		}
+
+		if(m_ec_master->isErrorInSoemDriver())
+		{
+			log(Error) << "Error in the SOEM driver." << endlog();
+			this->error();
+		}
 
 		// The mailbox messages are send/received immediatly
 
@@ -162,6 +180,20 @@ namespace YouBot
                 update_ops[i]();
             }
         }
+
+		if(!m_ec_master->sendProcessData())
+		{
+			++m_communication_errors;
+			if(m_communication_errors > m_max_communication_errors)
+			{
+				log(Error) << "Lost EtherCAT connection";
+				this->error();
+			}
+		}
+		else
+		{
+			m_communication_errors = 0;
+		}
 
         TaskContext::updateHook();
 	}

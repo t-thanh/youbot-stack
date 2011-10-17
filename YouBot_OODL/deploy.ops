@@ -22,7 +22,6 @@ connectPeers("OODL", "ArmController")
 connect("OODL.Arm1.joint_states","ArmController.joint_states",cp_1)
 connect("OODL.Arm1.motor_statuses","ArmController.joint_statuses",cp_1)
 connect("ArmController.joint_cmd_angles","OODL.Arm1.joint_cmd_angles",cp_1)
-connect("ArmController.joint_ctrl_modes", "OODL.Arm1.joint_ctrl_modes", cp_1);
 
 var ConnPolicy cp_2;
 cp_2.type = BUFFER;
@@ -30,7 +29,8 @@ cp_2.lock_policy = LOCK_FREE;
 cp_2.size = 20;
 
 connectPeers("OODL", "EventLogger");
-connect("OODL.events", "EventLogger.events", cp_2);
+connect("OODL.Arm1.events", "EventLogger.events", cp_2);
+connect("OODL.Base.events", "EventLogger.events", cp_2);
 
 #
 # ROS output
@@ -47,8 +47,11 @@ stream("OODL.Arm1.motor_statuses", cp_r);
 cp_r.name_id = "/debug/joint_cmd_angles";
 stream("ArmController.joint_cmd_angles", cp_r);
 
-cp_r.name_id = "/debug/events";
-stream("OODL.events", cp_r);
+cp_r.name_id = "/debug/arm/events";
+stream("OODL.Arm1.events", cp_r);
+cp_r.name_id = "/debug/base/events";
+stream("OODL.Base.events", cp_r);
+
 
 # 
 # Start running
@@ -58,6 +61,10 @@ EventLogger.start;
 OODL.start;
 ArmController.start;
 
+var std.vector<ctrl_modes> ctrl = std.vector<ctrl_modes>(5, PLANE_ANGLE);
+OODL.Arm1.setControlModes(ctrl);
+
 OODL.Arm1.clearControllerTimeouts;
+OODL.Base.clearControllerTimeouts;
 
 ArmController.unfoldManipulator();
