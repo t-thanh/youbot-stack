@@ -9,10 +9,10 @@
 
 #include "YouBotTypes.hpp"
 #include "YouBotOODL.hpp"
+#include "YouBotService.hpp"
 
 #include <sensor_msgs/typekit/Types.h>
 #include <motion_control_msgs/typekit/Types.h>
-#include <boost/bind.hpp>
 
 namespace YouBot
 {
@@ -25,7 +25,7 @@ namespace YouBot
 	struct _JointLimits;
 	typedef struct _JointLimits JointLimits;
 
-    class YouBotArmService : public Service {
+    class YouBotArmService : public YouBotService {
 
 		public:
     		YouBotArmService(const string& name, TaskContext* parent, unsigned int min_slave_nr);
@@ -39,19 +39,18 @@ namespace YouBot
 			void clearControllerTimeouts();
 
 		protected:
-			// Joints
 			OutputPort<sensor_msgs::JointState> joint_states;
 
 			InputPort<motion_control_msgs::JointPositions> joint_cmd_angles;
 			InputPort<motion_control_msgs::JointVelocities> joint_cmd_velocities;
 			InputPort<motion_control_msgs::JointEfforts> joint_cmd_torques;
 
-			InputPort<vector<ctrl_modes> > joint_ctrl_modes;
-
-			OutputPort<YouBot_OODL::driver_event> events;
 			OutputPort<YouBot_OODL::motor_statuses> motor_statuses;
 
 		private:
+			void setupComponentInterface();
+			void setupEventChecks();
+
 			bool calibrate();
 			bool start();
 			void update();
@@ -60,11 +59,12 @@ namespace YouBot
 
 			void readJointStates();
 			void updateJointSetpoints();
-			void checkForErrors();
+			void checkMotorStatuses();
 
 	        motion_control_msgs::JointVelocities m_joint_cmd_velocities;
 	        motion_control_msgs::JointPositions  m_joint_cmd_angles;
 	        motion_control_msgs::JointEfforts  m_joint_cmd_torques;
+
 	        sensor_msgs::JointState m_joint_states;
 
 			vector<JointSensedAngle> m_tmp_joint_angles;
@@ -80,9 +80,7 @@ namespace YouBot
 			JointTorqueSetpoint m_tmp_joint_cmd_torque;
 
 			YouBot_OODL::motor_statuses m_motor_statuses;
-			YouBot_OODL::driver_event m_events;
 
-			typedef boost::function<void(unsigned int, motor_status current)> check_fp;
 			std::vector<check_fp> m_event_checks;
 			bool m_overcurrent[NR_OF_ARM_SLAVES];
 			bool m_undervoltage[NR_OF_ARM_SLAVES];

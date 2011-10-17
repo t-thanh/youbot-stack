@@ -9,4 +9,5 @@
   <review status="unreviewed" notes=""/>
   <url></url>
   <depend stack="ros" />
+  <depend stack="motion_control" />
 </stack>

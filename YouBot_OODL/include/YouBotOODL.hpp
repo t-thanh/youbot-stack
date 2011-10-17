@@ -29,15 +29,6 @@ namespace YouBot
 			YouBotOODL(const string& name);
 			virtual ~YouBotOODL();
 
-			void emitEvent(std::string message);
-			void emitEvent(unsigned int joint, std::string message);
-			void emitEvent(unsigned int joint, std::string message, bool condition);
-
-			void check_edge(const motor_status ref_cond, const std::string outp_message, bool* const cond_state,
-						unsigned int joint, motor_status current);
-			void check_level(const motor_status ref_cond, const std::string outp_message,
-						unsigned int joint, motor_status current);
-
 		protected:
 			virtual bool configureHook();
 			virtual bool startHook();
@@ -56,12 +47,8 @@ namespace YouBot
 
 	        youbot::EthercatMaster* m_ec_master;
 
-	        YouBot_OODL::driver_event m_events;
+	        unsigned int m_communication_errors;
+	        unsigned int m_max_communication_errors;
 	};
 
-	void check_edge(YouBotOODL* const oodl, const motor_status ref_cond, const std::string outp_message, bool const* cond_states,
-			unsigned int joint, motor_status current);
-
-	void check_level(YouBotOODL* const oodl, const motor_status ref_cond, const std::string outp_message,
-				unsigned int joint, motor_status current);
 }

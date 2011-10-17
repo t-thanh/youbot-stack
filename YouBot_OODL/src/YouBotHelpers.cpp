@@ -1,5 +1,7 @@
 #include "YouBotHelpers.hpp"
 
+#include "YouBotService.hpp"
+
 #include <rtt/Logger.hpp>
 #include <ostream>
 #include <istream>

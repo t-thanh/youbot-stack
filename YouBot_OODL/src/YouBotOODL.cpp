@@ -12,8 +12,6 @@
 
 #include <vector>
 
-#include <boost/lexical_cast.hpp>
-
 #include <generic/Logger.hpp>
 #include <rtt/Logger.hpp>
 
@@ -25,13 +23,13 @@ namespace YouBot
 
 	unsigned int non_errors = ::MOTOR_HALTED | ::PWM_MODE_ACTIVE | ::VELOCITY_MODE | ::POSITION_MODE | ::TORQUE_MODE | ::POSITION_REACHED | ::INITIALIZED;
 
-	YouBotOODL::YouBotOODL(const string& name) : TaskContext(name, PreOperational)
+	YouBotOODL::YouBotOODL(const string& name) : TaskContext(name, PreOperational), m_communication_errors(0)
 	{
 		youbot::Logger::logginLevel = youbot::fatal;
 		RTT::Logger* ins = RTT::Logger::Instance();
 		ins->setLogLevel(RTT::Logger::Info);
 
-		m_events.driver_event.assign(50, ' '); //@TODO: Fix me
+		m_max_communication_errors = 100;
 	}
 
 	YouBotOODL::~YouBotOODL() {}
@@ -153,7 +151,25 @@ namespace YouBot
 
 	void YouBotOODL::updateHook()
 	{
-		m_ec_master->sendAndReceiveProcessData();
+		if(!m_ec_master->receiveProcessData())
+		{
+			++m_communication_errors;
+			if(m_communication_errors > m_max_communication_errors)
+			{
+				log(Error) << "Lost EtherCAT connection";
+				this->error();
+			}
+		}
+		else
+		{
+			m_communication_errors = 0;
+		}
+
+		if(m_ec_master->isErrorInSoemDriver())
+		{
+			log(Error) << "Error in the SOEM driver." << endlog();
+			this->error();
+		}
 
 		// The mailbox messages are send/received immediatly
 
@@ -164,6 +180,20 @@ namespace YouBot
                 update_ops[i]();
             }
         }
+
+		if(!m_ec_master->sendProcessData())
+		{
+			++m_communication_errors;
+			if(m_communication_errors > m_max_communication_errors)
+			{
+				log(Error) << "Lost EtherCAT connection";
+				this->error();
+			}
+		}
+		else
+		{
+			m_communication_errors = 0;
+		}
 
         TaskContext::updateHook();
 	}
@@ -192,52 +222,6 @@ namespace YouBot
         }
 
         TaskContext::cleanupHook();
-	}
-
-	void YouBotOODL::emitEvent(std::string message)
-	{
-		m_events.stamp = ros::Time::now();
-		m_events.driver_event = message;
-		events.write(m_events);
-	}
-
-	void YouBotOODL::emitEvent(unsigned int joint, std::string message)
-	{
-		m_events.stamp = ros::Time::now();
-		m_events.driver_event = "jnt" + boost::lexical_cast<string>(joint) + "." + message;
-		events.write(m_events);
-	}
-
-	void YouBotOODL::emitEvent(unsigned int joint, std::string message, bool condition)
-	{
-		m_events.stamp = ros::Time::now();
-		m_events.driver_event = "jnt" + boost::lexical_cast<string>(joint) + "." + message + "_" + (condition ? "true" : "false");
-		events.write(m_events);
-	}
-
-	// Joints from 0 to N-1
-	void YouBotOODL::check_edge(const motor_status ref_cond, const std::string outp_message, bool* const cond_state,
-			unsigned int joint, motor_status current)
-	{
-		if((ref_cond & current) != 0 && !(cond_state[joint]) )
-		{
-			cond_state[joint] = true;
-			emitEvent(joint+1, outp_message, true);
-		}
-		else if(cond_state[joint] && (ref_cond & current) == 0)
-		{
-			cond_state[joint] = false;
-			emitEvent(joint+1, outp_message, false);
-		}
-	}
-
-	void YouBotOODL::check_level(const motor_status ref_cond, const std::string outp_message,
-			unsigned int joint, motor_status current)
-	{
-		if((ref_cond & current) != 0)
-		{
-			emitEvent(joint, outp_message);
-		}
 	}
 }
 

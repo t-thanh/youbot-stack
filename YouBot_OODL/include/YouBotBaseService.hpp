@@ -8,7 +8,10 @@
 
 #include <sensor_msgs/typekit/Types.h>
 #include <motion_control_msgs/typekit/Types.h>
+#include <nav_msgs/typekit/Types.h>
+#include <geometry_msgs/typekit/Types.h>
 
+#include "YouBotService.hpp"
 #include "YouBotTypes.hpp"
 #include "YouBotOODL.hpp"
 
@@ -18,24 +21,21 @@ namespace YouBot
 	using namespace std;
 	using namespace youbot;
 
-    class YouBotBaseService : public Service {
+    class YouBotBaseService : public YouBotService {
 
 		public:
 			YouBotBaseService(const string& name, TaskContext* parent, unsigned int min_slave_nr);
 			virtual ~YouBotBaseService();
 
-			void getBasePosition(quantity<si::length>& longitudinalPosition, quantity<si::length>& transversalPosition, quantity<plane_angle>& orientation);
-			void setBasePosition(quantity<si::length>& longitudinalPosition, quantity<si::length>& transversalPosition, quantity<plane_angle>& orientation);
-
-			void getBaseVelocity(quantity<si::velocity>& longitudinalVelocity, quantity<si::velocity>& transversalVelocity, quantity<si::angular_velocity>& angularVelocity);
-			void setBaseVelocity(quantity<si::velocity>& longitudinalVelocity, quantity<si::velocity>& transversalVelocity, quantity<si::angular_velocity>& angularVelocity);
-
 			void setControlModes(vector<ctrl_modes>& all);
-			vector<ctrl_modes> getControlModes();
+			void getControlModes(vector<ctrl_modes>& all);
+
 			void displayMotorStatuses();
 
+			void clearControllerTimeouts();
 		private:
 			OutputPort<sensor_msgs::JointState> joint_states;
+			OutputPort<nav_msgs::Odometry> odometry_state;
 
 			OutputPort<YouBot_OODL::motor_statuses > motor_statuses;
 
@@ -43,7 +43,10 @@ namespace YouBot
 			InputPort<motion_control_msgs::JointPositions> joint_cmd_angles;
 			InputPort<motion_control_msgs::JointEfforts> joint_cmd_torques;
 
-			InputPort<vector<ctrl_modes> > joint_ctrl_modes;
+			InputPort<geometry_msgs::Twist> cmd_twist;
+
+			void setupComponentInterface();
+			void setupEventChecks();
 
 			bool calibrate();
 			bool start();
@@ -51,14 +54,21 @@ namespace YouBot
 			void cleanup();
 			void stop();
 
-			void updateJointSetpoint(unsigned int joint_nr);
+			void readJointStates();
+			void calculateOdometry();
 
-			bool check_error();
+			void setJointSetpoints();
+			void setTwistSetpoints();
+
+			void checkMotorStatuses();
 
 	        motion_control_msgs::JointVelocities m_joint_cmd_velocities;
 	        motion_control_msgs::JointPositions  m_joint_cmd_angles;
 	        motion_control_msgs::JointEfforts  m_joint_cmd_torques;
+	        geometry_msgs::Twist m_cmd_twist;
+
 	        sensor_msgs::JointState m_joint_states;
+	        nav_msgs::Odometry m_odometry_state;
 
 			vector<JointSensedAngle> m_tmp_joint_angles;
 			vector<JointSensedVelocity> m_tmp_joint_velocities;
@@ -73,6 +83,14 @@ namespace YouBot
 
 			YouBotBase* m_base;
 			YouBotJoint* m_joints[NR_OF_BASE_SLAVES];
+
+			std::vector<check_fp> m_event_checks;
+			bool m_overcurrent[NR_OF_ARM_SLAVES];
+			bool m_undervoltage[NR_OF_ARM_SLAVES];
+			bool m_overvoltage[NR_OF_ARM_SLAVES];
+			bool m_overtemperature[NR_OF_ARM_SLAVES];
+			bool m_connectionlost[NR_OF_ARM_SLAVES];
+			bool m_i2texceeded[NR_OF_ARM_SLAVES];
 
 			bool m_calibrated;
 

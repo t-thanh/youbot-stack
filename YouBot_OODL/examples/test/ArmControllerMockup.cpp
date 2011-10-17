@@ -39,7 +39,6 @@ namespace YouBot
 		this->addPort("joint_states" , joint_states).doc("Input joint states from the driver");
 		this->addPort("joint_cmd_angles", joint_cmd_angles).doc("Output joint angle commands to the driver");
 		this->addPort("joint_statuses", joint_statuses).doc("Input joint statuses from the driver");
-		this->addPort("joint_ctrl_modes", joint_ctrl_modes).doc("Joint control modes.");
 
 		joint_cmd_angles.setDataSample(m_joint_cmd_angles);
 
@@ -56,13 +55,14 @@ namespace YouBot
 	{
 		m_modes = vector<ctrl_modes>(NR_OF_ARM_SLAVES, PLANE_ANGLE);
 
+		op_setControlModes(m_modes);
+
 		// convert degrees to radian
 		for(unsigned int  i = 0; i < angles.size(); ++i)
 		{
 			m_joint_cmd_angles.positions[i] = angles[i] * M_PI / 180; //to radian
 		}
 
-		joint_ctrl_modes.write(m_modes);
         joint_cmd_angles.write(m_joint_cmd_angles);
 
 		bool done = false;
@@ -104,6 +104,8 @@ namespace YouBot
 	{
 		m_modes = vector<ctrl_modes>(NR_OF_ARM_SLAVES, PLANE_ANGLE);
 
+		op_setControlModes(m_modes);
+
 		for(unsigned int i = 0; i < NR_OF_ARM_SLAVES; ++i)
 		{
 			m_joint_cmd_angles.positions[i] = jointsInitialPosition[i];
@@ -117,11 +119,28 @@ namespace YouBot
 
 	bool ArmControllerMockup::startHook()
 	{
-		if(!joint_states.connected() || !joint_cmd_angles.connected() || !joint_statuses.connected() || !joint_ctrl_modes.connected())
+		if(!joint_states.connected() || !joint_cmd_angles.connected() || !joint_statuses.connected())
 		{
 			log(Error) << "Ports not connected." << endlog();
 			return false;
 		}
+
+		TaskContext* task_ptr = getPeer("OODL");
+		if(task_ptr == NULL)
+		{
+			log(Error) << "Could not find peer OODL" << endlog();
+			return false;
+		}
+		op_setControlModes = task_ptr->provides("Arm1")->getOperation("setControlModes");
+
+		if(!op_setControlModes.ready())
+		{
+			log(Error) << "Could not connect to Arm1.setControllerModes" << endlog();
+			return false;
+		}
+
+		m_modes = vector<ctrl_modes>(NR_OF_ARM_SLAVES, MOTOR_STOP);
+		op_setControlModes(m_modes);
 
 		return TaskContext::startHook();
 	}
@@ -133,7 +152,6 @@ namespace YouBot
         joint_states.read(m_joint_states);
         joint_statuses.read(m_joint_statuses);
 
-        joint_ctrl_modes.write(m_modes);
         joint_cmd_angles.write(m_joint_cmd_angles);
 
 	}
@@ -141,7 +159,7 @@ namespace YouBot
 	void ArmControllerMockup::stopHook()
 	{
 		m_modes = vector<ctrl_modes>(NR_OF_ARM_SLAVES, MOTOR_STOP);
-		joint_ctrl_modes.write(m_modes);
+		op_setControlModes(m_modes);
 
         TaskContext::stopHook();
 	}

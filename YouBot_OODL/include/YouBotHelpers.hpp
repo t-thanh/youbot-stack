@@ -28,6 +28,18 @@ namespace RTT
 
 namespace YouBot
 {
+	const std::string E_OVERCURRENT = "e_OVERCURRENT";
+	const std::string E_UNDERVOLTAGE = "e_UNDERVOLTAGE";
+	const std::string E_OVERVOLTAGE = "e_OVERVOLTAGE";
+	const std::string E_OVERTEMP = "e_OVERTEMP";
+	const std::string E_EC_CONN_LOST = "e_EC_CONN_LOST";
+	const std::string E_I2T_EXCEEDED = "e_I2T_EXCEEDED";
+	const std::string E_HALL_ERR = "e_HALL_ERR";
+	const std::string E_ENCODER_ERR = "e_ENCODER_ERR";
+	const std::string E_SINE_COMM_INIT_ERR = "e_SINE_COMM_INIT_ERR";
+	const std::string E_EMERGENCY_STOP = "e_EMERGENCY_STOP";
+	const std::string E_EC_TIMEOUT = "e_EC_TIMEOUT";
+
 	std::string ctrl_modes_tostring(const ctrl_modes& cd);
 
 	std::string motor_status_tostring(const motor_status& cd);
