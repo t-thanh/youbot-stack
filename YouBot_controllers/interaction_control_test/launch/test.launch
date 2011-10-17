@@ -1,0 +1,3 @@
+<launch>
+   <node name="core" pkg="interaction_control_test" type="launch/run.sh" args="deploy.ops" />
+</launch>

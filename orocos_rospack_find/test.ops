@@ -1,0 +1,2 @@
+import("orocos_rospack_find")
+loadService("Deployer","rospack")

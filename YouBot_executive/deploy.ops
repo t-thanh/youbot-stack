@@ -1,0 +1,11 @@
+import("YouBot_executive")
+loadComponent("executive","YouBot::YouBot_executive")
+   var ConnPolicy cp_JointSpaceSetpoint;
+   cp_JointSpaceSetpoint.type = DATA;  // Use ''BUFFER'' or ''DATA''
+   cp_JointSpaceSetpoint.lock_policy = LOCK_FREE; // Use  ''LOCKED'', ''LOCK_FREE'' or ''UNSYNC''
+   connect("executive.JointSpaceSetpoint","control.JointSpaceStiffness_setpoints",cp_JointSpaceSetpoint)
+
+   var ConnPolicy cp_JointSpaceStiffness;
+   cp_JointSpaceStiffness.type = DATA;  // Use ''BUFFER'' or ''DATA''
+   cp_JointSpaceStiffness.lock_policy = LOCK_FREE; // Use  ''LOCKED'', ''LOCK_FREE'' or ''UNSYNC''
+   connect("executive.JointSpaceStiffness","control.JointSpaceStiffness_c",cp_JointSpaceStiffness)   
