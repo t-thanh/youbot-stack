@@ -46,10 +46,12 @@ namespace YouBot
     		YouBotMonitorService(const string& name, TaskContext* parent);
 			virtual ~YouBotMonitorService();
 
-			virtual void setup_monitor(physical_part& p, control_space& st, physical_quantity& pt, event_type& to_check, double single_value);
-			virtual void setup_monitor(physical_part& p, control_space& st, physical_quantity& pt, event_type& to_check, std::vector<double> state_vector);
+			virtual void setup_monitor(physical_part& p, control_space& st, physical_quantity& pt, event_type& to_check, unsigned int index, double single_value);
+			virtual void setup_monitor(physical_part& p, control_space& st, physical_quantity& pt, event_type& to_check, std::vector<unsigned int> indices, std::vector<double> vector_value);
 
-			virtual void remove_monitor(physical_part& p, control_space& st, physical_quantity& pt, event_type& to_check);
+			virtual void remove_monitor(physical_part& p, control_space& st, physical_quantity& pt, event_type& to_check, unsigned int index, double single_value);
+			virtual void remove_monitor(physical_part& p, control_space& st, physical_quantity& pt, event_type& to_check, std::vector<unsigned int> indices, std::vector<double> vector_value);
+
 			virtual void clear_monitors();
 
 			virtual void setupComponentInterface();
