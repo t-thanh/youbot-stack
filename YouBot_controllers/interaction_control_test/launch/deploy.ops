@@ -1,37 +1,30 @@
 //import(""); //importing addpaters and control_test should be in same directory
+import("orocos_rospack_find")
+loadService("Deployer","rospack")
+
 kickStart("20sim_deploy.xml")
-//runScript("ros_connection.ops")
-import("YouBot_OODL")
+
+runScript("ros_connection.ops")
+
 require("print")
 displayComponentTypes;
 //setup parameters
 var strings  arm_joint_uri=strings("joint1","joint2","joint3","joint4","joint5");
 var std.vector<ctrl_modes>  arm_ctrl_modes=std.vector<ctrl_modes>(5,TORQUE)
-import("orocos_rospack_find")
-loadService("Deployer","rospack")
 
 
-//creatring all components
-loadComponent("youbot","YouBot::YouBotOODL");
+runScript(rospack.find("YouBot_OODL")+"/deploy_with_monitor.ops")
 
-//set periods
-setActivity("youbot", 0.001, HighestPriority, ORO_SCHED_RT);
+
+
 // configure all componetns
-youbot.configure;
+
 control.configure;
 control2arm.configure;
 arm2control.configure;
 
-  /*var double M_RAD=3.14/180;
-   control.xyzypr[0]=0.0;
-   control.xyzypr[1]=0.0;
-   control.xyzypr[2]=1.0; 
-   control.xyzypr[3]=-3.0;
-   control.xyzypr[4]=0.0;
-   control.xyzypr[5]=0.0;*/
-
 //setup control mode
-youbot.Manipulator1.setControlModes(arm_ctrl_modes)
+youbot.Arm1.setControlModes(arm_ctrl_modes)
 control2arm.initialize(TORQUE,5);
 arm2control.initialize(5);
 
@@ -40,13 +33,13 @@ arm2control.initialize(5);
 var ConnPolicy cp_5;
 cp_5.type = DATA;  // Use ''BUFFER'' or ''DATA''
 cp_5.lock_policy = LOCK_FREE; // Use  ''LOCKED'', ''LOCK_FREE'' or ''UNSYNC''
-connect("control2arm.output_cmd_torques","youbot.Manipulator1.joint_cmd_torques",cp_5)
+connect("control2arm.output_cmd_torques","youbot.Arm1.joint_cmd_torques",cp_5)
 
 
 var ConnPolicy cp_7;
 cp_7.type = DATA;  // Use ''BUFFER'' or ''DATA''
 cp_7.lock_policy = LOCK_FREE; // Use  ''LOCKED'', ''LOCK_FREE'' or ''UNSYNC''
-connect("arm2control.input_states","youbot.Manipulator1.joint_states",cp_7)
+connect("arm2control.input_states","youbot.Arm1.joint_states",cp_7)
 
 
 
@@ -54,7 +47,7 @@ connect("arm2control.input_states","youbot.Manipulator1.joint_states",cp_7)
 youbot.start
 arm2control.start
 control.start
-//control2arm.start
+control2arm.start
 
 /*control.CtipControl.CtipControl[0]=0.05;
 control.GravityCompensation1.Link1.Gravity.m[0]=0.845;
@@ -62,4 +55,4 @@ control.GravityCompensation1.Link2.Gravity.m[0]=2.412;
 control.GravityCompensation1.Link3.Gravity.m[0]=0.934;
 control.GravityCompensation1.Link4.Gravity.m[0]=0.877;
 control.GravityCompensation1.Link5.Gravity.m[0]=1.121;*/
-runScript(rospack.find("YouBot_executive")+"deploy.ops")
+runScript(rospack.find("YouBot_executive")+"/deploy.ops")

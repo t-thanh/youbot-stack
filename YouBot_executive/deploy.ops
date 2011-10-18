@@ -9,3 +9,8 @@ loadComponent("executive","YouBot::YouBot_executive")
    cp_JointSpaceStiffness.type = DATA;  // Use ''BUFFER'' or ''DATA''
    cp_JointSpaceStiffness.lock_policy = LOCK_FREE; // Use  ''LOCKED'', ''LOCK_FREE'' or ''UNSYNC''
    connect("executive.JointSpaceStiffness","control.JointSpaceStiffness_c",cp_JointSpaceStiffness)   
+executive.configure
+executive.start
+// in snake position
+executive.Position_setpoint=array(0.0,0.0,0.0,0.0,-0.3,0.5,0.5,0.0)
+executive.Stiffness_setpoint=array(0.0,0.0,0.0,15.0,15.0,10.0,15.0,15.0)

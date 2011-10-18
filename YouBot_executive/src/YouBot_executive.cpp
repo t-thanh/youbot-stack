@@ -8,11 +8,23 @@ namespace YouBot
 {
 
 YouBot_executive::YouBot_executive(const string& name) :
-		TaskContext(name, PreOperational)
+		TaskContext(name, PreOperational), position(),stiffness()
 {
-	this->addOperation("unfoldArm",&YouBot_executive::unfoldArm,this).doc("jut text");
+	position.assign(8,0);
+	stiffness.assign(8,0);
+	Operation<void(void)> op_unfoldArm("unfoldArm",&YouBot_executive::unfoldArm,this);
+	this->addOperation(op_unfoldArm).doc("jut text");
+
+	Operation<void(void)> op_gravityMode("gravityMode",&YouBot_executive::gravityMode,this);
+	this->addOperation(op_gravityMode).doc("jut text");
+
+	Operation<void(void)> op_positionArm("positionArm",&YouBot_executive::positionArm,this);
+	this->addOperation(op_positionArm).doc("jut text");
+
 	this->addPort("JointSpaceSetpoint",JointSpaceSetpoint).doc("");
-	this->addPort("JointSpaceStiffnes",JointSpaceStiffnes).doc("");
+	this->addPort("JointSpaceStiffness",JointSpaceStiffness).doc("");
+	this->addProperty("Position_setpoint",position);
+	this->addProperty("Stiffness_setpoint",stiffness);
 
 }
 
@@ -53,11 +65,33 @@ void YouBot_executive::unfoldArm()
 	std_msgs::Float64MultiArray msgs_setpoint;
 	std_msgs::Float64MultiArray msgs_stiffnes;
 	double d_setpoint[8]= {0,0,0,0,0,0,0,0};
-	double d_stiffnes[8]= {0,0,0,1,1,1,1,1};
+	double d_stiffnes[8]= {0,0,0,5,5,5,5,5};
 	msgs_setpoint.data.assign(d_setpoint,d_setpoint+8);
 	msgs_stiffnes.data.assign(d_stiffnes,d_stiffnes+8);
 	JointSpaceSetpoint.write(msgs_setpoint);
-	JointSpaceStiffnes.write(msgs_stiffnes);
+	JointSpaceStiffness.write(msgs_stiffnes);
+}
+void YouBot_executive::gravityMode()
+{
+	RTT::log(RTT::Fatal)<<"it is success"<<RTT::endlog();
+	std_msgs::Float64MultiArray msgs_setpoint;
+	std_msgs::Float64MultiArray msgs_stiffnes;
+	double d_setpoint[8]= {0,0,0,0,0,0,0,0};
+	double d_stiffnes[8]= {0,0,0,0,0,0,0,0};
+	msgs_setpoint.data.assign(d_setpoint,d_setpoint+8);
+	msgs_stiffnes.data.assign(d_stiffnes,d_stiffnes+8);
+	JointSpaceSetpoint.write(msgs_setpoint);
+	JointSpaceStiffness.write(msgs_stiffnes);
+}
+void YouBot_executive::positionArm()
+{
+	RTT::log(RTT::Fatal)<<"it is success"<<RTT::endlog();
+	std_msgs::Float64MultiArray msgs_setpoint;
+	std_msgs::Float64MultiArray msgs_stiffness;
+	msgs_setpoint.data.assign(position.begin(),position.end());
+	msgs_stiffness.data.assign(stiffness.begin(),stiffness.end());
+	JointSpaceSetpoint.write(msgs_setpoint);
+	JointSpaceStiffness.write(msgs_stiffness);
 }
 }
 

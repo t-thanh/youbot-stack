@@ -16,8 +16,12 @@ namespace YouBot
 		YouBot_executive(const string& name);
 		virtual ~YouBot_executive();
 		void unfoldArm();
+		void gravityMode();
+		void positionArm();
+		vector<double > position;
+		vector<double > stiffness;
 		RTT::OutputPort<flat_matrix_t > JointSpaceSetpoint;
-		RTT::OutputPort<flat_matrix_t > JointSpaceStiffnes;
+		RTT::OutputPort<flat_matrix_t > JointSpaceStiffness;
 		protected:
 			virtual bool configureHook();
 			virtual bool startHook();

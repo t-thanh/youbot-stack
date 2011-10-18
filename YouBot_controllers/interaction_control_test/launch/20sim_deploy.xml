@@ -5,7 +5,7 @@
   <simple name="Import" type="string">
     <value>interaction_control_test</value><!-- replace with package name if the libraries are not in the same folder-->
   </simple>
- <!--<simple name="Import" type="string">
+ <simple name="Import" type="string">
 	<value>YouBot_adapters</value>
  </simple>
   <struct name="control" type="ModelControl::interaction_control">
@@ -53,5 +53,4 @@
       <value>0</value>
     </simple>
   </struct>
-  -->
 </properties>
