@@ -26,6 +26,8 @@ namespace YouBot
     		YouBotMonitorService(const string& name);
 			virtual ~YouBotMonitorService();
 
+			virtual bool startHook();
+
 			virtual void updateHook();
 
 			virtual void setup_monitor(std::string descriptive_name);
@@ -42,11 +44,11 @@ namespace YouBot
 
 		protected:
 			template<class message_type>
-			bool check_monitor(InputPort<message_type>* const inp, const physical_quantity quantity, const std::string msg,
+			bool check_monitor(message_type* const inp, const physical_quantity quantity, const std::string msg,
 					vector<unsigned int>* const indices, vector<double>* const vector_value, compare_type c_type);
 
 			bool bind_function(monitor* m);
-			monitor* getMonitor(std::string& name);
+			vector<monitor*>::iterator getMonitor(vector<monitor*>& list, std::string& name);
 
 			InputPort<sensor_msgs::JointState> 	base_joint_state;
 			InputPort<nav_msgs::Odometry> 		base_cart_state;
@@ -54,109 +56,105 @@ namespace YouBot
 			InputPort<sensor_msgs::JointState> 	arm_joint_state;
 //			InputPort<> 						arm_cart_state;
 
+			sensor_msgs::JointState m_base_joint_state;
+			nav_msgs::Odometry m_base_cart_state;
+			sensor_msgs::JointState m_arm_joint_state;
+//			m_arm_cart_state
+
 			OutputPort<YouBot_monitors::monitor_event> events;
 			YouBot_monitors::monitor_event m_events;
 
 			vector<PropertyBag*> m_properties;
 			vector<monitor*> m_monitors;
 
-		public:
-			PropertyBag sub_bag;
-			std::string s_param;
-			bool b_param;
-
+			vector<monitor*> m_active_monitors;
 			//active monitors -> lock free??
     };
 
 	template<>
-	bool YouBotMonitorService::check_monitor<sensor_msgs::JointState>(InputPort<sensor_msgs::JointState>* const imp, const physical_quantity quantity, const std::string msg,
+	bool YouBotMonitorService::check_monitor<sensor_msgs::JointState>(sensor_msgs::JointState* const imp, const physical_quantity quantity, const std::string msg,
 			vector<unsigned int>* const indices, vector<double>* const cmp_value, compare_type c_type)
 	{
-		sensor_msgs::JointState tmp;
-		if(imp->read(tmp) != NoData)
+		switch(quantity)
 		{
-			switch(quantity)
+			case(POSITION):
 			{
-				case(POSITION):
-				{
-					return compare(indices, cmp_value, tmp.position, c_type);
-					break;
-				}
-				case(VELOCITY):
-				{
-					return compare(indices, cmp_value, tmp.velocity, c_type);
-					break;
-				}
-				case(FORCE):
-				{
-					return compare(indices, cmp_value, tmp.effort, c_type);
-					break;
-				}
-				case(TORQUE):
-				{
-					return compare(indices, cmp_value, tmp.effort, c_type);
-					break;
-				}
-				default:
-					log(Error) << "Case not recognized." << endlog();
-					this->error();
-					break;
+				return compare(indices, cmp_value, imp->position, c_type);
+				break;
+			}
+			case(VELOCITY):
+			{
+				return compare(indices, cmp_value, imp->velocity, c_type);
+				break;
+			}
+			case(FORCE):
+			{
+				return compare(indices, cmp_value, imp->effort, c_type);
+				break;
+			}
+			case(TORQUE):
+			{
+				return compare(indices, cmp_value, imp->effort, c_type);
+				break;
+			}
+			default:
+			{
+				log(Error) << "Case not recognized." << endlog();
+				this->error();
+				break;
 			}
 		}
 		return false;
 	}
 
 	template<>
-	bool YouBotMonitorService::check_monitor<nav_msgs::Odometry>(InputPort<nav_msgs::Odometry>* const imp, const physical_quantity quantity, const std::string msg,
+	bool YouBotMonitorService::check_monitor<nav_msgs::Odometry>(nav_msgs::Odometry* const imp, const physical_quantity quantity, const std::string msg,
 			vector<unsigned int>* const indices, vector<double>* const vector_value, compare_type c_type)
 	{
-		nav_msgs::Odometry tmp;
-		if(imp->read(tmp) != NoData)
+		switch(quantity)
 		{
-			switch(quantity)
+			case(POSITION):
 			{
-				case(POSITION):
-				{
-					vector<double> tmp2(3,0);
-					tmp2[0] = tmp.pose.pose.position.x;
-					tmp2[1] = tmp.pose.pose.position.y;
+				vector<double> tmp2(3,0);
+				tmp2[0] = imp->pose.pose.position.x;
+				tmp2[1] = imp->pose.pose.position.y;
 //					tmp2[2] = tmp.pose.pose.position.z;
-					tmp2[2] = tf::getYaw (tmp.pose.pose.orientation); //yaw
-					return compare(indices, vector_value, tmp2, c_type);
-					break;
-				}
-				case(VELOCITY):
-				{
-					vector<double> tmp2(6,0);
-					tmp2[0] = tmp.twist.twist.linear.x;
-					tmp2[1] = tmp.twist.twist.linear.y;
-					tmp2[2] = tmp.twist.twist.linear.z;
-					tmp2[3] = tmp.twist.twist.angular.x;
-					tmp2[4] = tmp.twist.twist.angular.y;
-					tmp2[5] = tmp.twist.twist.angular.z;
-					return compare(indices, vector_value, tmp2, c_type);
-					break;
-				}
-				case(FORCE):
-				{
-					log(Error) << "FORCE not included in message." << endlog();
-					this->error();
-					break;
-				}
-				case(TORQUE):
-				{
-					log(Error) << "TORQUE not included in message." << endlog();
-					this->error();
-					break;
-				}
-				default:
-				{
-					log(Error) << "Case not recognized." << endlog();
-					this->error();
-					break;
-				}
+				tmp2[2] = tf::getYaw (imp->pose.pose.orientation); //yaw
+				return compare(indices, vector_value, tmp2, c_type);
+				break;
+			}
+			case(VELOCITY):
+			{
+				vector<double> tmp2(6,0);
+				tmp2[0] = imp->twist.twist.linear.x;
+				tmp2[1] = imp->twist.twist.linear.y;
+				tmp2[2] = imp->twist.twist.linear.z;
+				tmp2[3] = imp->twist.twist.angular.x;
+				tmp2[4] = imp->twist.twist.angular.y;
+				tmp2[5] = imp->twist.twist.angular.z;
+				return compare(indices, vector_value, tmp2, c_type);
+				break;
+			}
+			case(FORCE):
+			{
+				log(Error) << "FORCE not included in message." << endlog();
+				this->error();
+				break;
+			}
+			case(TORQUE):
+			{
+				log(Error) << "TORQUE not included in message." << endlog();
+				this->error();
+				break;
+			}
+			default:
+			{
+				log(Error) << "Case not recognized." << endlog();
+				this->error();
+				break;
 			}
 		}
+
 		return false;
 	}
 

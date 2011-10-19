@@ -7,6 +7,8 @@
 #include <cassert>
 
 #include <boost/lexical_cast.hpp>
+#include <boost/algorithm/string.hpp>
+
 
 namespace YouBot
 {
@@ -56,25 +58,38 @@ namespace YouBot
 		events.write(m_events);
 	}
 
+	bool YouBotMonitorService::startHook()
+	{
+		if(! (base_joint_state.connected() && base_cart_state.connected() && arm_joint_state.connected()) )
+		{
+			return false;
+		}
+		return true;
+	}
+
 	void YouBotMonitorService::updateHook()
 	{
-		unsigned int size = m_monitors.size();
+		base_joint_state.read(m_base_joint_state);
+		base_cart_state.read(m_base_cart_state);
+		arm_joint_state.read(m_arm_joint_state);
+
+		unsigned int size = m_active_monitors.size();
 		for(unsigned int i = 0; i < size; ++i)
 		{
-			if(m_monitors[i]->check())
+			if(m_active_monitors[i]->check())
 			{
-				if(m_monitors[i]->e_type == EDGE && !m_monitors[i]->state)
+				if(m_active_monitors[i]->e_type == EDGE && !m_active_monitors[i]->state)
 				{
-					emitEvent(m_monitors[i]->id, m_monitors[i]->msg, true);
+					emitEvent(m_active_monitors[i]->id, m_active_monitors[i]->msg, true);
 				}
-				else if(m_monitors[i]->e_type == LEVEL)
+				else if(m_active_monitors[i]->e_type == LEVEL)
 				{
-					emitEvent(m_monitors[i]->id, m_monitors[i]->msg);
+					emitEvent(m_active_monitors[i]->id, m_active_monitors[i]->msg);
 				}
 			}
-			else if(m_monitors[i]->e_type == EDGE && m_monitors[i]->state)
+			else if(m_active_monitors[i]->e_type == EDGE && m_active_monitors[i]->state)
 			{
-				emitEvent(m_monitors[i]->id, m_monitors[i]->msg, false);
+				emitEvent(m_active_monitors[i]->id, m_active_monitors[i]->msg, false);
 			}
 		}
 	}
@@ -85,7 +100,7 @@ namespace YouBot
 
 		if(m->space == CARTESIAN && m->part == BASE)
 		{
-			m->check = boost::bind(boost::mem_fn(&YouBotMonitorService::check_monitor<nav_msgs::Odometry>), this, &base_cart_state, m->quantity, m->msg, &m->indices, &m->values, m->c_type);
+			m->check = boost::bind(boost::mem_fn(&YouBotMonitorService::check_monitor<nav_msgs::Odometry>), this, &m_base_cart_state, m->quantity, m->msg, &m->indices, &m->values, m->c_type);
 		}
 		else if(m->space == CARTESIAN && m->part == ARM)
 		{
@@ -95,33 +110,41 @@ namespace YouBot
 		}
 		else if(m->space == JOINT && m->part == BASE)
 		{
-			m->check = boost::bind(boost::mem_fn(&YouBotMonitorService::check_monitor<sensor_msgs::JointState>), this, &base_joint_state, m->quantity, m->msg, &m->indices, &m->values, m->c_type);
+			m->check = boost::bind(boost::mem_fn(&YouBotMonitorService::check_monitor<sensor_msgs::JointState>), this, &m_base_joint_state, m->quantity, m->msg, &m->indices, &m->values, m->c_type);
 		}
 		else if(m->space == JOINT && m->part == ARM)
 		{
-			m->check = boost::bind(boost::mem_fn(&YouBotMonitorService::check_monitor<sensor_msgs::JointState>), this, &arm_joint_state, m->quantity, m->msg, &m->indices, &m->values, m->c_type);
+			m->check = boost::bind(boost::mem_fn(&YouBotMonitorService::check_monitor<sensor_msgs::JointState>), this, &m_arm_joint_state, m->quantity, m->msg, &m->indices, &m->values, m->c_type);
 		}
 
 		return true;
 	}
 
-	monitor* YouBotMonitorService::getMonitor(std::string& name)
+	vector<monitor*>::iterator YouBotMonitorService::getMonitor(vector<monitor*>& list, std::string& name)
 	{
-		monitor* m(NULL);
-		for(unsigned int i = 0; i < m_monitors.size(); ++i)
+		for(vector<monitor*>::iterator i = list.begin(); i < list.end(); ++i)
 		{
-			if(name.compare(m_monitors[i]->descriptive_name))
+			if(boost::iequals(name, (*i)->descriptive_name))
 			{
-				m = m_monitors[i];
+				return i;
 			}
 		}
-		return m;
+		return list.end();
 	}
 
 	void YouBotMonitorService::setup_monitor(std::string descriptive_name)
 	{
+		vector<monitor*>::iterator i;
+		monitor* m = (i = getMonitor(m_monitors, descriptive_name)) == m_monitors.end() ? NULL : *i;
+
+		if(m != NULL)
+		{
+			log(Error) << "Monitor already in database." << endlog();
+			return;
+		}
+
 		PropertyBag* p = new PropertyBag;
-		monitor* m = new monitor;
+		m = new monitor;
 
 		m->descriptive_name = descriptive_name;
 		p->addProperty("descriptive_name", m->descriptive_name).doc("Descriptive name of the monitor");
@@ -136,11 +159,14 @@ namespace YouBot
 		p->addProperty("values", m->values);
 
 		this->addProperty(m->descriptive_name, *p);
+		m_monitors.push_back(m);
+		m_active_monitors.reserve(m_monitors.size());
 	}
 
 	void YouBotMonitorService::activate_monitor(std::string name)
 	{
-		monitor* m = getMonitor(name);
+		vector<monitor*>::iterator i;
+		monitor* m = (i = getMonitor(m_monitors, name)) != m_monitors.end() ? *i : NULL;
 
 		if(m == NULL)
 		{
@@ -194,12 +220,13 @@ namespace YouBot
 		}
 
 		m->active = true;
-		//TODO: Add to active_monitors
+		m_active_monitors.push_back(m);
 	}
 
 	void YouBotMonitorService::deactivate_monitor(std::string name)
 	{
-		monitor* m = getMonitor(name);
+		vector<monitor*>::iterator i;
+		monitor* m = (i = getMonitor(m_monitors, name)) == m_monitors.end() ? NULL : *i;
 
 		if(m == NULL)
 		{
@@ -207,9 +234,16 @@ namespace YouBot
 			this->error();
 			return;
 		}
-
 		m->active = false;
-		//TODO: Remove monitor from active_monitors
+
+		m = (i = getMonitor(m_active_monitors, name)) == m_active_monitors.end() ? NULL : *i;
+		if(m == NULL)
+		{
+			log(Error) << "Monitor not active" << endlog();
+			return;
+		}
+
+		m_active_monitors.erase(i);
 	}
 }
 
