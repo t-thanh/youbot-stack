@@ -20,13 +20,13 @@ namespace YouBot
 	using namespace RTT;
 	using namespace std;
 
-    class YouBotMonitorService : public Service {
+    class YouBotMonitorService : public TaskContext {
 
 		public:
-    		YouBotMonitorService(TaskContext* parent);
+    		YouBotMonitorService(const string& name);
 			virtual ~YouBotMonitorService();
 
-			virtual void update();
+			virtual void updateHook();
 
 			virtual void setup_monitor(std::string descriptive_name);
 
@@ -99,7 +99,7 @@ namespace YouBot
 				}
 				default:
 					log(Error) << "Case not recognized." << endlog();
-					this->getOwner()->error();
+					this->error();
 					break;
 			}
 		}
@@ -140,19 +140,19 @@ namespace YouBot
 				case(FORCE):
 				{
 					log(Error) << "FORCE not included in message." << endlog();
-					this->getOwner()->error();
+					this->error();
 					break;
 				}
 				case(TORQUE):
 				{
 					log(Error) << "TORQUE not included in message." << endlog();
-					this->getOwner()->error();
+					this->error();
 					break;
 				}
 				default:
 				{
 					log(Error) << "Case not recognized." << endlog();
-					this->getOwner()->error();
+					this->error();
 					break;
 				}
 			}
