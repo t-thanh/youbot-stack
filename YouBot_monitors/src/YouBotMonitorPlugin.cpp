@@ -5,12 +5,16 @@
 
 #include <iostream>
 
+#include "YouBotMonitorTypeInfos.hpp"
+
 using namespace RTT;
 using namespace std;
 
 using namespace RTT;
 using namespace RTT::types;
 using namespace std;
+
+using namespace YouBot;
 /**
  * An example plugin which can be loaded in a process.
  * Orocos plugins should provide at least these two functions:
@@ -22,7 +26,11 @@ bool loadRTTPlugin( RTT::TaskContext* t )
     else
         cout << "Plugin of YouBot helpers in component: "<< t->getName() << endl;
 
-//	RTT::types::Types()->addType( new CtrlModesTypeInfo );
+	RTT::types::Types()->addType( new ControlSpaceTypeInfo );
+	RTT::types::Types()->addType( new PhysicalPartTypeInfo );
+	RTT::types::Types()->addType( new PhysicalQuantityTypeInfo );
+	RTT::types::Types()->addType( new EventTypeTypeInfo );
+	RTT::types::Types()->addType( new CompareTypeTypeInfo );
 //	RTT::types::Types()->addType( new SequenceTypeInfo<std::vector<ctrl_modes> >("std.vector<ctrl_modes>") );
 
 //		RTT::types::Types()->addType( new JointStatusTypeInfo );

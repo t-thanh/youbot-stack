@@ -13,7 +13,7 @@
 #include <boost/function.hpp>
 #include <vector>
 
-#include "YouBotMonitorServiceHelpers.hpp"
+#include "YouBotMonitorHelpers.hpp"
 
 namespace YouBot
 {
@@ -28,16 +28,13 @@ namespace YouBot
 
 			virtual void update();
 
-			virtual void setup_monitor(physical_part& part, control_space& space, physical_quantity& quantity,
-					event_type& e_type, compare_type& c_type, std::string& msg, unsigned int& index, double& single_value);
+			virtual void setup_monitor(std::string descriptive_name);
 
-			virtual void setup_monitor(physical_part& part, control_space& space, physical_quantity& quantity,
-					event_type& e_type, compare_type& c_type, std::string& msg, vector<unsigned int>& indices, vector<double>& values);
-//
-//			virtual void remove_monitor(physical_part& p, control_space& st, physical_quantity& pt, event_type& to_check, unsigned int index, double single_value);
-//			virtual void remove_monitor(physical_part& p, control_space& st, physical_quantity& pt, event_type& to_check, std::vector<unsigned int> indices, std::vector<double> vector_value);
-//
-//			virtual void clear_monitors();
+			virtual void activate_monitor(std::string name);
+
+			virtual void deactivate_monitor(std::string name);
+
+//			virtual void remove_monitors(std::string& name);
 
 			virtual void setupComponentInterface();
 			void emitEvent(std::string id, std::string message);
@@ -48,7 +45,8 @@ namespace YouBot
 			bool check_monitor(InputPort<message_type>* const inp, const physical_quantity quantity, const std::string msg,
 					vector<unsigned int>* const indices, vector<double>* const vector_value, compare_type c_type);
 
-			bool bind_function(monitor& m);
+			bool bind_function(monitor* m);
+			monitor* getMonitor(std::string& name);
 
 			InputPort<sensor_msgs::JointState> 	base_joint_state;
 			InputPort<nav_msgs::Odometry> 		base_cart_state;
@@ -59,7 +57,15 @@ namespace YouBot
 			OutputPort<YouBot_monitors::monitor_event> events;
 			YouBot_monitors::monitor_event m_events;
 
-			vector<monitor> m_monitors;
+			vector<PropertyBag*> m_properties;
+			vector<monitor*> m_monitors;
+
+		public:
+			PropertyBag sub_bag;
+			std::string s_param;
+			bool b_param;
+
+			//active monitors -> lock free??
     };
 
 	template<>

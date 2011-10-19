@@ -30,6 +30,9 @@ namespace YouBot
 
 	typedef struct _monitor
 	{
+		bool active;
+		std::string descriptive_name;
+
 		physical_part part;
 		control_space space;
 		physical_quantity quantity;
@@ -47,12 +50,12 @@ namespace YouBot
 
 		monitor_fp check;
 
-		_monitor() : part(ARM), space(JOINT), quantity(POSITION), e_type(EDGE), c_type(LESS),
+		_monitor() : active(false), part(ARM), space(JOINT), quantity(POSITION), e_type(EDGE), c_type(LESS),
 				id(""), msg(""),
 				state(false),
 				is_single_value(true),
-				indices(1),
-				values(1)
+				indices(6),
+				values(6)
 		{}
 	} monitor;
 
@@ -85,6 +88,16 @@ namespace YouBot
 	std::string control_space_tostring(const control_space& space)
 	{
 		if(space == CARTESIAN)
+			return "CARTESIAN";
+		else if(space == JOINT)
+			return "JOINT";
+		else
+			return "error";
+	}
+
+	std::string control_space_toeventstring(const control_space& space)
+	{
+		if(space == CARTESIAN)
 			return "cart";
 		else if(space == JOINT)
 			return "jnt";
@@ -93,6 +106,20 @@ namespace YouBot
 	}
 
 	std::string physical_quantity_tostring(const physical_quantity& quantity)
+	{
+		if(quantity == POSITION)
+			return "POSITION";
+		else if(quantity == VELOCITY)
+			return "VELOCITY";
+		else if(quantity == FORCE)
+			return "FORCE";
+		else if(quantity == TORQUE)
+			return "TORQUE";
+		else
+			return "error";
+	}
+
+	std::string physical_quantity_toeventstring(const physical_quantity& quantity)
 	{
 		if(quantity == POSITION)
 			return "pos";
@@ -106,39 +133,38 @@ namespace YouBot
 			return "error";
 	}
 
-// single value monitor vs state vector monitor
-
-// Sensor msgs
-// Channel name, <pos, velo, force>, limit_exceeded
-// Channel name, <pos> pos_reached
-
-// Odometry = Position + Twist
-// pos, velo
-// Howto: cartforce?
-
-}
-
-namespace RTT
-{
-	namespace types
+	std::string physical_part_tostring(const physical_part& part)
 	{
-		using namespace YouBot;
-
-		std::ostream& operator<<(std::ostream& os, const control_space& cd) {
-			return os << control_space_tostring(cd);
-		}
-
-		std::istream& operator>>(std::istream& is, control_space& cd) {
-			return is >> cd;
-		}
-
-		std::ostream& operator<<(std::ostream& os, const physical_quantity& cd) {
-			return os << physical_quantity_tostring(cd);
-		}
-
-		std::istream& operator>>(std::istream& is, physical_quantity& cd) {
-			return is >> cd;
-		}
-
+		if(part == ARM)
+			return "ARM";
+		else if(part == BASE)
+			return "BASE";
+		else
+			return "error";
 	}
+
+	std::string event_type_tostring(const event_type& e_type)
+	{
+		if(e_type == EDGE)
+			return "EDGE";
+		else if(e_type == LEVEL)
+			return "LEVEL";
+		else
+			return "error";
+	}
+
+	std::string compare_type_tostring(const compare_type& c_type)
+	{
+		if(c_type == LESS)
+			return "LESS";
+		else if(c_type == LESS_EQUAL)
+			return "LESS_EQUAL";
+		else if(c_type == GREATER)
+			return "GREATER";
+		else if(c_type == GREATER_EQUAL)
+			return "GREATER_EQUAL";
+		else
+			return "error";
+	}
+
 }
