@@ -36,5 +36,5 @@ executive.start
 
    // random safe pose
    executive.Gripper_position_setpoint=array(0.45,0.0,0.39,0.0,1.64,0.0)
-   executive.Gripper_stiffness_setpoint=array(10.0,0.0)
+   executive.Gripper_stiffness_setpoint=array(10.0,100.0)
 

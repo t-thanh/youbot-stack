@@ -39,3 +39,8 @@ cp_effort.name_id="/effort";
 cp_effort.type=0;
 cp_effort.transport=3;
 stream("control.DemuxHW1_arm_e",cp_effort);
+var ConnPolicy cp_flow;
+cp_flow.name_id="/flow";
+cp_flow.type=0;
+cp_flow.transport=3;
+stream("arm2control.output_velocities",cp_flow);
