@@ -1,5 +1,7 @@
 #pragma once
 
+#include "YouBotMonitorTypes.hpp"
+
 #include <rtt/Service.hpp>
 #include <rtt/Port.hpp>
 #include <rtt/RTT.hpp>
@@ -17,69 +19,37 @@ namespace YouBot
 	using namespace RTT;
 	using namespace std;
 
-	const size_t max_event_length = 255;
+	std::string compare_type_tostring(const compare_type& c_type);
 
-	enum control_space 		{JOINT = 1, CARTESIAN = 2};
-	enum physical_part 		{ARM = 1, BASE = 2}; //, BOTH = 3 - don't use BOTH yet
-	enum physical_quantity 	{POSITION = 1, VELOCITY = 2, TORQUE = 3, FORCE = 4};
-	enum event_type 		{EDGE = 1, LEVEL = 2};
-	enum compare_type		{LESS = 1, LESS_EQUAL = 2, GREATER = 3, GREATER_EQUAL = 4};
-
-	typedef boost::function<bool() > monitor_fp;
-
-	typedef struct _monitor
-	{
-		bool active;
-		std::string descriptive_name;
-
-		physical_part part;
-		control_space space;
-		physical_quantity quantity;
-		event_type e_type;
-		compare_type c_type;
-
-		std::string id; // determined beforehand to speed up runtime execution.
-		std::string msg;
-
-		bool state; //for EDGE
-
-		bool is_single_value;
-		double epsilon;
-		vector<unsigned int> indices;
-		vector<double> values;
-
-		monitor_fp check;
-
-		_monitor() : active(false), part(ARM), space(JOINT), quantity(POSITION), e_type(EDGE), c_type(LESS),
-				id(""), msg(""),
-				state(false),
-				is_single_value(true),
-				epsilon(5),
-				indices(6),
-				values(6)
-		{}
-	} monitor;
-
-	bool compare(vector<unsigned int>* const indices, vector<double>* const first, const vector<double>& second, const compare_type ct, const double epsilon)
+	bool compare(vector<unsigned int>* const indices, vector<double>* const setp, const vector<double>& cur, const compare_type ct, const double epsilon)
 	{
 		unsigned int index = 0;
 		unsigned int size = indices->size();
 		for(unsigned int i = 0; i < size; ++i)
 		{
 			index = (*indices)[i];
-			if( ct == LESS && abs((*first)[index] - second[index]) >= epsilon )
+			double diff = (*setp)[index] - cur[index];
+			double nepsilon = abs(epsilon * (*setp)[index]);
+
+//			log(Info) << compare_type_tostring(ct) << " diff: " << diff << " epsilon: " << nepsilon << endlog();
+
+			if( ct == LESS && diff <= 0 )
 			{
 				return false;
 			}
-			else if(ct == LESS_EQUAL && abs((*first)[index] - second[index]) > epsilon)
+			else if(ct == LESS_EQUAL && diff < 0 )
 			{
 				return false;
 			}
-			else if(ct == GREATER && abs((*first)[index] - second[index]) <= epsilon)
+			else if(ct == EQUAL &&  abs(diff) > nepsilon )
 			{
 				return false;
 			}
-			else if(ct == GREATER_EQUAL && abs((*first)[index] - second[index]) < epsilon)
+			else if(ct == GREATER_EQUAL && diff > 0 )
+			{
+				return false;
+			}
+			else if(ct == GREATER && diff >= 0 )
 			{
 				return false;
 			}
@@ -162,6 +132,8 @@ namespace YouBot
 			return "LESS";
 		else if(c_type == LESS_EQUAL)
 			return "LESS_EQUAL";
+		else if(c_type == EQUAL)
+			return "EQUAL";
 		else if(c_type == GREATER)
 			return "GREATER";
 		else if(c_type == GREATER_EQUAL)

@@ -15,9 +15,9 @@ monitor.pos_reached1.physical_quantity = POSITION
 monitor.pos_reached1.event_type = EDGE
 monitor.pos_reached1.compare_type = LESS
 monitor.pos_reached1.msg = string("e_POS_REACHED");
-monitor.pos_reached1.epsilon = 1
+monitor.pos_reached1.epsilon = 0 
 monitor.pos_reached1.indices = uint32[](uint32(0))
-monitor.pos_reached1.values = std.vector<double>(0.0241963)
+monitor.pos_reached1.values = std.vector<double>(0.03)
 monitor.activate_monitor("pos_reached1");
 
 monitor.setup_monitor("pos_reached2");
@@ -25,9 +25,9 @@ monitor.pos_reached2.physical_part = ARM
 monitor.pos_reached2.control_space = JOINT
 monitor.pos_reached2.physical_quantity = POSITION
 monitor.pos_reached2.event_type = EDGE
-monitor.pos_reached2.compare_type = LESS
+monitor.pos_reached2.compare_type = EQUAL 
 monitor.pos_reached2.msg = string("e_POS_REACHED");
-monitor.pos_reached2.epsilon = 0.2
+monitor.pos_reached2.epsilon = 0.1
 monitor.pos_reached2.indices = uint32[](uint32(0), uint32(1), uint32(2), uint32(3), uint32(4))
 monitor.pos_reached2.values = std.vector<double>(2.93978, 1.14268, -2.53434, 1.79704, 2.91726)
 monitor.activate_monitor("pos_reached2");

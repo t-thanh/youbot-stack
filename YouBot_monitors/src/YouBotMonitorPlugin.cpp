@@ -15,6 +15,12 @@ using namespace RTT::types;
 using namespace std;
 
 using namespace YouBot;
+
+std::string getRTTPluginName()
+{
+    return "YouBotMonitorPlugin";
+}
+
 /**
  * An example plugin which can be loaded in a process.
  * Orocos plugins should provide at least these two functions:
@@ -22,9 +28,9 @@ using namespace YouBot;
 bool loadRTTPlugin( RTT::TaskContext* t )
 {
     if ( t == 0 )
-        cout << "Plugin of YouBot helpers loaded in process."<< endl;
+        cout << "Plugin of " << getRTTPluginName() << " loaded in process."<< endl;
     else
-        cout << "Plugin of YouBot helpers in component: "<< t->getName() << endl;
+        cout << "Plugin of " << getRTTPluginName() << " loaded in component: "<< t->getName() << endl;
 
 	RTT::types::Types()->addType( new ControlSpaceTypeInfo );
 	RTT::types::Types()->addType( new PhysicalPartTypeInfo );
@@ -50,13 +56,9 @@ bool loadRTTPlugin( RTT::TaskContext* t )
 
 	globals->setValue( new Constant<compare_type>("LESS",YouBot::LESS) );
 	globals->setValue( new Constant<compare_type>("LESS_EQUAL",YouBot::LESS_EQUAL) );
+	globals->setValue( new Constant<compare_type>("EQUAL",YouBot::EQUAL) );
 	globals->setValue( new Constant<compare_type>("GREATER",YouBot::GREATER) );
 	globals->setValue( new Constant<compare_type>("GREATER_EQUAL",YouBot::GREATER_EQUAL) );
 
     return true;
-}
-
-std::string getRTTPluginName()
-{
-    return "YouBotMonitorServicePlugin";
 }

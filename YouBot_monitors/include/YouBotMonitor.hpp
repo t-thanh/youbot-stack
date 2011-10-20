@@ -67,8 +67,7 @@ namespace YouBot
 			vector<PropertyBag*> m_properties;
 			vector<monitor*> m_monitors;
 
-			vector<monitor*> m_active_monitors;
-			//active monitors -> lock free??
+			vector<monitor*> m_active_monitors; //TODO: Change into lockfree list?
     };
 
 	template<>

@@ -98,32 +98,6 @@ namespace YouBot
 		}
 	}
 
-	bool YouBotMonitorService::bind_function(monitor* m)
-	{
-		// Note: You MUST use the final (heap stored) monitor struct!
-
-		if(m->space == CARTESIAN && m->part == BASE)
-		{
-			m->check = boost::bind(boost::mem_fn(&YouBotMonitorService::check_monitor<nav_msgs::Odometry>), this, &m_base_cart_state, m->quantity, m->msg, &m->indices, &m->values, m->c_type, m->epsilon);
-		}
-		else if(m->space == CARTESIAN && m->part == ARM)
-		{
-//			m.check = boost::bind(&YouBotMonitorService::check_monitor, this, &arm_cart_state, m.quantity, m.msg, &m.indices, &m.values, m.c_type);
-			log(Error) << "Not implemented!" << endlog();
-			return false;
-		}
-		else if(m->space == JOINT && m->part == BASE)
-		{
-			m->check = boost::bind(boost::mem_fn(&YouBotMonitorService::check_monitor<sensor_msgs::JointState>), this, &m_base_joint_state, m->quantity, m->msg, &m->indices, &m->values, m->c_type, m->epsilon);
-		}
-		else if(m->space == JOINT && m->part == ARM)
-		{
-			m->check = boost::bind(boost::mem_fn(&YouBotMonitorService::check_monitor<sensor_msgs::JointState>), this, &m_arm_joint_state, m->quantity, m->msg, &m->indices, &m->values, m->c_type, m->epsilon);
-		}
-
-		return true;
-	}
-
 	vector<monitor*>::iterator YouBotMonitorService::getMonitor(vector<monitor*>& list, std::string& name)
 	{
 		for(vector<monitor*>::iterator i = list.begin(); i < list.end(); ++i)
@@ -152,16 +126,16 @@ namespace YouBot
 
 		m->descriptive_name = descriptive_name;
 		p->addProperty("descriptive_name", m->descriptive_name).doc("Descriptive name of the monitor");
-		p->addProperty("active", m->active).doc("Is active?");
-		p->addProperty("physical_part", m->part);
-		p->addProperty("control_space", m->space);
-		p->addProperty("physical_quantity", m->quantity);
-		p->addProperty("event_type", m->e_type);
-		p->addProperty("compare_type", m->c_type);
-		p->addProperty("msg", m->msg);
-		p->addProperty("epsilon", m->epsilon);
-		p->addProperty("indices", m->indices);
-		p->addProperty("values", m->values);
+		p->addProperty("active", m->active).doc("Is the monitor active?");
+		p->addProperty("physical_part", m->part).doc("Robot part: ARM, BASE or BOTH");
+		p->addProperty("control_space", m->space).doc("Compare in JOINT or CARTESIAN space");
+		p->addProperty("physical_quantity", m->quantity).doc("Interesting quantity: POSITION, VELOCITY, FORCE or TORQUE");
+		p->addProperty("event_type", m->e_type).doc("LEVEL or EDGE triggered event(s)");
+		p->addProperty("compare_type", m->c_type).doc("LESS, LESS_EQUAL, EQUAL, GREATER, GREATER_EQUAL");
+		p->addProperty("msg", m->msg).doc("Event's message");
+		p->addProperty("epsilon", m->epsilon).doc("Epsilon range for the EQUAL compare_type (only).");
+		p->addProperty("indices", m->indices).doc("Interesting states (indices).");
+		p->addProperty("values", m->values).doc("Triggering state set-points");
 
 		this->addProperty(m->descriptive_name, *p);
 		m_monitors.push_back(m);
@@ -182,7 +156,7 @@ namespace YouBot
 
 		if(m->active)
 		{
-			log(Info) << "Cannot activate an already active monitor." << endlog();
+			log(Warning) << "Cannot activate an already active monitor." << endlog();
 			return;
 		}
 
@@ -235,20 +209,47 @@ namespace YouBot
 
 		if(m == NULL)
 		{
-			log(Error) << "Monitor not found" << endlog();
+			log(Error) << "Monitor not found." << endlog();
 			this->error();
 			return;
 		}
+
 		m->active = false;
 
 		m = (i = getMonitor(m_active_monitors, name)) == m_active_monitors.end() ? NULL : *i;
 		if(m == NULL)
 		{
-			log(Error) << "Monitor not active" << endlog();
+			log(Warning) << "Monitor was not active." << endlog();
 			return;
 		}
 
 		m_active_monitors.erase(i);
+	}
+
+	bool YouBotMonitorService::bind_function(monitor* m)
+	{
+		// Note: You MUST use the final (heap stored) monitor struct!
+
+		if(m->space == CARTESIAN && m->part == BASE)
+		{
+			m->check = boost::bind(boost::mem_fn(&YouBotMonitorService::check_monitor<nav_msgs::Odometry>), this, &m_base_cart_state, m->quantity, m->msg, &m->indices, &m->values, m->c_type, m->epsilon);
+		}
+		else if(m->space == CARTESIAN && m->part == ARM)
+		{
+//			m.check = boost::bind(&YouBotMonitorService::check_monitor, this, &arm_cart_state, m.quantity, m.msg, &m.indices, &m.values, m.c_type);
+			log(Error) << "Not implemented!" << endlog();
+			return false;
+		}
+		else if(m->space == JOINT && m->part == BASE)
+		{
+			m->check = boost::bind(boost::mem_fn(&YouBotMonitorService::check_monitor<sensor_msgs::JointState>), this, &m_base_joint_state, m->quantity, m->msg, &m->indices, &m->values, m->c_type, m->epsilon);
+		}
+		else if(m->space == JOINT && m->part == ARM)
+		{
+			m->check = boost::bind(boost::mem_fn(&YouBotMonitorService::check_monitor<sensor_msgs::JointState>), this, &m_arm_joint_state, m->quantity, m->msg, &m->indices, &m->values, m->c_type, m->epsilon);
+		}
+
+		return true;
 	}
 }
 
