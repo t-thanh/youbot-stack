@@ -55,6 +55,7 @@ namespace YouBot
 		memset(m_overtemperature, 0, NR_OF_ARM_SLAVES);
 		memset(m_connectionlost, 0, NR_OF_ARM_SLAVES);
 		memset(m_i2texceeded, 0, NR_OF_ARM_SLAVES);
+		memset(m_timeout, 0, NR_OF_ARM_SLAVES);
 
 		setupComponentInterface();
 
@@ -126,8 +127,8 @@ namespace YouBot
 //		m_event_checks.push_back(cond);
 
 		//TODO: FIX ME: Second startup creates lots of timeout's.
-//		cond = boost::bind(&check_event_level, this, ::TIMEOUT, E_EC_TIMEOUT, _1, _2);
-//		m_event_checks.push_back(cond);
+		cond = boost::bind(&check_event_edge, this, ::TIMEOUT, E_EC_TIMEOUT, m_timeout, _1, _2); //TODO: Set back to level
+		m_event_checks.push_back(cond);
 	}
 
 	void YouBotArmService::setControlModes(vector<ctrl_modes>& all)

@@ -85,12 +85,13 @@ namespace YouBot
 			YouBotJoint* m_joints[NR_OF_BASE_SLAVES];
 
 			std::vector<check_fp> m_event_checks;
-			bool m_overcurrent[NR_OF_ARM_SLAVES];
-			bool m_undervoltage[NR_OF_ARM_SLAVES];
-			bool m_overvoltage[NR_OF_ARM_SLAVES];
-			bool m_overtemperature[NR_OF_ARM_SLAVES];
-			bool m_connectionlost[NR_OF_ARM_SLAVES];
-			bool m_i2texceeded[NR_OF_ARM_SLAVES];
+			bool m_overcurrent[NR_OF_BASE_SLAVES];
+			bool m_undervoltage[NR_OF_BASE_SLAVES];
+			bool m_overvoltage[NR_OF_BASE_SLAVES];
+			bool m_overtemperature[NR_OF_BASE_SLAVES];
+			bool m_connectionlost[NR_OF_BASE_SLAVES];
+			bool m_i2texceeded[NR_OF_BASE_SLAVES];
+			bool m_timeout[NR_OF_BASE_SLAVES];
 
 			bool m_calibrated;
 

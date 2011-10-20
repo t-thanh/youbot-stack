@@ -87,6 +87,7 @@ namespace YouBot
 			bool m_overtemperature[NR_OF_ARM_SLAVES];
 			bool m_connectionlost[NR_OF_ARM_SLAVES];
 			bool m_i2texceeded[NR_OF_ARM_SLAVES];
+			bool m_timeout[NR_OF_ARM_SLAVES];
 
 			YouBotManipulator* m_manipulator;
 			YouBotJoint* m_joints[NR_OF_ARM_SLAVES];
