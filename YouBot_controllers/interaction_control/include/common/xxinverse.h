@@ -3,10 +3,10 @@
  *
  *  file:  include\common\xxinverse.h
  *  subm:  interaction_control
- *  model: gravity_test_vA
- *  expmt: gravity_test_vA
- *  date:  October 12, 2011
- *  time:  2:22:58 pm
+ *  model: ModelControl
+ *  expmt: ModelControl
+ *  date:  October 20, 2011
+ *  time:  11:07:22 am
  *  user:  Campuslicentie 
  *  from:  Universiteit Twente
  *  build: 4.1.2.2

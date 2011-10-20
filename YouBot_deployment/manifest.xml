@@ -1,0 +1,13 @@
+<package>
+  <description brief="YouBot_deployment">
+
+    Various deploymnet scripts
+  </description>
+  <author>Yury Brodskiy and Robert Wilterdink</author>
+  <license>LGPLv2.1 / BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>ce203</url>
+  
+</package>
+
+

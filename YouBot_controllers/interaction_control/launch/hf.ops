@@ -1,0 +1,9 @@
+   control.JointSpaceDamping.r[0]=7
+   control.JointSpaceDamping.r[1]=7
+   control.JointSpaceDamping.r[2]=7
+   control.JointSpaceDamping.r[3]=7
+   control.JointSpaceDamping.r[4]=7
+   control.JointSpaceDamping.r[5]=7
+   control.JointSpaceDamping.r[6]=7
+   control.JointSpaceDamping.r[7]=7
+

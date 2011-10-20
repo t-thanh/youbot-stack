@@ -1,5 +1,5 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
-PROJECT(gravity_test_vA_interaction_control)
+PROJECT(ModelControl_interaction_control)
 
 #
 # Output structure

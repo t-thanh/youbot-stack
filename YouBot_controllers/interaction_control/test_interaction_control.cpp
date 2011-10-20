@@ -3,10 +3,10 @@
  *
  *  file:  test_interaction_control.cpp
  *  subm:  interaction_control
- *  model: gravity_test_vA
- *  expmt: gravity_test_vA
- *  date:  October 12, 2011
- *  time:  2:22:58 pm
+ *  model: ModelControl
+ *  expmt: ModelControl
+ *  date:  October 20, 2011
+ *  time:  11:07:22 am
  *  user:  Campuslicentie
  *  from:  Universiteit Twente
  *  build: 4.1.2.2
@@ -35,7 +35,7 @@
 using namespace Orocos;
 using namespace RTT;
 using namespace std;
-//using namespace gravity_test_vA;
+//using namespace ModelControl;
 /* the main function */
 int ORO_main(int argc, char** argv)
 {
@@ -46,7 +46,7 @@ int ORO_main(int argc, char** argv)
         	log(Info) << argv[0] << " manually raises LogLevel to 'Info' (5). See also file 'orocos.log'."<<endlog();
     	}
 
-		gravity_test_vA::interaction_control my20simSubmodel;
+		ModelControl::interaction_control my20simSubmodel;
 
         my20simSubmodel.setActivity(new Activity( 2 ));
 

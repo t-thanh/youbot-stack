@@ -16,7 +16,6 @@ if (ROS_ROOT)
   rosbuild_init()
   rosbuild_find_ros_package( rtt )
   set( RTT_HINTS HINTS ${rtt_PACKAGE_PATH}/install )
-  rosbuild_genmsg()
   rosbuild_include(rtt_ros_integration GenerateRTTtypekit)
 
 # Set the CMAKE_PREFIX_PATH in case you're not using Orocos through ROS

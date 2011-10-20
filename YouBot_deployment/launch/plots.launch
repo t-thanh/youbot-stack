@@ -1,0 +1,4 @@
+<launch>
+	<node pkg="rxtools" type="rxplot" name="plot_effort" args=" -b 30 -p 30 /effort/data[0]:data[1]:data[2]:data[3]:data[4]" />
+	<node pkg="rxtools" type="rxplot" name="plot_flow" args=" -b 30 -p 30 /flow/data[0]:data[1]:data[2]:data[3]:data[4]" />
+</launch>

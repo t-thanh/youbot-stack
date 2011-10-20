@@ -3,7 +3,7 @@
  <!-- Following xml loads the 20sim control with all required adapters.
       The youbot components should be loaded and connected separately-->
   <simple name="Import" type="string">
-    <value>interaction_control_test</value><!-- replace with package name if the libraries are not in the same folder-->
+    <value>interaction_control</value><!-- replace with package name if the libraries are not in the same folder-->
   </simple>
  <simple name="Import" type="string">
 	<value>YouBot_adapters</value>
@@ -53,4 +53,5 @@
       <value>0</value>
     </simple>
   </struct>
+  
 </properties>

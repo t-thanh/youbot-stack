@@ -8,7 +8,7 @@
  <simple name="Import" type="string">
 	<value>YouBot_adapters</value>
  </simple>
-  <struct name="control" type="gravity_test_vA::interaction_control">
+  <struct name="control" type="ModelControl::interaction_control">
     <struct name="Ports" type="PropertyBag">
       <simple name="bond_to_arm_T" type="string">
         <value>cp_ad_torque</value>
