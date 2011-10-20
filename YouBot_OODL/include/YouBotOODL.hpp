@@ -36,8 +36,6 @@ namespace YouBot
 			virtual void stopHook();
 			virtual void cleanupHook();
 
-			OutputPort<YouBot_OODL::driver_event> events;
-
 		private:
 	        vector<OperationCaller<bool(void)> > calibrate_ops;
 	        vector<OperationCaller<bool(void)> > start_ops;

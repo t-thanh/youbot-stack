@@ -12,7 +12,7 @@
 #include <rtt/PropertyBag.hpp>
 #include <rtt/Time.hpp>
 
-#include "YouBotTypes.hpp"
+#include <std_msgs/typekit/Types.h>
 
 namespace YouBot
 {
@@ -29,9 +29,7 @@ namespace YouBot
 			virtual void updateHook();
 
 		private:
-			InputPort<YouBot_OODL::driver_event> events;
-			YouBot_OODL::driver_event m_events;
-
-			ros::Time begin;
+			InputPort<std_msgs::String> events;
+			std_msgs::String m_events;
 	};
 }

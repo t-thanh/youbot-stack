@@ -1,0 +1,13 @@
+runScript("../YouBot_OODL/deploy.ops");
+
+import("YouBot_monitors");
+loadComponent("monitor", "YouBot::YouBotMonitorService")
+
+var ConnPolicy cp_m;
+cp_m.type = DATA;  
+cp_m.lock_policy = LOCK_FREE; 
+
+connectPeers("OODL", "monitor");
+connect("OODL.Arm1.joint_states","monitor.arm_joint_state",cp_m)
+connect("OODL.Base.joint_states","monitor.base_joint_state",cp_m)
+connect("OODL.Base.odometry_state","monitor.base_cart_state",cp_m)

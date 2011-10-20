@@ -5,7 +5,6 @@
 
 #include <youbot/YouBotManipulator.hpp>
 #include <youbot/YouBotJoint.hpp>
-#include <youbot/YouBotGripper.hpp>
 
 #include "YouBotTypes.hpp"
 #include "YouBotOODL.hpp"

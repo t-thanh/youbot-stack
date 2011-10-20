@@ -67,4 +67,3 @@ OODL.Arm1.setControlModes(ctrl);
 OODL.Arm1.clearControllerTimeouts;
 OODL.Base.clearControllerTimeouts;
 
-ArmController.unfoldManipulator();

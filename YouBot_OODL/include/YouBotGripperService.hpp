@@ -3,12 +3,11 @@
 #include <rtt/Service.hpp>
 #include <rtt/Port.hpp>
 
-#include <youbot/YouBotManipulator.hpp>
-#include <youbot/YouBotJoint.hpp>
 #include <youbot/YouBotGripper.hpp>
 
 #include "YouBotTypes.hpp"
 #include "YouBotOODL.hpp"
+#include "YouBotService.hpp"
 
 #include <sensor_msgs/typekit/Types.h>
 #include <motion_control_msgs/typekit/Types.h>
@@ -34,18 +33,18 @@ namespace YouBot
 	};
 	typedef struct _GripperLimits GripperLimits;
 
-    class YouBotGripperService : public Service {
+    class YouBotGripperService : public YouBotService {
 
 		public:
-    		YouBotGripperService(const string& name, TaskContext* parent, unsigned int min_slave_nr);
+    		YouBotGripperService(const string& name, TaskContext* parent);
 			virtual ~YouBotGripperService();
 
-//			void displayGripperStatus();
+			void displayGripperStatus();
 
 		protected:
 			// Gripper
 			InputPort<motion_control_msgs::JointPositions> gripper_cmd_position;
-			OutputPort<sensor_msgs::JointState> gripper_state;
+//			OutputPort<sensor_msgs::JointState> gripper_state;
 
 		private:
 			bool calibrate();
@@ -54,7 +53,7 @@ namespace YouBot
 			void cleanup();
 			void stop();
 
-			bool check_error();
+			void checkForErrors();
 
 			// Gripper
 	        motion_control_msgs::JointPositions m_gripper_cmd_position;
