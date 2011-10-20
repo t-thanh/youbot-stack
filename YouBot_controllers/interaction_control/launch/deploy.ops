@@ -1,0 +1,46 @@
+//import(""); //importing addpaters and control_test should be in same directory
+import("rtt_rospack")
+loadService("Deployer","rospack")
+
+kickStart(rospack.find("interaction_control")+"/launch/20sim_deploy.xml")
+
+runScript(rospack.find("YouBot_OODL")+"/deploy_with_monitor.ops")
+runScript(rospack.find("interaction_control")+"/launch/ros_connection.ops")
+
+var strings  arm_joint_uri=strings("joint1","joint2","joint3","joint4","joint5");
+var std.vector<ctrl_modes>  arm_ctrl_modes=std.vector<ctrl_modes>(5,TORQUE)
+
+control.configure;
+control2arm.configure;
+arm2control.configure;
+
+//setup control mode
+youbot.Arm1.setControlModes(arm_ctrl_modes)
+control2arm.initialize(TORQUE,5);
+arm2control.initialize(5);
+
+//making connections
+
+var ConnPolicy cp_5;
+cp_5.type = DATA;  // Use ''BUFFER'' or ''DATA''
+cp_5.lock_policy = LOCK_FREE; // Use  ''LOCKED'', ''LOCK_FREE'' or ''UNSYNC''
+connect("control2arm.output_cmd_torques","youbot.Arm1.joint_cmd_torques",cp_5)
+
+var ConnPolicy cp_7;
+cp_7.type = DATA;  // Use ''BUFFER'' or ''DATA''
+cp_7.lock_policy = LOCK_FREE; // Use  ''LOCKED'', ''LOCK_FREE'' or ''UNSYNC''
+connect("arm2control.input_states","youbot.Arm1.joint_states",cp_7)
+
+var ConnPolicy cp_8;
+cp_8.type = DATA;  // Use ''BUFFER'' or ''DATA''
+cp_8.lock_policy = LOCK_FREE; // Use  ''LOCKED'', ''LOCK_FREE'' or ''UNSYNC''
+connect("control.bond_to_arm_omega","arm2control.output_velocities",cp_8)
+
+//All start
+youbot.start
+arm2control.start
+control.start
+control2arm.start
+
+
+runScript(rospack.find("YouBot_executive")+"/deploy.ops")

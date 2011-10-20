@@ -5,10 +5,10 @@
  *
  *  file:  include\interaction_control.h
  *  subm:  interaction_control
- *  model: gravity_test_vA
- *  expmt: gravity_test_vA
- *  date:  October 12, 2011
- *  time:  2:22:58 pm
+ *  model: ModelControl
+ *  expmt: ModelControl
+ *  date:  October 18, 2011
+ *  time:  10:41:50 am
  *  user:  Campuslicentie
  *  from:  Universiteit Twente
  *  build: 4.1.2.2
@@ -45,7 +45,7 @@
 
 #include "Adapter20Sim.h"
 
-namespace gravity_test_vA
+namespace ModelControl
 {
 	using namespace common20sim;
 
