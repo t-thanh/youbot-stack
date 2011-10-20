@@ -18,7 +18,7 @@ if (ROS_ROOT)
   set( RTT_HINTS HINTS ${rtt_PACKAGE_PATH}/install )
   rosbuild_genmsg()
   rosbuild_include(rtt_ros_integration GenerateRTTtypekit)
-  ros_generate_rtt_typekit(YouBot_monitors)
+#ros_generate_rtt_typekit(YouBot_monitors)
 
 # Set the CMAKE_PREFIX_PATH in case you're not using Orocos through ROS
 # for helping these find commands find RTT.

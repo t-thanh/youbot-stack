@@ -1,6 +1,5 @@
 #pragma once
 
-#include <YouBot_monitors/typekit/Types.h>
 #include <rtt/Service.hpp>
 #include <rtt/Port.hpp>
 #include <rtt/RTT.hpp>

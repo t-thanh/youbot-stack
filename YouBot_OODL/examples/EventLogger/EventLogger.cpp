@@ -10,7 +10,7 @@ namespace YouBot
 	EventLogger::EventLogger(const string& name) :
 			TaskContext(name)
 	{
-		m_events.driver_event.assign(255, ' '); //@TODO: Fix me
+		m_events.data.assign(255, ' '); //@TODO: Fix me
 
 		this->addEventPort("events",events).doc("Connect an event-emitting port to it to print events on the screen.");
 	}
@@ -25,8 +25,6 @@ namespace YouBot
 			return false;
 		}
 
-		begin = ros::Time::now();
-
 		return TaskContext::startHook();
 	}
 
@@ -36,7 +34,7 @@ namespace YouBot
 
         while(events.read(m_events) == NewData)
         {
-        	log(Info) << "[" << (m_events.stamp - begin).toSec() << "] : " << m_events.driver_event << endlog();
+        	log(Info) << m_events.data << endlog();
         }
 	}
 }

@@ -1,5 +1,7 @@
 #pragma once
 
+#include <std_msgs/typekit/Types.h>
+
 #include <rtt/Service.hpp>
 #include <rtt/Port.hpp>
 
@@ -31,8 +33,8 @@ namespace YouBot
 			virtual void cleanup() = 0;
 			virtual void stop() = 0;
 
-			OutputPort<YouBot_OODL::driver_event> events;
-			YouBot_OODL::driver_event m_events;
+			OutputPort<std_msgs::String> events;
+			std_msgs::String m_events;
     };
 
 	void check_event_edge(YouBotService* const serv, const motor_status ref_cond, const std::string outp_message, bool* const cond_state,

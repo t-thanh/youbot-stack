@@ -59,8 +59,6 @@ namespace YouBot
 			return false;
 		}
 
-		this->addPort("events",events).doc("OODL events");
-
 		// Base
 		this->provides()->addService(Service::shared_ptr( new YouBotBaseService("Base",this, 1) ) );
 		update_ops.push_back(this->provides("Base")->getOperation("update"));

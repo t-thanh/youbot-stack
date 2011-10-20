@@ -22,9 +22,8 @@ namespace YouBot
 	YouBotMonitorService::YouBotMonitorService(const string& name) :
 			TaskContext(name)
 	{
-		memset(&m_events.stamp, 0, sizeof(ros::Time));
-		m_events.monitor_event.reserve(max_event_length);
-		m_events.monitor_event.assign("");
+		m_events.data.reserve(max_event_length);
+		m_events.data.assign("");
 
         // Pre-allocate port memory for outputs
 		events.setDataSample(m_events);
@@ -51,15 +50,13 @@ namespace YouBot
 
 	void YouBotMonitorService::emitEvent(std::string id, std::string message)
 	{
-		m_events.stamp = ros::Time::now();
-		m_events.monitor_event = id + "." + message; //"jnt" + boost::lexical_cast<string>(joint)
+		m_events.data = id + "." + message; //"jnt" + boost::lexical_cast<string>(joint)
 		events.write(m_events);
 	}
 
 	void YouBotMonitorService::emitEvent(std::string id, std::string message, bool condition)
 	{
-		m_events.stamp = ros::Time::now();
-		m_events.monitor_event = id + "." + message + "_" + (condition ? "true" : "false");
+		m_events.data = id + "." + message + "_" + (condition ? "true" : "false");
 		events.write(m_events);
 	}
 

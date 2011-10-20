@@ -1,6 +1,5 @@
 #pragma once
 
-#include <YouBot_monitors/typekit/Types.h>
 #include <rtt/Service.hpp>
 #include <rtt/Port.hpp>
 #include <rtt/RTT.hpp>
@@ -8,6 +7,7 @@
 #include <sensor_msgs/typekit/Types.h>
 #include <nav_msgs/typekit/Types.h>
 #include <geometry_msgs/typekit/Types.h>
+#include <std_msgs/typekit/Types.h>
 #include <tf/tf.h>
 
 #include <boost/function.hpp>
@@ -61,8 +61,8 @@ namespace YouBot
 			sensor_msgs::JointState m_arm_joint_state;
 //			m_arm_cart_state
 
-			OutputPort<YouBot_monitors::monitor_event> events;
-			YouBot_monitors::monitor_event m_events;
+			OutputPort<std_msgs::String> events;
+			std_msgs::String m_events;
 
 			vector<PropertyBag*> m_properties;
 			vector<monitor*> m_monitors;
