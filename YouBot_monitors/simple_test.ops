@@ -1,0 +1,27 @@
+runScript("deploy.ops");
+
+var ConnPolicy cp_2;
+cp_2.type = BUFFER;
+cp_2.lock_policy = LOCK_FREE;
+cp_2.size = 20;
+
+#connectPeers("monitor", "EventLogger");
+#connect("monitor.events", "EventLogger.events", cp_2);
+
+monitor.setup_monitor("pos_reached");
+monitor.pos_reached.physical_part = ARM
+monitor.pos_reached.control_space = JOINT
+monitor.pos_reached.physical_quantity = POSITION
+monitor.pos_reached.event_type = EDGE
+monitor.pos_reached.compare_type = LESS
+monitor.pos_reached.msg = string("e_POS_REACHED");
+monitor.pos_reached.epsilon = 1
+monitor.pos_reached.indices = uint32[](uint32(0))
+monitor.pos_reached.values = std.vector<double>(0.0241963)
+
+monitor.activate_monitor("pos_reached");
+
+monitor.setPeriod(1);
+monitor.start;
+
+

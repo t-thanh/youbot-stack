@@ -24,6 +24,7 @@ namespace YouBot
 	{
 		memset(&m_events.stamp, 0, sizeof(ros::Time));
 		m_events.monitor_event.reserve(max_event_length);
+		m_events.monitor_event.assign("");
 
         // Pre-allocate port memory for outputs
 		events.setDataSample(m_events);
@@ -37,6 +38,10 @@ namespace YouBot
 	void YouBotMonitorService::setupComponentInterface()
 	{
 		this->addPort("events", events).doc("Joint events");
+
+		this->addPort("arm_joint_state", arm_joint_state).doc("Arm joint states");
+		this->addPort("base_joint_state", base_joint_state).doc("Base joint states");
+		this->addPort("base_cart_state", base_cart_state).doc("Base cartesian states");
 
         this->addOperation("setup_monitor",&YouBotMonitorService::setup_monitor,this, OwnThread);
         this->addOperation("activate_monitor",&YouBotMonitorService::activate_monitor,this, OwnThread);
@@ -80,6 +85,7 @@ namespace YouBot
 			{
 				if(m_active_monitors[i]->e_type == EDGE && !m_active_monitors[i]->state)
 				{
+					m_active_monitors[i]->state = true;
 					emitEvent(m_active_monitors[i]->id, m_active_monitors[i]->msg, true);
 				}
 				else if(m_active_monitors[i]->e_type == LEVEL)
@@ -89,6 +95,7 @@ namespace YouBot
 			}
 			else if(m_active_monitors[i]->e_type == EDGE && m_active_monitors[i]->state)
 			{
+				m_active_monitors[i]->state = false;
 				emitEvent(m_active_monitors[i]->id, m_active_monitors[i]->msg, false);
 			}
 		}
@@ -100,7 +107,7 @@ namespace YouBot
 
 		if(m->space == CARTESIAN && m->part == BASE)
 		{
-			m->check = boost::bind(boost::mem_fn(&YouBotMonitorService::check_monitor<nav_msgs::Odometry>), this, &m_base_cart_state, m->quantity, m->msg, &m->indices, &m->values, m->c_type);
+			m->check = boost::bind(boost::mem_fn(&YouBotMonitorService::check_monitor<nav_msgs::Odometry>), this, &m_base_cart_state, m->quantity, m->msg, &m->indices, &m->values, m->c_type, m->epsilon);
 		}
 		else if(m->space == CARTESIAN && m->part == ARM)
 		{
@@ -110,11 +117,11 @@ namespace YouBot
 		}
 		else if(m->space == JOINT && m->part == BASE)
 		{
-			m->check = boost::bind(boost::mem_fn(&YouBotMonitorService::check_monitor<sensor_msgs::JointState>), this, &m_base_joint_state, m->quantity, m->msg, &m->indices, &m->values, m->c_type);
+			m->check = boost::bind(boost::mem_fn(&YouBotMonitorService::check_monitor<sensor_msgs::JointState>), this, &m_base_joint_state, m->quantity, m->msg, &m->indices, &m->values, m->c_type, m->epsilon);
 		}
 		else if(m->space == JOINT && m->part == ARM)
 		{
-			m->check = boost::bind(boost::mem_fn(&YouBotMonitorService::check_monitor<sensor_msgs::JointState>), this, &m_arm_joint_state, m->quantity, m->msg, &m->indices, &m->values, m->c_type);
+			m->check = boost::bind(boost::mem_fn(&YouBotMonitorService::check_monitor<sensor_msgs::JointState>), this, &m_arm_joint_state, m->quantity, m->msg, &m->indices, &m->values, m->c_type, m->epsilon);
 		}
 
 		return true;
@@ -155,6 +162,7 @@ namespace YouBot
 		p->addProperty("event_type", m->e_type);
 		p->addProperty("compare_type", m->c_type);
 		p->addProperty("msg", m->msg);
+		p->addProperty("epsilon", m->epsilon);
 		p->addProperty("indices", m->indices);
 		p->addProperty("values", m->values);
 

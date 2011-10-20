@@ -45,7 +45,7 @@ namespace YouBot
 		protected:
 			template<class message_type>
 			bool check_monitor(message_type* const inp, const physical_quantity quantity, const std::string msg,
-					vector<unsigned int>* const indices, vector<double>* const vector_value, compare_type c_type);
+					vector<unsigned int>* const indices, vector<double>* const vector_value, const compare_type c_type, const double epsilon);
 
 			bool bind_function(monitor* m);
 			vector<monitor*>::iterator getMonitor(vector<monitor*>& list, std::string& name);
@@ -73,28 +73,28 @@ namespace YouBot
 
 	template<>
 	bool YouBotMonitorService::check_monitor<sensor_msgs::JointState>(sensor_msgs::JointState* const imp, const physical_quantity quantity, const std::string msg,
-			vector<unsigned int>* const indices, vector<double>* const cmp_value, compare_type c_type)
+			vector<unsigned int>* const indices, vector<double>* const cmp_value, const compare_type c_type, const double epsilon)
 	{
 		switch(quantity)
 		{
 			case(POSITION):
 			{
-				return compare(indices, cmp_value, imp->position, c_type);
+				return compare(indices, cmp_value, imp->position, c_type, epsilon);
 				break;
 			}
 			case(VELOCITY):
 			{
-				return compare(indices, cmp_value, imp->velocity, c_type);
+				return compare(indices, cmp_value, imp->velocity, c_type, epsilon);
 				break;
 			}
 			case(FORCE):
 			{
-				return compare(indices, cmp_value, imp->effort, c_type);
+				return compare(indices, cmp_value, imp->effort, c_type, epsilon);
 				break;
 			}
 			case(TORQUE):
 			{
-				return compare(indices, cmp_value, imp->effort, c_type);
+				return compare(indices, cmp_value, imp->effort, c_type, epsilon);
 				break;
 			}
 			default:
@@ -109,7 +109,7 @@ namespace YouBot
 
 	template<>
 	bool YouBotMonitorService::check_monitor<nav_msgs::Odometry>(nav_msgs::Odometry* const imp, const physical_quantity quantity, const std::string msg,
-			vector<unsigned int>* const indices, vector<double>* const vector_value, compare_type c_type)
+			vector<unsigned int>* const indices, vector<double>* const vector_value, const compare_type c_type, const double epsilon)
 	{
 		switch(quantity)
 		{
@@ -120,7 +120,7 @@ namespace YouBot
 				tmp2[1] = imp->pose.pose.position.y;
 //					tmp2[2] = tmp.pose.pose.position.z;
 				tmp2[2] = tf::getYaw (imp->pose.pose.orientation); //yaw
-				return compare(indices, vector_value, tmp2, c_type);
+				return compare(indices, vector_value, tmp2, c_type, epsilon);
 				break;
 			}
 			case(VELOCITY):
@@ -132,7 +132,7 @@ namespace YouBot
 				tmp2[3] = imp->twist.twist.angular.x;
 				tmp2[4] = imp->twist.twist.angular.y;
 				tmp2[5] = imp->twist.twist.angular.z;
-				return compare(indices, vector_value, tmp2, c_type);
+				return compare(indices, vector_value, tmp2, c_type, epsilon);
 				break;
 			}
 			case(FORCE):

@@ -31,16 +31,28 @@ bool loadRTTPlugin( RTT::TaskContext* t )
 	RTT::types::Types()->addType( new PhysicalQuantityTypeInfo );
 	RTT::types::Types()->addType( new EventTypeTypeInfo );
 	RTT::types::Types()->addType( new CompareTypeTypeInfo );
-//	RTT::types::Types()->addType( new SequenceTypeInfo<std::vector<ctrl_modes> >("std.vector<ctrl_modes>") );
-
-//		RTT::types::Types()->addType( new JointStatusTypeInfo );
-//	RTT::types::Types()->addType( new SequenceTypeInfo<std::vector<joint_status> >("std.vector<joint_status>") );
+//	RTT::types::Types()->addType( new SequenceTypeInfo<std::vector<unsigned int> >("std.vector<uint>") );
 
 	GlobalsRepository::shared_ptr globals = GlobalsRepository::Instance();
-//	globals->setValue( new Constant<ctrl_modes>("PLANE_ANGLE",YouBot::PLANE_ANGLE) );
-//	globals->setValue( new Constant<ctrl_modes>("ANGULAR_VELOCITY",YouBot::ANGULAR_VELOCITY) );
-//	globals->setValue( new Constant<ctrl_modes>("TORQUE",YouBot::TORQUE) );
-//	globals->setValue( new Constant<ctrl_modes>("MOTOR_STOP",YouBot::MOTOR_STOP) );
+	globals->setValue( new Constant<control_space>("JOINT",YouBot::JOINT) );
+	globals->setValue( new Constant<control_space>("CARTESIAN",YouBot::CARTESIAN) );
+
+	globals->setValue( new Constant<physical_part>("ARM",YouBot::ARM) );
+	globals->setValue( new Constant<physical_part>("BASE",YouBot::BASE) );
+
+	globals->setValue( new Constant<physical_quantity>("POSITION",YouBot::POSITION) );
+	globals->setValue( new Constant<physical_quantity>("VELOCITY",YouBot::VELOCITY) );
+	globals->setValue( new Constant<physical_quantity>("TORQUE",YouBot::TORQUE) );
+	globals->setValue( new Constant<physical_quantity>("FORCE",YouBot::FORCE) );
+
+	globals->setValue( new Constant<event_type>("EDGE",YouBot::EDGE) );
+	globals->setValue( new Constant<event_type>("LEVEL",YouBot::LEVEL) );
+
+	globals->setValue( new Constant<compare_type>("LESS",YouBot::LESS) );
+	globals->setValue( new Constant<compare_type>("LESS_EQUAL",YouBot::LESS_EQUAL) );
+	globals->setValue( new Constant<compare_type>("GREATER",YouBot::GREATER) );
+	globals->setValue( new Constant<compare_type>("GREATER_EQUAL",YouBot::GREATER_EQUAL) );
+
     return true;
 }
 

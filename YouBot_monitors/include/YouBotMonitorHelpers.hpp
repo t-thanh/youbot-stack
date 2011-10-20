@@ -45,6 +45,7 @@ namespace YouBot
 		bool state; //for EDGE
 
 		bool is_single_value;
+		double epsilon;
 		vector<unsigned int> indices;
 		vector<double> values;
 
@@ -54,35 +55,38 @@ namespace YouBot
 				id(""), msg(""),
 				state(false),
 				is_single_value(true),
+				epsilon(5),
 				indices(6),
 				values(6)
 		{}
 	} monitor;
 
-	bool compare(vector<unsigned int>* const indices, vector<double>* const first, const vector<double>& second, const compare_type ct)
+	bool compare(vector<unsigned int>* const indices, vector<double>* const first, const vector<double>& second, const compare_type ct, const double epsilon)
 	{
 		unsigned int index = 0;
-		for(unsigned int i = 0; i < indices->size(); ++i)
+		unsigned int size = indices->size();
+		for(unsigned int i = 0; i < size; ++i)
 		{
 			index = (*indices)[i];
-			if( ct == LESS && (*first)[index] >= second[index] )
+			if( ct == LESS && abs((*first)[index] - second[index]) >= epsilon )
 			{
 				return false;
 			}
-			else if(ct == LESS_EQUAL && (*first)[index] > second[index])
+			else if(ct == LESS_EQUAL && abs((*first)[index] - second[index]) > epsilon)
 			{
 				return false;
 			}
-			else if(ct == GREATER && (*first)[index] <= second[index])
+			else if(ct == GREATER && abs((*first)[index] - second[index]) <= epsilon)
 			{
 				return false;
 			}
-			else if(ct == GREATER_EQUAL && (*first)[index] < second[index])
+			else if(ct == GREATER_EQUAL && abs((*first)[index] - second[index]) < epsilon)
 			{
 				return false;
 			}
 		}
-		return true;
+
+		return (size > 0) ? true : false;
 	}
 
 	std::string control_space_tostring(const control_space& space)
