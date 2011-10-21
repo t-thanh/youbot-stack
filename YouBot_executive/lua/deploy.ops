@@ -1,0 +1,4 @@
+import("ocl");
+loadComponent("FSM","OCL::LuaComponent");
+FSM.exec_file(rospack.find("YouBot_executive")+"/lua/test_component.lua");
+FSM.configure;
