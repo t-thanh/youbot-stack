@@ -14,12 +14,12 @@ loadComponent("executive","YouBot::YouBot_executive")
    var ConnPolicy cp_CartSpaceStiffness_t;
    cp_CartSpaceStiffness_t.type = DATA;  // Use ''BUFFER'' or ''DATA''
    cp_CartSpaceStiffness_t.lock_policy = LOCK_FREE; // Use  ''LOCKED'', ''LOCK_FREE'' or ''UNSYNC''
-   connect("executive.CartSpaceStiffness_trans","control.CartesianSpaceSitiffness_CtipTranslation",cp_CartSpaceStiffness_t) 
+   connect("executive.CartSpaceStiffness_trans","control.CartesianSpaceStiffness_CtipTranslation",cp_CartSpaceStiffness_t) 
 
    var ConnPolicy cp_CartSpaceStiffness_r;
    cp_CartSpaceStiffness_r.type = DATA;  // Use ''BUFFER'' or ''DATA''
    cp_CartSpaceStiffness_r.lock_policy = LOCK_FREE; // Use  ''LOCKED'', ''LOCK_FREE'' or ''UNSYNC''
-   connect("executive.CartSpaceStiffness_rot","control.CartesianSpaceSitiffness_CtipRotation",cp_CartSpaceStiffness_r)
+   connect("executive.CartSpaceStiffness_rot","control.CartesianSpaceStiffness_CtipRotation",cp_CartSpaceStiffness_r)
 
    var ConnPolicy cp_CartSpaceSetpoint;
    cp_CartSpaceSetpoint.type = DATA;  // Use ''BUFFER'' or ''DATA''

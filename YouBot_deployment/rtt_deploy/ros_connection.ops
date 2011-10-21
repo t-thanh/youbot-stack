@@ -27,15 +27,31 @@ var ConnPolicy cp_Htip0;
 cp_Htip0.name_id="/Htip0";
 cp_Htip0.type=0;
 cp_Htip0.transport=3;
-stream("control.CtipControl_Htip0",cp_Htip0);
+stream("control.CartesianSpaceStiffness_Htip0",cp_Htip0);
 
 var ConnPolicy cp_Hvp0;
 cp_Hvp0.name_id="/Hvp0";
 cp_Hvp0.type=0;
 cp_Hvp0.transport=3;
-stream("control.CtipControl_Hvp0",cp_Hvp0);
+stream("control.CartesianSpaceStiffness_Hvp0",cp_Hvp0);
 var ConnPolicy cp_effort;
 cp_effort.name_id="/effort";
 cp_effort.type=0;
 cp_effort.transport=3;
-stream("control.CtipControl_p_e",cp_effort);
+stream("control.DemuxHW1_arm_e",cp_effort);
+var ConnPolicy cp_flow;
+cp_flow.name_id="/flow";
+cp_flow.type=0;
+cp_flow.transport=3;
+stream("arm2control.output_velocities",cp_flow);
+var ConnPolicy cp;
+
+cp.name_id="/substate";
+cp.type=0;
+cp.transport=3;
+stream("control.JointSoftLimits_substate",cp);
+
+cp.name_id="/angl";
+cp.type=0;
+cp.transport=3;
+stream("control.JointSoftLimits_state",cp);

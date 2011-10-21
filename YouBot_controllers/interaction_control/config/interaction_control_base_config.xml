@@ -14,7 +14,7 @@
  &lt;KeepParameterValues&gt;False&lt;/KeepParameterValues&gt;
  &lt;AllowLibraryUpdate&gt;True&lt;/AllowLibraryUpdate&gt;
 &lt;/Description&gt;</description>
-		<date>2011-10-20T11:07:07.0Z</date>
+		<date>2011-10-21T13:00:00.0Z</date>
 		<modelDir></modelDir>
 		<originalModel>Z:\home\youbot\DEV\20SimModels\Tests\ModelControl.emx</originalModel>
 		<additional>Campuslicentie, Universiteit Twente</additional>
@@ -38,7 +38,7 @@
 			</size>
 			<storage>
 				<name>V</name>
-				<index>2096</index>
+				<index>2024</index>
 			</storage>
 			<iconindex>2</iconindex>
 		</modelVariable>
@@ -648,7 +648,7 @@
 			</size>
 			<storage>
 				<name>V</name>
-				<index>2096</index>
+				<index>2024</index>
 			</storage>
 			<iconindex>2</iconindex>
 		</modelVariable>
@@ -691,7 +691,7 @@ code
 			<iconindex>2</iconindex>
 		</modelVariable>
 		<modelVariable id="44">
-			<name>CartesianSpaceSitiffness\p.e</name>
+			<name>CartesianSpaceStiffness\p.e</name>
 			<kind>variable</kind>
 			<type>real</type>
 			<value>0.0; 0.0; 0.0; 0.0; 0.0; 0.0</value>
@@ -707,7 +707,7 @@ code
 			<iconindex>6</iconindex>
 		</modelVariable>
 		<modelVariable id="45">
-			<name>CartesianSpaceSitiffness\p.f</name>
+			<name>CartesianSpaceStiffness\p.f</name>
 			<aliasOf>ControllableJ\tip.f</aliasOf>
 			<kind>variable</kind>
 			<type>real</type>
@@ -724,7 +724,7 @@ code
 			<iconindex>6</iconindex>
 		</modelVariable>
 		<modelVariable id="46">
-			<name>CartesianSpaceSitiffness\state</name>
+			<name>CartesianSpaceStiffness\state</name>
 			<kind>variable</kind>
 			<type>real</type>
 			<value>0.0, 0.0, 0.0, 0.0; 0.0, 0.0, 0.0, 0.0; 0.0, 0.0, 0.0, 0.0; 0.0, 0.0, 0.0, 0.0</value>
@@ -740,7 +740,7 @@ code
 			<iconindex>6</iconindex>
 		</modelVariable>
 		<modelVariable id="47">
-			<name>CartesianSpaceSitiffness\Hvp0</name>
+			<name>CartesianSpaceStiffness\Hvp0</name>
 			<aliasOf>Gain\H</aliasOf>
 			<kind>output</kind>
 			<type>real</type>
@@ -757,7 +757,7 @@ code
 			<iconindex>6</iconindex>
 		</modelVariable>
 		<modelVariable id="48">
-			<name>CartesianSpaceSitiffness\Htip0</name>
+			<name>CartesianSpaceStiffness\Htip0</name>
 			<aliasOf>CalculateJ\Htip0</aliasOf>
 			<kind>output</kind>
 			<type>real</type>
@@ -774,7 +774,7 @@ code
 			<iconindex>6</iconindex>
 		</modelVariable>
 		<modelVariable id="49">
-			<name>CartesianSpaceSitiffness\CtipTranslation</name>
+			<name>CartesianSpaceStiffness\CtipTranslation</name>
 			<kind>input</kind>
 			<type>real</type>
 			<value>0.0</value>
@@ -792,7 +792,7 @@ code
 			<iconindex>6</iconindex>
 		</modelVariable>
 		<modelVariable id="50">
-			<name>CartesianSpaceSitiffness\CtipRotation</name>
+			<name>CartesianSpaceStiffness\CtipRotation</name>
 			<kind>input</kind>
 			<type>real</type>
 			<value>0.0</value>
@@ -810,7 +810,7 @@ code
 			<iconindex>6</iconindex>
 		</modelVariable>
 		<modelVariable id="51">
-			<name>CartesianSpaceSitiffness\theta</name>
+			<name>CartesianSpaceStiffness\theta</name>
 			<kind>variable</kind>
 			<type>real</type>
 			<value>0.0</value>
@@ -821,7 +821,7 @@ code
 			<iconindex>6</iconindex>
 		</modelVariable>
 		<modelVariable id="52">
-			<name>CartesianSpaceSitiffness\omega</name>
+			<name>CartesianSpaceStiffness\omega</name>
 			<kind>variable</kind>
 			<type>real</type>
 			<value>0.0; 0.0; 0.0</value>
@@ -836,7 +836,7 @@ code
 			<iconindex>6</iconindex>
 		</modelVariable>
 		<modelVariable id="53">
-			<name>CartesianSpaceSitiffness\Wr</name>
+			<name>CartesianSpaceStiffness\Wr</name>
 			<kind>variable</kind>
 			<type>real</type>
 			<value>0.0; 0.0; 0.0; 0.0; 0.0; 0.0</value>
@@ -851,7 +851,7 @@ code
 			<iconindex>6</iconindex>
 		</modelVariable>
 		<modelVariable id="54">
-			<name>CartesianSpaceSitiffness\Wt</name>
+			<name>CartesianSpaceStiffness\Wt</name>
 			<kind>variable</kind>
 			<type>real</type>
 			<value>0.0; 0.0; 0.0; 0.0; 0.0; 0.0</value>
@@ -866,7 +866,7 @@ code
 			<iconindex>6</iconindex>
 		</modelVariable>
 		<modelVariable id="55">
-			<name>CartesianSpaceSitiffness\temp</name>
+			<name>CartesianSpaceStiffness\temp</name>
 			<kind>variable</kind>
 			<type>real</type>
 			<value>0.0</value>
@@ -877,7 +877,7 @@ code
 			<iconindex>6</iconindex>
 		</modelVariable>
 		<modelVariable id="56">
-			<name>CartesianSpaceSitiffness\stenght</name>
+			<name>CartesianSpaceStiffness\stenght</name>
 			<kind>variable</kind>
 			<type>real</type>
 			<value>0.0</value>
@@ -939,7 +939,7 @@ code
 			</size>
 			<storage>
 				<name>V</name>
-				<index>2112</index>
+				<index>2040</index>
 			</storage>
 			<iconindex>9</iconindex>
 		</modelVariable>
@@ -980,7 +980,7 @@ code
 			<name>ControllableJ\force_lim</name>
 			<kind>parameter</kind>
 			<type>real</type>
-			<value>7.0</value>
+			<value>10.0</value>
 			<storage>
 				<name>P</name>
 				<index>44</index>
@@ -1037,7 +1037,7 @@ code
 		</modelVariable>
 		<modelVariable id="66">
 			<name>DemuxHW1\control.e</name>
-			<aliasOf>OneJunction2\p3.e</aliasOf>
+			<aliasOf>OneJunction2\p2.e</aliasOf>
 			<kind>variable</kind>
 			<type>real</type>
 			<value>0.0; 0.0; 0.0; 0.0; 0.0; 0.0; 0.0; 0.0</value>
@@ -1054,7 +1054,7 @@ code
 			</physical>
 			<storage>
 				<name>V</name>
-				<index>2118</index>
+				<index>2046</index>
 			</storage>
 			<iconindex>10</iconindex>
 		</modelVariable>
@@ -1114,7 +1114,7 @@ code
 		</modelVariable>
 		<modelVariable id="70">
 			<name>EffortSensor1\p1.e</name>
-			<aliasOf>OneJunction2\p3.e</aliasOf>
+			<aliasOf>OneJunction2\p2.e</aliasOf>
 			<kind>variable</kind>
 			<type>real</type>
 			<value>0.0; 0.0; 0.0; 0.0; 0.0; 0.0; 0.0; 0.0</value>
@@ -1125,7 +1125,7 @@ code
 			</size>
 			<storage>
 				<name>V</name>
-				<index>2118</index>
+				<index>2046</index>
 			</storage>
 			<iconindex>11</iconindex>
 		</modelVariable>
@@ -1154,7 +1154,7 @@ code
 		</modelVariable>
 		<modelVariable id="72">
 			<name>EffortSensor1\p2.T</name>
-			<aliasOf>OneJunction2\p3.e</aliasOf>
+			<aliasOf>OneJunction2\p2.e</aliasOf>
 			<kind>variable</kind>
 			<type>real</type>
 			<value>0.0; 0.0; 0.0; 0.0; 0.0; 0.0; 0.0; 0.0</value>
@@ -1171,7 +1171,7 @@ code
 			</physical>
 			<storage>
 				<name>V</name>
-				<index>2118</index>
+				<index>2046</index>
 			</storage>
 			<iconindex>11</iconindex>
 		</modelVariable>
@@ -1200,7 +1200,7 @@ code
 		</modelVariable>
 		<modelVariable id="74">
 			<name>EffortSensor1\effort</name>
-			<aliasOf>OneJunction2\p3.e</aliasOf>
+			<aliasOf>OneJunction2\p2.e</aliasOf>
 			<kind>variable</kind>
 			<type>real</type>
 			<value>0.0; 0.0; 0.0; 0.0; 0.0; 0.0; 0.0; 0.0</value>
@@ -1217,7 +1217,7 @@ code
 			</physical>
 			<storage>
 				<name>V</name>
-				<index>2118</index>
+				<index>2046</index>
 			</storage>
 			<iconindex>11</iconindex>
 		</modelVariable>
@@ -10721,7 +10721,7 @@ code
 			</size>
 			<storage>
 				<name>V</name>
-				<index>2096</index>
+				<index>2024</index>
 			</storage>
 			<iconindex>170</iconindex>
 		</modelVariable>
@@ -10948,7 +10948,7 @@ code
 			</size>
 			<storage>
 				<name>V</name>
-				<index>2096</index>
+				<index>2024</index>
 			</storage>
 			<iconindex>14</iconindex>
 		</modelVariable>
@@ -10971,7 +10971,8 @@ code
 			<name>GravityCompensation1\LinkCOMdim</name>
 			<kind>parameter</kind>
 			<type>real</type>
-			<value>0.01489, 0.01489, 0.10453, 0.001, 0.011, 0.0; 0.00213, 0.00213, 0.0017, 0.0967, 0.05103, 0.00115; 0.00213, 0.00213, -0.00297, 0.02107, -0.02319, -0.01683</value>
+			<value>0.0, 0.0, 0.0, 0.0, 0.0, 0.003; 0.0, 0.0, -0.032, 0.028, -0.010, 0.0;0.0, 0.0, 0.078, 0.079, 0.029,-0.034</value>
+			<!--<value>0.01489, 0.01489, 0.10453, 0.001, 0.011, 0.0; 0.00213, 0.00213, 0.0017, 0.0967, 0.05103, 0.00115; 0.00213, 0.00213, -0.00297, 0.02107, -0.02319, -0.01683</value>-->
 			<description></description>
 			<size>
 				<rows>3</rows>
@@ -11054,7 +11055,7 @@ code
 		<modelVariable id="687">
 			<name>JointSoftLimits\state</name>
 			<aliasOf>MuxToControl1\control</aliasOf>
-			<kind>variable</kind>
+			<kind>output</kind>
 			<type>real</type>
 			<value>0.0; 0.0; 0.0; 0.0; 0.0; 0.0; 0.0; 0.0</value>
 			<description></description>
@@ -11064,16 +11065,19 @@ code
 			</size>
 			<storage>
 				<name>V</name>
-				<index>2096</index>
+				<index>2024</index>
 			</storage>
 			<iconindex>173</iconindex>
 		</modelVariable>
 		<modelVariable id="688">
-			<name>JointSoftLimits\CendstopAvoidanceControl</name>
+			<name>JointSoftLimits\c</name>
 			<kind>parameter</kind>
 			<type>real</type>
-			<value>50.0</value>
-			<description></description>
+			<value>0.0; 0.0; 0.0; 80.0; 80.0; 80.0; 80.0; 80.0</value>
+			<size>
+				<rows>8</rows>
+				<columns>1</columns>
+			</size>
 			<storage>
 				<name>P</name>
 				<index>189</index>
@@ -11081,94 +11085,54 @@ code
 			<iconindex>173</iconindex>
 		</modelVariable>
 		<modelVariable id="689">
-			<name>JointSoftLimits\dangerzone</name>
+			<name>JointSoftLimits\limits_low</name>
 			<kind>parameter</kind>
 			<type>real</type>
-			<value>0.05</value>
-			<description></description>
-			<physical>
-				<unit>
-					<name>rad</name>
-				</unit>
-				<quantity>plane angle</quantity>
-			</physical>
+			<value>-10.0; -10.0; -10.0; -2.9395; -1.1244; -2.4733; -1.7668; -2.8127</value>
+			<size>
+				<rows>8</rows>
+				<columns>1</columns>
+			</size>
 			<storage>
 				<name>P</name>
-				<index>190</index>
+				<index>197</index>
 			</storage>
 			<iconindex>173</iconindex>
 		</modelVariable>
 		<modelVariable id="690">
-			<name>JointSoftLimits\InitialJointPos</name>
+			<name>JointSoftLimits\limits_high</name>
 			<kind>parameter</kind>
 			<type>real</type>
-			<value>0.0; 0.0; 0.0; 0.0; 0.0</value>
-			<description></description>
+			<value>10.0; 10.0; 10.0; 2.8847; 1.4809; 2.5325; 1.6368; 2.7125</value>
 			<size>
-				<rows>5</rows>
+				<rows>8</rows>
 				<columns>1</columns>
 			</size>
 			<storage>
 				<name>P</name>
-				<index>191</index>
+				<index>205</index>
 			</storage>
 			<iconindex>173</iconindex>
 		</modelVariable>
 		<modelVariable id="691">
-			<name>JointSoftLimits\MaxEndstopPos</name>
+			<name>JointSoftLimits\working_range</name>
 			<kind>parameter</kind>
 			<type>real</type>
-			<value>2.95; 1.5; 2.55; 1.79; 2.92</value>
-			<description></description>
-			<size>
-				<rows>5</rows>
-				<columns>1</columns>
-			</size>
+			<value>0.95</value>
 			<storage>
 				<name>P</name>
-				<index>196</index>
+				<index>213</index>
 			</storage>
 			<iconindex>173</iconindex>
 		</modelVariable>
 		<modelVariable id="692">
-			<name>JointSoftLimits\MinEndstopPos</name>
-			<kind>parameter</kind>
+			<name>JointSoftLimits\substate</name>
+			<kind>output</kind>
 			<type>real</type>
-			<value>-2.95; -1.5; -2.64; -1.79; -2.92</value>
-			<description></description>
-			<size>
-				<rows>5</rows>
-				<columns>1</columns>
-			</size>
-			<storage>
-				<name>P</name>
-				<index>201</index>
-			</storage>
-			<iconindex>173</iconindex>
-		</modelVariable>
-		<modelVariable id="693">
-			<name>JointSoftLimits\forceMap</name>
-			<kind>parameter</kind>
-			<type>real</type>
-			<value>0.0; 0.0; 0.0; -1.0; -1.0; -1.0; -1.0; -1.0</value>
+			<value>0.0; 0.0; 0.0; 0.0; 0.0; 0.0; 0.0; 0.0</value>
 			<size>
 				<rows>8</rows>
 				<columns>1</columns>
-			</size>
-			<storage>
-				<name>P</name>
-				<index>206</index>
-			</storage>
-			<iconindex>173</iconindex>
-		</modelVariable>
-		<modelVariable id="694">
-			<name>JointSoftLimits\K</name>
-			<kind>variable</kind>
-			<type>real</type>
-			<value>0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0; 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0; 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0; 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0; 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0; 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0; 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0; 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0</value>
-			<size>
-				<rows>8</rows>
-				<columns>8</columns>
 			</size>
 			<storage>
 				<name>V</name>
@@ -11176,67 +11140,37 @@ code
 			</storage>
 			<iconindex>173</iconindex>
 		</modelVariable>
+		<modelVariable id="693">
+			<name>JointSoftLimits\angle_limits_low</name>
+			<kind>variable</kind>
+			<type>real</type>
+			<value>0.0; 0.0; 0.0; 0.0; 0.0; 0.0; 0.0; 0.0</value>
+			<size>
+				<rows>8</rows>
+				<columns>1</columns>
+			</size>
+			<storage>
+				<name>V</name>
+				<index>1912</index>
+			</storage>
+			<iconindex>173</iconindex>
+		</modelVariable>
+		<modelVariable id="694">
+			<name>JointSoftLimits\angle_limits_high</name>
+			<kind>variable</kind>
+			<type>real</type>
+			<value>0.0; 0.0; 0.0; 0.0; 0.0; 0.0; 0.0; 0.0</value>
+			<size>
+				<rows>8</rows>
+				<columns>1</columns>
+			</size>
+			<storage>
+				<name>V</name>
+				<index>1920</index>
+			</storage>
+			<iconindex>173</iconindex>
+		</modelVariable>
 		<modelVariable id="695">
-			<name>JointSoftLimits\ks</name>
-			<kind>variable</kind>
-			<type>real</type>
-			<value>0.0; 0.0; 0.0; 0.0; 0.0; 0.0; 0.0; 0.0</value>
-			<size>
-				<rows>8</rows>
-				<columns>1</columns>
-			</size>
-			<storage>
-				<name>V</name>
-				<index>1968</index>
-			</storage>
-			<iconindex>173</iconindex>
-		</modelVariable>
-		<modelVariable id="696">
-			<name>JointSoftLimits\posdangerzones</name>
-			<kind>variable</kind>
-			<type>real</type>
-			<value>0.0; 0.0; 0.0; 0.0; 0.0; 0.0; 0.0; 0.0</value>
-			<size>
-				<rows>8</rows>
-				<columns>1</columns>
-			</size>
-			<storage>
-				<name>V</name>
-				<index>1976</index>
-			</storage>
-			<iconindex>173</iconindex>
-		</modelVariable>
-		<modelVariable id="697">
-			<name>JointSoftLimits\negdangerzones</name>
-			<kind>variable</kind>
-			<type>real</type>
-			<value>0.0; 0.0; 0.0; 0.0; 0.0; 0.0; 0.0; 0.0</value>
-			<size>
-				<rows>8</rows>
-				<columns>1</columns>
-			</size>
-			<storage>
-				<name>V</name>
-				<index>1984</index>
-			</storage>
-			<iconindex>173</iconindex>
-		</modelVariable>
-		<modelVariable id="698">
-			<name>JointSoftLimits\tempstate</name>
-			<kind>variable</kind>
-			<type>real</type>
-			<value>0.0; 0.0; 0.0; 0.0; 0.0; 0.0; 0.0; 0.0</value>
-			<size>
-				<rows>8</rows>
-				<columns>1</columns>
-			</size>
-			<storage>
-				<name>V</name>
-				<index>1992</index>
-			</storage>
-			<iconindex>173</iconindex>
-		</modelVariable>
-		<modelVariable id="699">
 			<name>JointSpaceDamping\p.e</name>
 			<kind>variable</kind>
 			<type>real</type>
@@ -11248,11 +11182,11 @@ code
 			</size>
 			<storage>
 				<name>V</name>
-				<index>2000</index>
+				<index>1928</index>
 			</storage>
-			<iconindex>179</iconindex>
+			<iconindex>174</iconindex>
 		</modelVariable>
-		<modelVariable id="700">
+		<modelVariable id="696">
 			<name>JointSpaceDamping\p.f</name>
 			<aliasOf>DemuxHW1\control.f</aliasOf>
 			<kind>variable</kind>
@@ -11273,13 +11207,13 @@ code
 				<name>V</name>
 				<index>477</index>
 			</storage>
-			<iconindex>179</iconindex>
+			<iconindex>174</iconindex>
 		</modelVariable>
-		<modelVariable id="701">
+		<modelVariable id="697">
 			<name>JointSpaceDamping\r</name>
 			<kind>parameter</kind>
 			<type>real</type>
-			<value>10.0; 10.0; 10.0; 10.0; 10.0; 10.0; 10.0; 10.0</value>
+			<value>7.0; 7.0; 7.0; 7.0; 7.0; 7.0; 7.0; 7.0</value>
 			<size>
 				<rows>8</rows>
 				<columns>1</columns>
@@ -11288,9 +11222,9 @@ code
 				<name>P</name>
 				<index>214</index>
 			</storage>
-			<iconindex>179</iconindex>
+			<iconindex>174</iconindex>
 		</modelVariable>
-		<modelVariable id="702">
+		<modelVariable id="698">
 			<name>JointSpaceDamping\p_deadzone</name>
 			<kind>parameter</kind>
 			<type>real</type>
@@ -11304,9 +11238,9 @@ code
 				<name>P</name>
 				<index>222</index>
 			</storage>
-			<iconindex>179</iconindex>
+			<iconindex>174</iconindex>
 		</modelVariable>
-		<modelVariable id="703">
+		<modelVariable id="699">
 			<name>JointSpaceDamping\n_deadzone</name>
 			<kind>parameter</kind>
 			<type>real</type>
@@ -11320,9 +11254,9 @@ code
 				<name>P</name>
 				<index>230</index>
 			</storage>
-			<iconindex>179</iconindex>
+			<iconindex>174</iconindex>
 		</modelVariable>
-		<modelVariable id="704">
+		<modelVariable id="700">
 			<name>JointSpaceDamping\R</name>
 			<kind>variable</kind>
 			<type>real</type>
@@ -11333,11 +11267,11 @@ code
 			</size>
 			<storage>
 				<name>V</name>
-				<index>2008</index>
+				<index>1936</index>
 			</storage>
-			<iconindex>179</iconindex>
+			<iconindex>174</iconindex>
 		</modelVariable>
-		<modelVariable id="705">
+		<modelVariable id="701">
 			<name>JointSpaceDamping\substate</name>
 			<kind>variable</kind>
 			<type>real</type>
@@ -11349,11 +11283,11 @@ code
 			</size>
 			<storage>
 				<name>V</name>
-				<index>2072</index>
+				<index>2000</index>
 			</storage>
-			<iconindex>179</iconindex>
+			<iconindex>174</iconindex>
 		</modelVariable>
-		<modelVariable id="706">
+		<modelVariable id="702">
 			<name>JointSpaceStiffness\joints.e</name>
 			<kind>variable</kind>
 			<type>real</type>
@@ -11365,11 +11299,11 @@ code
 			</size>
 			<storage>
 				<name>V</name>
-				<index>2080</index>
+				<index>2008</index>
 			</storage>
-			<iconindex>180</iconindex>
+			<iconindex>175</iconindex>
 		</modelVariable>
-		<modelVariable id="707">
+		<modelVariable id="703">
 			<name>JointSpaceStiffness\joints.f</name>
 			<aliasOf>DemuxHW1\control.f</aliasOf>
 			<kind>variable</kind>
@@ -11390,9 +11324,9 @@ code
 				<name>V</name>
 				<index>477</index>
 			</storage>
-			<iconindex>180</iconindex>
+			<iconindex>175</iconindex>
 		</modelVariable>
-		<modelVariable id="708">
+		<modelVariable id="704">
 			<name>JointSpaceStiffness\state</name>
 			<aliasOf>MuxToControl1\control</aliasOf>
 			<kind>variable</kind>
@@ -11405,15 +11339,15 @@ code
 			</size>
 			<storage>
 				<name>V</name>
-				<index>2096</index>
+				<index>2024</index>
 			</storage>
-			<iconindex>180</iconindex>
+			<iconindex>175</iconindex>
 		</modelVariable>
-		<modelVariable id="709">
+		<modelVariable id="705">
 			<name>JointSpaceStiffness\c</name>
 			<kind>input</kind>
 			<type>real</type>
-			<value>0.0; 0.0; 0.0; 0.1; 0.1; 0.1; 0.1; 0.1</value>
+			<value>0.0; 0.0; 0.0; 0.0; 0.0; 0.0; 0.0; 0.0</value>
 			<size>
 				<rows>8</rows>
 				<columns>1</columns>
@@ -11422,9 +11356,9 @@ code
 				<name>P</name>
 				<index>238</index>
 			</storage>
-			<iconindex>180</iconindex>
+			<iconindex>175</iconindex>
 		</modelVariable>
-		<modelVariable id="710">
+		<modelVariable id="706">
 			<name>JointSpaceStiffness\setpoints</name>
 			<kind>input</kind>
 			<type>real</type>
@@ -11437,20 +11371,20 @@ code
 				<name>P</name>
 				<index>246</index>
 			</storage>
-			<iconindex>180</iconindex>
+			<iconindex>175</iconindex>
 		</modelVariable>
-		<modelVariable id="711">
+		<modelVariable id="707">
 			<name>JointSpaceStiffness\force_lim</name>
 			<kind>parameter</kind>
 			<type>real</type>
-			<value>7.0</value>
+			<value>10.0</value>
 			<storage>
 				<name>P</name>
 				<index>254</index>
 			</storage>
-			<iconindex>180</iconindex>
+			<iconindex>175</iconindex>
 		</modelVariable>
-		<modelVariable id="712">
+		<modelVariable id="708">
 			<name>JointSpaceStiffness\substate</name>
 			<kind>variable</kind>
 			<type>real</type>
@@ -11461,11 +11395,11 @@ code
 			</size>
 			<storage>
 				<name>V</name>
-				<index>2088</index>
+				<index>2016</index>
 			</storage>
-			<iconindex>180</iconindex>
+			<iconindex>175</iconindex>
 		</modelVariable>
-		<modelVariable id="713">
+		<modelVariable id="709">
 			<name>MuxToControl1\control</name>
 			<kind>variable</kind>
 			<type>real</type>
@@ -11477,11 +11411,11 @@ code
 			</size>
 			<storage>
 				<name>V</name>
-				<index>2096</index>
+				<index>2024</index>
 			</storage>
-			<iconindex>181</iconindex>
+			<iconindex>176</iconindex>
 		</modelVariable>
-		<modelVariable id="714">
+		<modelVariable id="710">
 			<name>MuxToControl1\arm</name>
 			<kind>variable</kind>
 			<type>real</type>
@@ -11493,11 +11427,11 @@ code
 			</size>
 			<storage>
 				<name>V</name>
-				<index>2104</index>
+				<index>2032</index>
 			</storage>
-			<iconindex>181</iconindex>
+			<iconindex>176</iconindex>
 		</modelVariable>
-		<modelVariable id="715">
+		<modelVariable id="711">
 			<name>MuxToControl1\base</name>
 			<kind>variable</kind>
 			<type>real</type>
@@ -11509,11 +11443,11 @@ code
 			</size>
 			<storage>
 				<name>V</name>
-				<index>2109</index>
+				<index>2037</index>
 			</storage>
-			<iconindex>181</iconindex>
+			<iconindex>176</iconindex>
 		</modelVariable>
-		<modelVariable id="716">
+		<modelVariable id="712">
 			<name>MuxToControl1\zero_angles</name>
 			<kind>parameter</kind>
 			<type>real</type>
@@ -11526,9 +11460,9 @@ code
 				<name>P</name>
 				<index>255</index>
 			</storage>
-			<iconindex>181</iconindex>
+			<iconindex>176</iconindex>
 		</modelVariable>
-		<modelVariable id="717">
+		<modelVariable id="713">
 			<name>OneJunction\flow</name>
 			<aliasOf>ControllableJ\tip.f</aliasOf>
 			<kind>variable</kind>
@@ -11543,11 +11477,11 @@ code
 				<name>V</name>
 				<index>457</index>
 			</storage>
-			<iconindex>182</iconindex>
+			<iconindex>177</iconindex>
 		</modelVariable>
-		<modelVariable id="718">
+		<modelVariable id="714">
 			<name>OneJunction\p1.e</name>
-			<aliasOf>CartesianSpaceSitiffness\p.e</aliasOf>
+			<aliasOf>CartesianSpaceStiffness\p.e</aliasOf>
 			<kind>variable</kind>
 			<type>real</type>
 			<value>0.0; 0.0; 0.0; 0.0; 0.0; 0.0</value>
@@ -11560,9 +11494,9 @@ code
 				<name>V</name>
 				<index>409</index>
 			</storage>
-			<iconindex>182</iconindex>
+			<iconindex>177</iconindex>
 		</modelVariable>
-		<modelVariable id="719">
+		<modelVariable id="715">
 			<name>OneJunction\p2.e</name>
 			<kind>variable</kind>
 			<type>real</type>
@@ -11574,11 +11508,11 @@ code
 			</size>
 			<storage>
 				<name>V</name>
-				<index>2112</index>
+				<index>2040</index>
 			</storage>
-			<iconindex>182</iconindex>
+			<iconindex>177</iconindex>
 		</modelVariable>
-		<modelVariable id="720">
+		<modelVariable id="716">
 			<name>OneJunction\p1.f</name>
 			<aliasOf>ControllableJ\tip.f</aliasOf>
 			<kind>variable</kind>
@@ -11593,9 +11527,9 @@ code
 				<name>V</name>
 				<index>457</index>
 			</storage>
-			<iconindex>182</iconindex>
+			<iconindex>177</iconindex>
 		</modelVariable>
-		<modelVariable id="721">
+		<modelVariable id="717">
 			<name>OneJunction\p2.f</name>
 			<aliasOf>ControllableJ\tip.f</aliasOf>
 			<kind>variable</kind>
@@ -11610,9 +11544,9 @@ code
 				<name>V</name>
 				<index>457</index>
 			</storage>
-			<iconindex>182</iconindex>
+			<iconindex>177</iconindex>
 		</modelVariable>
-		<modelVariable id="722">
+		<modelVariable id="718">
 			<name>OneJunction1\flow</name>
 			<aliasOf>DemuxHW1\control.f</aliasOf>
 			<kind>variable</kind>
@@ -11633,9 +11567,9 @@ code
 				<name>V</name>
 				<index>477</index>
 			</storage>
-			<iconindex>183</iconindex>
+			<iconindex>178</iconindex>
 		</modelVariable>
-		<modelVariable id="723">
+		<modelVariable id="719">
 			<name>OneJunction1\p1.e</name>
 			<aliasOf>GravityCompensation1\Mux\port.e</aliasOf>
 			<kind>variable</kind>
@@ -11650,9 +11584,9 @@ code
 				<name>V</name>
 				<index>1866</index>
 			</storage>
-			<iconindex>183</iconindex>
+			<iconindex>178</iconindex>
 		</modelVariable>
-		<modelVariable id="724">
+		<modelVariable id="720">
 			<name>OneJunction1\p2.e</name>
 			<aliasOf>GravityCompensation1\Mux\port.e</aliasOf>
 			<kind>variable</kind>
@@ -11667,9 +11601,9 @@ code
 				<name>V</name>
 				<index>1866</index>
 			</storage>
-			<iconindex>183</iconindex>
+			<iconindex>178</iconindex>
 		</modelVariable>
-		<modelVariable id="725">
+		<modelVariable id="721">
 			<name>OneJunction1\p1.f</name>
 			<aliasOf>DemuxHW1\control.f</aliasOf>
 			<kind>variable</kind>
@@ -11690,9 +11624,9 @@ code
 				<name>V</name>
 				<index>477</index>
 			</storage>
-			<iconindex>183</iconindex>
+			<iconindex>178</iconindex>
 		</modelVariable>
-		<modelVariable id="726">
+		<modelVariable id="722">
 			<name>OneJunction1\p2.f</name>
 			<aliasOf>DemuxHW1\control.f</aliasOf>
 			<kind>variable</kind>
@@ -11713,9 +11647,9 @@ code
 				<name>V</name>
 				<index>477</index>
 			</storage>
-			<iconindex>183</iconindex>
+			<iconindex>178</iconindex>
 		</modelVariable>
-		<modelVariable id="727">
+		<modelVariable id="723">
 			<name>OneJunction2\flow</name>
 			<aliasOf>DemuxHW1\control.f</aliasOf>
 			<kind>variable</kind>
@@ -11736,27 +11670,10 @@ code
 				<name>V</name>
 				<index>477</index>
 			</storage>
-			<iconindex>184</iconindex>
+			<iconindex>179</iconindex>
 		</modelVariable>
-		<modelVariable id="728">
+		<modelVariable id="724">
 			<name>OneJunction2\p1.e</name>
-			<aliasOf>ControllableJ\joints.e</aliasOf>
-			<kind>variable</kind>
-			<type>real</type>
-			<value>0.0; 0.0; 0.0; 0.0; 0.0; 0.0; 0.0; 0.0</value>
-			<description></description>
-			<size>
-				<rows>8</rows>
-				<columns>1</columns>
-			</size>
-			<storage>
-				<name>V</name>
-				<index>449</index>
-			</storage>
-			<iconindex>184</iconindex>
-		</modelVariable>
-		<modelVariable id="729">
-			<name>OneJunction2\p2.e</name>
 			<aliasOf>JointSpaceStiffness\joints.e</aliasOf>
 			<kind>variable</kind>
 			<type>real</type>
@@ -11768,12 +11685,12 @@ code
 			</size>
 			<storage>
 				<name>V</name>
-				<index>2080</index>
+				<index>2008</index>
 			</storage>
-			<iconindex>184</iconindex>
+			<iconindex>179</iconindex>
 		</modelVariable>
-		<modelVariable id="730">
-			<name>OneJunction2\p3.e</name>
+		<modelVariable id="725">
+			<name>OneJunction2\p2.e</name>
 			<kind>variable</kind>
 			<type>real</type>
 			<value>0.0; 0.0; 0.0; 0.0; 0.0; 0.0; 0.0; 0.0</value>
@@ -11790,12 +11707,12 @@ code
 			</physical>
 			<storage>
 				<name>V</name>
-				<index>2118</index>
+				<index>2046</index>
 			</storage>
-			<iconindex>184</iconindex>
+			<iconindex>179</iconindex>
 		</modelVariable>
-		<modelVariable id="731">
-			<name>OneJunction2\p4.e</name>
+		<modelVariable id="726">
+			<name>OneJunction2\p3.e</name>
 			<aliasOf>JointSoftLimits\p.e</aliasOf>
 			<kind>variable</kind>
 			<type>real</type>
@@ -11809,10 +11726,10 @@ code
 				<name>V</name>
 				<index>1896</index>
 			</storage>
-			<iconindex>184</iconindex>
+			<iconindex>179</iconindex>
 		</modelVariable>
-		<modelVariable id="732">
-			<name>OneJunction2\p5.e</name>
+		<modelVariable id="727">
+			<name>OneJunction2\p4.e</name>
 			<aliasOf>JointSpaceDamping\p.e</aliasOf>
 			<kind>variable</kind>
 			<type>real</type>
@@ -11824,12 +11741,12 @@ code
 			</size>
 			<storage>
 				<name>V</name>
-				<index>2000</index>
+				<index>1928</index>
 			</storage>
-			<iconindex>184</iconindex>
+			<iconindex>179</iconindex>
 		</modelVariable>
-		<modelVariable id="733">
-			<name>OneJunction2\p6.e</name>
+		<modelVariable id="728">
+			<name>OneJunction2\p5.e</name>
 			<aliasOf>GravityCompensation1\Mux\port.e</aliasOf>
 			<kind>variable</kind>
 			<type>real</type>
@@ -11843,9 +11760,26 @@ code
 				<name>V</name>
 				<index>1866</index>
 			</storage>
-			<iconindex>184</iconindex>
+			<iconindex>179</iconindex>
 		</modelVariable>
-		<modelVariable id="734">
+		<modelVariable id="729">
+			<name>OneJunction2\p6.e</name>
+			<aliasOf>ControllableJ\joints.e</aliasOf>
+			<kind>variable</kind>
+			<type>real</type>
+			<value>0.0; 0.0; 0.0; 0.0; 0.0; 0.0; 0.0; 0.0</value>
+			<description></description>
+			<size>
+				<rows>8</rows>
+				<columns>1</columns>
+			</size>
+			<storage>
+				<name>V</name>
+				<index>449</index>
+			</storage>
+			<iconindex>179</iconindex>
+		</modelVariable>
+		<modelVariable id="730">
 			<name>OneJunction2\p1.f</name>
 			<aliasOf>DemuxHW1\control.f</aliasOf>
 			<kind>variable</kind>
@@ -11866,9 +11800,9 @@ code
 				<name>V</name>
 				<index>477</index>
 			</storage>
-			<iconindex>184</iconindex>
+			<iconindex>179</iconindex>
 		</modelVariable>
-		<modelVariable id="735">
+		<modelVariable id="731">
 			<name>OneJunction2\p2.f</name>
 			<aliasOf>DemuxHW1\control.f</aliasOf>
 			<kind>variable</kind>
@@ -11889,9 +11823,9 @@ code
 				<name>V</name>
 				<index>477</index>
 			</storage>
-			<iconindex>184</iconindex>
+			<iconindex>179</iconindex>
 		</modelVariable>
-		<modelVariable id="736">
+		<modelVariable id="732">
 			<name>OneJunction2\p3.f</name>
 			<aliasOf>DemuxHW1\control.f</aliasOf>
 			<kind>variable</kind>
@@ -11912,9 +11846,9 @@ code
 				<name>V</name>
 				<index>477</index>
 			</storage>
-			<iconindex>184</iconindex>
+			<iconindex>179</iconindex>
 		</modelVariable>
-		<modelVariable id="737">
+		<modelVariable id="733">
 			<name>OneJunction2\p4.f</name>
 			<aliasOf>DemuxHW1\control.f</aliasOf>
 			<kind>variable</kind>
@@ -11935,9 +11869,9 @@ code
 				<name>V</name>
 				<index>477</index>
 			</storage>
-			<iconindex>184</iconindex>
+			<iconindex>179</iconindex>
 		</modelVariable>
-		<modelVariable id="738">
+		<modelVariable id="734">
 			<name>OneJunction2\p5.f</name>
 			<aliasOf>DemuxHW1\control.f</aliasOf>
 			<kind>variable</kind>
@@ -11958,9 +11892,9 @@ code
 				<name>V</name>
 				<index>477</index>
 			</storage>
-			<iconindex>184</iconindex>
+			<iconindex>179</iconindex>
 		</modelVariable>
-		<modelVariable id="739">
+		<modelVariable id="735">
 			<name>OneJunction2\p6.f</name>
 			<aliasOf>DemuxHW1\control.f</aliasOf>
 			<kind>variable</kind>
@@ -11981,9 +11915,9 @@ code
 				<name>V</name>
 				<index>477</index>
 			</storage>
-			<iconindex>184</iconindex>
+			<iconindex>179</iconindex>
 		</modelVariable>
-		<modelVariable id="740">
+		<modelVariable id="736">
 			<name>Splitter1\input</name>
 			<aliasOf>MuxToControl1\control</aliasOf>
 			<kind>variable</kind>
@@ -11996,11 +11930,11 @@ code
 			</size>
 			<storage>
 				<name>V</name>
-				<index>2096</index>
+				<index>2024</index>
 			</storage>
-			<iconindex>185</iconindex>
+			<iconindex>180</iconindex>
 		</modelVariable>
-		<modelVariable id="741">
+		<modelVariable id="737">
 			<name>Splitter1\output1</name>
 			<aliasOf>MuxToControl1\control</aliasOf>
 			<kind>variable</kind>
@@ -12013,11 +11947,11 @@ code
 			</size>
 			<storage>
 				<name>V</name>
-				<index>2096</index>
+				<index>2024</index>
 			</storage>
-			<iconindex>185</iconindex>
+			<iconindex>180</iconindex>
 		</modelVariable>
-		<modelVariable id="742">
+		<modelVariable id="738">
 			<name>Splitter1\output2</name>
 			<aliasOf>MuxToControl1\control</aliasOf>
 			<kind>variable</kind>
@@ -12030,11 +11964,11 @@ code
 			</size>
 			<storage>
 				<name>V</name>
-				<index>2096</index>
+				<index>2024</index>
 			</storage>
-			<iconindex>185</iconindex>
+			<iconindex>180</iconindex>
 		</modelVariable>
-		<modelVariable id="743">
+		<modelVariable id="739">
 			<name>Splitter1\output3</name>
 			<aliasOf>MuxToControl1\control</aliasOf>
 			<kind>variable</kind>
@@ -12047,11 +11981,11 @@ code
 			</size>
 			<storage>
 				<name>V</name>
-				<index>2096</index>
+				<index>2024</index>
 			</storage>
-			<iconindex>185</iconindex>
+			<iconindex>180</iconindex>
 		</modelVariable>
-		<modelVariable id="744">
+		<modelVariable id="740">
 			<name>Splitter1\output4</name>
 			<aliasOf>MuxToControl1\control</aliasOf>
 			<kind>variable</kind>
@@ -12064,11 +11998,11 @@ code
 			</size>
 			<storage>
 				<name>V</name>
-				<index>2096</index>
+				<index>2024</index>
 			</storage>
-			<iconindex>185</iconindex>
+			<iconindex>180</iconindex>
 		</modelVariable>
-		<modelVariable id="745">
+		<modelVariable id="741">
 			<name>bond_to_base.F</name>
 			<kind>output</kind>
 			<type>real</type>
@@ -12086,11 +12020,11 @@ code
 			</physical>
 			<storage>
 				<name>V</name>
-				<index>2126</index>
+				<index>2054</index>
 			</storage>
 			<iconindex>1</iconindex>
 		</modelVariable>
-		<modelVariable id="746">
+		<modelVariable id="742">
 			<name>bond_to_base.v</name>
 			<kind>input</kind>
 			<type>real</type>
@@ -12108,11 +12042,11 @@ code
 			</physical>
 			<storage>
 				<name>V</name>
-				<index>2129</index>
+				<index>2057</index>
 			</storage>
 			<iconindex>1</iconindex>
 		</modelVariable>
-		<modelVariable id="747">
+		<modelVariable id="743">
 			<name>bond_to_arm.T</name>
 			<kind>output</kind>
 			<type>real</type>
@@ -12130,11 +12064,11 @@ code
 			</physical>
 			<storage>
 				<name>V</name>
-				<index>2132</index>
+				<index>2060</index>
 			</storage>
 			<iconindex>1</iconindex>
 		</modelVariable>
-		<modelVariable id="748">
+		<modelVariable id="744">
 			<name>bond_to_arm.omega</name>
 			<kind>input</kind>
 			<type>real</type>
@@ -12152,27 +12086,11 @@ code
 			</physical>
 			<storage>
 				<name>V</name>
-				<index>2137</index>
+				<index>2065</index>
 			</storage>
 			<iconindex>1</iconindex>
 		</modelVariable>
-		<modelVariable id="749">
-			<name>odometry_base</name>
-			<kind>input</kind>
-			<type>real</type>
-			<value>0.0; 0.0; 0.0</value>
-			<description></description>
-			<size>
-				<rows>3</rows>
-				<columns>1</columns>
-			</size>
-			<storage>
-				<name>V</name>
-				<index>2142</index>
-			</storage>
-			<iconindex>1</iconindex>
-		</modelVariable>
-		<modelVariable id="750">
+		<modelVariable id="745">
 			<name>measured_angles_arm</name>
 			<kind>input</kind>
 			<type>real</type>
@@ -12184,15 +12102,15 @@ code
 			</size>
 			<storage>
 				<name>V</name>
-				<index>2145</index>
+				<index>2070</index>
 			</storage>
 			<iconindex>1</iconindex>
 		</modelVariable>
-		<modelVariable id="751">
+		<modelVariable id="746">
 			<name>xyzypr</name>
 			<kind>input</kind>
 			<type>real</type>
-			<value>0.0; 0.0; 0.0; 0.0; 0.0; 0.0</value>
+			<value>0.0; 0.0; 1.0; 0.0; 0.0; 0.0</value>
 			<description></description>
 			<size>
 				<rows>6</rows>
@@ -12200,36 +12118,52 @@ code
 			</size>
 			<storage>
 				<name>V</name>
-				<index>2150</index>
+				<index>2075</index>
 			</storage>
 			<iconindex>1</iconindex>
 		</modelVariable>
-		<modelVariable id="752">
-			<name>CartesianSpaceSitiffness\optimizationCriteria</name>
+		<modelVariable id="747">
+			<name>odometry_base</name>
+			<kind>input</kind>
+			<type>real</type>
+			<value>0.0; 0.0; 0.0</value>
+			<description></description>
+			<size>
+				<rows>3</rows>
+				<columns>1</columns>
+			</size>
+			<storage>
+				<name>V</name>
+				<index>2081</index>
+			</storage>
+			<iconindex>1</iconindex>
+		</modelVariable>
+		<modelVariable id="748">
+			<name>CartesianSpaceStiffness\optimizationCriteria</name>
 			<kind>state</kind>
 			<type>real</type>
 			<value>0.0</value>
 			<description></description>
-			<pair>CartesianSpaceSitiffness\optimizationCriteria_dot</pair>
+			<pair>CartesianSpaceStiffness\optimizationCriteria_dot</pair>
 			<storage>
 				<name>s</name>
 				<index>12</index>
 			</storage>
 			<iconindex>6</iconindex>
 		</modelVariable>
-		<modelVariable id="753">
-			<name>CartesianSpaceSitiffness\optimizationCriteria_initial</name>
+		<modelVariable id="749">
+			<name>CartesianSpaceStiffness\optimizationCriteria_initial</name>
 			<kind>initial value</kind>
 			<type>real</type>
 			<value>0.0</value>
-			<pair>CartesianSpaceSitiffness\optimizationCriteria</pair>
+			<pair>CartesianSpaceStiffness\optimizationCriteria</pair>
 			<storage>
 				<name>I</name>
 				<index>12</index>
 			</storage>
 			<iconindex>6</iconindex>
 		</modelVariable>
-		<modelVariable id="754">
+		<modelVariable id="750">
 			<name></name>
 			<kind>rate</kind>
 			<type>real</type>
@@ -12246,7 +12180,7 @@ code
 			</storage>
 			<iconindex>12</iconindex>
 		</modelVariable>
-		<modelVariable id="755">
+		<modelVariable id="751">
 			<name></name>
 			<kind>rate</kind>
 			<type>real</type>
@@ -12263,7 +12197,7 @@ code
 			</storage>
 			<iconindex>12</iconindex>
 		</modelVariable>
-		<modelVariable id="756">
+		<modelVariable id="752">
 			<name>filter\y</name>
 			<kind>state</kind>
 			<type>real</type>
@@ -12280,7 +12214,7 @@ code
 			</storage>
 			<iconindex>12</iconindex>
 		</modelVariable>
-		<modelVariable id="757">
+		<modelVariable id="753">
 			<name>filter\initPos</name>
 			<kind>initial value</kind>
 			<type>real</type>
@@ -12300,7 +12234,7 @@ code
 	</modelVariables>
 	<storage>
 		<name>ivc_ModelControl</name>
-		<size>19736</size>
+		<size>19160</size>
 		<tables>
 			<table>
 				<name>s</name>
@@ -12318,10 +12252,10 @@ code
 			</table>
 			<table>
 				<name>V</name>
-				<size>17248</size>
+				<size>16672</size>
 				<kind>real</kind>
 				<kindSize>8</kindSize>
-				<count>2156</count>
+				<count>2084</count>
 			</table>
 			<table>
 				<name>I</name>
@@ -12520,11 +12454,6 @@ code
 		<icon>89504E470D0A1A0A0000000D4948445200000010000000100803000000282D0F53000000FC504C54455F5768A8C3D9AAAAB1AAABAFAAABB0B2ADAAB6AFABCBD8E5CCB8A0CDDAE7D1DFEAEBDED1F2DEC4F3E7D9F8E9D1F8FCFEF9FDFEFEF9F0FEFDF9FFFEFBFFFEFDFFFFFFA6A8A9F5FCFEFAFDFEBBD6EDB1CFE6FCF4E866584CDABB89E8D5B39683617E5F3FEBF7FDDBBA95EDD7BB6E4D2EAFD0E4E1C3A15C80955E8097CEAD86E8DBCE3F3222DBC5ABC5A47BC0DAF0C2A2788FC1DFD1DDEAAACBE89BB6D3264364223B5C99BEDD7BA4C5B2906C7CA5C57397B931130465442700000000010500010600030800031B030D1C0602000717330803000C05010F031B162243180100190B021B031123344224080A2C496A3A1B124F525C6A595DAAADB2B0ACAA9643FCAA00000074494441547801631045030C640908690507194A200928DB383BF8E92109E87A1BC831304A5B78395929820594AC7D028CC5D5FCD5E53D8CC002821C32DA2E66FA9EB6B68E9660019D40555977734D5F0D31262EB0008F8AABBD89249F829B9DA9145840989B9585534084978D999D9F5CA7A30200160B1BE3F72919E90000000049454E44AE426082</icon>
 		<icon>89504E470D0A1A0A0000000D4948445200000010000000100803000000282D0F5300000084504C5445C3F1FECEF5FFE0FAFFF4DEC1FBFFFFFEFCF4FEFCF5FFFFFFD4B796C4F1FEA3DEF9F4DEC097988BA3DEF9B8D4E7D2B08BC3A379D2B08BC3A379BC9C6F5D381AD2B291AE884EBC9C6E2E4E71304B6CAE894EBAD5E8336A9D351E0F5B37190200030200040A1652130432190227280B142D4C70301B0D324D6E346B9D3A1B0B3C1D0C97988C0CB56D5900000052494441547801636047030C640AB08AAA29A84B230970CB49F0686AB020040455B8D8C51499100242CA0CECC24A8C080101654E767164017E155E7629642DCC22AADA5A324886B271C8CA4BF251E674640000490709DFF396359A0000000049454E44AE426082</icon>
 		<icon>89504E470D0A1A0A0000000D4948445200000010000000100803000000282D0F530000009F504C54458E99B1E1EFF8ECD8BFF0F9FDF9E6C2FBEED6FCFEFFFCFFFFFFFEFCFFFFFEFFFFFFBBECFDF9E4C0FBF0D97BB6E4B9EBFD92AFCBA6C7E3EFF8FDDAB894EEDBC39C92827E5832E2EFF8DDBB987BB6E5C5A57BC7A67D698091A4C6E14E2F1C664B33835C368E99B10E214490ADC8192A3F1209040E1A2C0002070003070C1E410F1C2F170B0618293E1B03211D04223011083313094D2E1C6C523A6C84949C9282551A58500000005649444154780163E042030C640A70881869ABEB280BC1057815D46444E53465E10212067C6C5C2C0C8C7001693D6E5433A474F9510584F525D9397914C5E102AC625AC626864A82086B99E4553554049829713A3200001A350D4F0CBAF3600000000049454E44AE426082</icon>
-		<icon>89504E470D0A1A0A0000000D49484452000000100000000D0806000000A0BBEE240000006E494441547801A592410E80300804D92FF63D5E7D4EFBC5D5564D6C0394EA9EE030130280A4FC091C010510D482C4AAA0C1FBDD6C8E441374B04C24A340853DC95BE0C296A4179C29A584B69F52823A412817834F3BC8399B134CAF30C24B7FA0C1E14FB4E099A0499EAB6870CD01556A5CE787CF88AD0000000049454E44AE426082</icon>
-		<icon>89504E470D0A1A0A0000000D49484452000000100000000D0806000000A0BBEE240000006E494441547801A592410E80300804D92FF63D5E7D4EFBC5D5564D6C0394EA9EE030130280A4FC091C010510D482C4AAA0C1FBDD6C8E441374B04C24A340853DC95BE0C296A4179C29A584B69F52823A412817834F3BC8399B134CAF30C24B7FA0C1E14FB4E099A0499EAB6870CD01556A5CE787CF88AD0000000049454E44AE426082</icon>
-		<icon>89504E470D0A1A0A0000000D49484452000000100000000D0806000000A0BBEE240000006E494441547801A592410E80300804D92FF63D5E7D4EFBC5D5564D6C0394EA9EE030130280A4FC091C010510D482C4AAA0C1FBDD6C8E441374B04C24A340853DC95BE0C296A4179C29A584B69F52823A412817834F3BC8399B134CAF30C24B7FA0C1E14FB4E099A0499EAB6870CD01556A5CE787CF88AD0000000049454E44AE426082</icon>
-		<icon>89504E470D0A1A0A0000000D49484452000000100000000D0806000000A0BBEE240000006E494441547801A592410E80300804D92FF63D5E7D4EFBC5D5564D6C0394EA9EE030130280A4FC091C010510D482C4AAA0C1FBDD6C8E441374B04C24A340853DC95BE0C296A4179C29A584B69F52823A412817834F3BC8399B134CAF30C24B7FA0C1E14FB4E099A0499EAB6870CD01556A5CE787CF88AD0000000049454E44AE426082</icon>
-		<icon>89504E470D0A1A0A0000000D49484452000000100000000D0806000000A0BBEE240000006E494441547801A592410E80300804D92FF63D5E7D4EFBC5D5564D6C0394EA9EE030130280A4FC091C010510D482C4AAA0C1FBDD6C8E441374B04C24A340853DC95BE0C296A4179C29A584B69F52823A412817834F3BC8399B134CAF30C24B7FA0C1E14FB4E099A0499EAB6870CD01556A5CE787CF88AD0000000049454E44AE426082</icon>
 		<icon>89504E470D0A1A0A0000000D4948445200000010000000100803000000282D0F5300000093504C544586A3AAAAAAA9C9F3FBCAF5FFE2C192F1E6D5F3FDFFF4E1C7F8FEFFFEFFFFFFFEFAFFFFFF424F51CFE9F8A7A29AFCF9F5B5D4EB473C2D684322E1F0FAE5CD9E765A3ABFA0757DA9D47FA6C794B8D8724C28A6CAE5162B4F00000000000105091805132E07000308101D11264115000015000E15001C15002A19051D1C04081C3A5E2A568A3B2D1D435155524F4B5555556384A46AC425AF0000005349444154780163E046030C640A88A9C8CACA2919082304D41818F94415241102EACCDCFC221A120801555D7D3D1D190124011E41452D5E4E242D4CAC52F2E21C2866B00B294BA30870B1686AB351E074640000A6120E3B9D44D82C0000000049454E44AE426082</icon>
 		<icon>89504E470D0A1A0A0000000D4948445200000010000000100803000000282D0F530000009F504C54458E99B1E1EFF8ECD8BFF0F9FDF9E6C2FBEED6FCFEFFFCFFFFFFFEFCFFFFFEFFFFFFBBECFDF9E4C0FBF0D97BB6E4B9EBFD92AFCBA6C7E3EFF8FDDAB894EEDBC39C92827E5832E2EFF8DDBB987BB6E5C5A57BC7A67D698091A4C6E14E2F1C664B33835C368E99B10E214490ADC8192A3F1209040E1A2C0002070003070C1E410F1C2F170B0618293E1B03211D04223011083313094D2E1C6C523A6C84949C9282551A58500000005649444154780163E042030C640A70881869ABEB280BC1057815D46444E53465E10212067C6C5C2C0C8C7001693D6E5433A474F9510584F525D9397914C5E102AC625AC626864A82086B99E4553554049829713A3200001A350D4F0CBAF3600000000049454E44AE426082</icon>
 		<icon>89504E470D0A1A0A0000000D4948445200000010000000100803000000282D0F5300000036504C5445FFFFFF5B656F6A626C77777783868289909A8A84879691839693859F9F9FAFB3B7B1B4B8B3AFACB6B1AEC0C5C9C8C4BFCACBCBD5D5D5C4288B4F0000003049444154780163602008983951003303A7200AE0245B8047809B978B9F0F21C0CEC6C8C1C4C24A91A1C802184E270800A3370A97C601158C0000000049454E44AE426082</icon>

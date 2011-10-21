@@ -4,8 +4,8 @@
  *  file:  include\common\xxtypes.h
  *  model: ModelControl
  *  expmt: ModelControl
- *  date:  October 20, 2011
- *  time:  11:07:22 am
+ *  date:  October 21, 2011
+ *  time:  1:00:09 pm
  *  user:  Campuslicentie 
  *  from:  Universiteit Twente
  *  build: 4.1.2.2

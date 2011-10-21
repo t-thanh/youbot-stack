@@ -1,9 +1,0 @@
-<launch>
-	<node name="H10" pkg="YouBot_adapters" type="HomogeneousToTF" args="/H10" />
-	<node name="H20" pkg="YouBot_adapters" type="HomogeneousToTF" args="/H20" />
-	<node name="H30" pkg="YouBot_adapters" type="HomogeneousToTF" args="/H30" />
-	<node name="H40" pkg="YouBot_adapters" type="HomogeneousToTF" args="/H40" />
-	<node name="H50" pkg="YouBot_adapters" type="HomogeneousToTF" args="/H50" />
-	<node name="Htip0" pkg="YouBot_adapters" type="HomogeneousToTF" args="/Htip0" />
-	<node name="Hvp0" pkg="YouBot_adapters" type="HomogeneousToTF" args="/Hvp0" />
-</launch>

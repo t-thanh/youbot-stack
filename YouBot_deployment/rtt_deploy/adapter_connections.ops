@@ -1,13 +1,3 @@
-//import(""); //importing addpaters and control_test should be in same directory
-import("rtt_rospack")
-loadService("Deployer","rospack")
-
-kickStart(rospack.find("interaction_control")+"/launch/20sim_deploy.xml")
-
-runScript(rospack.find("YouBot_OODL")+"/deploy_with_monitor.ops")
-runScript(rospack.find("interaction_control")+"/launch/ros_connection.ops")
-
-var strings  arm_joint_uri=strings("joint1","joint2","joint3","joint4","joint5");
 var std.vector<ctrl_modes>  arm_ctrl_modes=std.vector<ctrl_modes>(5,TORQUE)
 
 control.configure;
@@ -15,7 +5,8 @@ control2arm.configure;
 arm2control.configure;
 
 //setup control mode
-youbot.Arm1.setControlModes(arm_ctrl_modes)
+youbot.Arm1.setControlModes(arm_ctrl_modes);
+youbot.Arm1.clearControllerTimeouts();
 control2arm.initialize(TORQUE,5);
 arm2control.initialize(5);
 
@@ -36,11 +27,6 @@ cp_8.type = DATA;  // Use ''BUFFER'' or ''DATA''
 cp_8.lock_policy = LOCK_FREE; // Use  ''LOCKED'', ''LOCK_FREE'' or ''UNSYNC''
 connect("control.bond_to_arm_omega","arm2control.output_velocities",cp_8)
 
-//All start
-youbot.start
 arm2control.start
 control.start
-control2arm.start
-
-
-runScript(rospack.find("YouBot_executive")+"/deploy.ops")
+//control2arm.start
