@@ -14,7 +14,7 @@
  &lt;KeepParameterValues&gt;False&lt;/KeepParameterValues&gt;
  &lt;AllowLibraryUpdate&gt;True&lt;/AllowLibraryUpdate&gt;
 &lt;/Description&gt;</description>
-		<date>2011-10-20T15:05:05.0Z</date>
+		<date>2011-10-21T13:00:00.0Z</date>
 		<modelDir></modelDir>
 		<originalModel>Z:\home\youbot\DEV\20SimModels\Tests\ModelControl.emx</originalModel>
 		<additional>Campuslicentie, Universiteit Twente</additional>
@@ -1037,7 +1037,7 @@ code
 		</modelVariable>
 		<modelVariable id="66">
 			<name>DemuxHW1\control.e</name>
-			<aliasOf>OneJunction2\p3.e</aliasOf>
+			<aliasOf>OneJunction2\p2.e</aliasOf>
 			<kind>variable</kind>
 			<type>real</type>
 			<value>0.0; 0.0; 0.0; 0.0; 0.0; 0.0; 0.0; 0.0</value>
@@ -1114,7 +1114,7 @@ code
 		</modelVariable>
 		<modelVariable id="70">
 			<name>EffortSensor1\p1.e</name>
-			<aliasOf>OneJunction2\p3.e</aliasOf>
+			<aliasOf>OneJunction2\p2.e</aliasOf>
 			<kind>variable</kind>
 			<type>real</type>
 			<value>0.0; 0.0; 0.0; 0.0; 0.0; 0.0; 0.0; 0.0</value>
@@ -1154,7 +1154,7 @@ code
 		</modelVariable>
 		<modelVariable id="72">
 			<name>EffortSensor1\p2.T</name>
-			<aliasOf>OneJunction2\p3.e</aliasOf>
+			<aliasOf>OneJunction2\p2.e</aliasOf>
 			<kind>variable</kind>
 			<type>real</type>
 			<value>0.0; 0.0; 0.0; 0.0; 0.0; 0.0; 0.0; 0.0</value>
@@ -1200,7 +1200,7 @@ code
 		</modelVariable>
 		<modelVariable id="74">
 			<name>EffortSensor1\effort</name>
-			<aliasOf>OneJunction2\p3.e</aliasOf>
+			<aliasOf>OneJunction2\p2.e</aliasOf>
 			<kind>variable</kind>
 			<type>real</type>
 			<value>0.0; 0.0; 0.0; 0.0; 0.0; 0.0; 0.0; 0.0</value>
@@ -10971,7 +10971,8 @@ code
 			<name>GravityCompensation1\LinkCOMdim</name>
 			<kind>parameter</kind>
 			<type>real</type>
-			<value>0.01489, 0.01489, 0.10453, 0.001, 0.011, 0.0; 0.00213, 0.00213, 0.0017, 0.0967, 0.05103, 0.00115; 0.00213, 0.00213, -0.00297, 0.02107, -0.02319, -0.01683</value>
+			<value>0.0, 0.0, 0.0, 0.0, 0.0, 0.003; 0.0, 0.0, -0.032, 0.028, -0.010, 0.0;0.0, 0.0, 0.078, 0.079, 0.029,-0.034</value>
+			<!--<value>0.01489, 0.01489, 0.10453, 0.001, 0.011, 0.0; 0.00213, 0.00213, 0.0017, 0.0967, 0.05103, 0.00115; 0.00213, 0.00213, -0.00297, 0.02107, -0.02319, -0.01683</value>-->
 			<description></description>
 			<size>
 				<rows>3</rows>
@@ -11072,7 +11073,7 @@ code
 			<name>JointSoftLimits\c</name>
 			<kind>parameter</kind>
 			<type>real</type>
-			<value>0.0; 0.0; 0.0; 0.0; 0.0; 0.0; 0.0; 0.0</value>
+			<value>0.0; 0.0; 0.0; 80.0; 80.0; 80.0; 80.0; 80.0</value>
 			<size>
 				<rows>8</rows>
 				<columns>1</columns>
@@ -11117,7 +11118,7 @@ code
 			<name>JointSoftLimits\working_range</name>
 			<kind>parameter</kind>
 			<type>real</type>
-			<value>0.1</value>
+			<value>0.95</value>
 			<storage>
 				<name>P</name>
 				<index>213</index>
@@ -11673,23 +11674,6 @@ code
 		</modelVariable>
 		<modelVariable id="724">
 			<name>OneJunction2\p1.e</name>
-			<aliasOf>ControllableJ\joints.e</aliasOf>
-			<kind>variable</kind>
-			<type>real</type>
-			<value>0.0; 0.0; 0.0; 0.0; 0.0; 0.0; 0.0; 0.0</value>
-			<description></description>
-			<size>
-				<rows>8</rows>
-				<columns>1</columns>
-			</size>
-			<storage>
-				<name>V</name>
-				<index>449</index>
-			</storage>
-			<iconindex>179</iconindex>
-		</modelVariable>
-		<modelVariable id="725">
-			<name>OneJunction2\p2.e</name>
 			<aliasOf>JointSpaceStiffness\joints.e</aliasOf>
 			<kind>variable</kind>
 			<type>real</type>
@@ -11705,8 +11689,8 @@ code
 			</storage>
 			<iconindex>179</iconindex>
 		</modelVariable>
-		<modelVariable id="726">
-			<name>OneJunction2\p3.e</name>
+		<modelVariable id="725">
+			<name>OneJunction2\p2.e</name>
 			<kind>variable</kind>
 			<type>real</type>
 			<value>0.0; 0.0; 0.0; 0.0; 0.0; 0.0; 0.0; 0.0</value>
@@ -11727,8 +11711,8 @@ code
 			</storage>
 			<iconindex>179</iconindex>
 		</modelVariable>
-		<modelVariable id="727">
-			<name>OneJunction2\p4.e</name>
+		<modelVariable id="726">
+			<name>OneJunction2\p3.e</name>
 			<aliasOf>JointSoftLimits\p.e</aliasOf>
 			<kind>variable</kind>
 			<type>real</type>
@@ -11744,8 +11728,8 @@ code
 			</storage>
 			<iconindex>179</iconindex>
 		</modelVariable>
-		<modelVariable id="728">
-			<name>OneJunction2\p5.e</name>
+		<modelVariable id="727">
+			<name>OneJunction2\p4.e</name>
 			<aliasOf>JointSpaceDamping\p.e</aliasOf>
 			<kind>variable</kind>
 			<type>real</type>
@@ -11761,8 +11745,8 @@ code
 			</storage>
 			<iconindex>179</iconindex>
 		</modelVariable>
-		<modelVariable id="729">
-			<name>OneJunction2\p6.e</name>
+		<modelVariable id="728">
+			<name>OneJunction2\p5.e</name>
 			<aliasOf>GravityCompensation1\Mux\port.e</aliasOf>
 			<kind>variable</kind>
 			<type>real</type>
@@ -11775,6 +11759,23 @@ code
 			<storage>
 				<name>V</name>
 				<index>1866</index>
+			</storage>
+			<iconindex>179</iconindex>
+		</modelVariable>
+		<modelVariable id="729">
+			<name>OneJunction2\p6.e</name>
+			<aliasOf>ControllableJ\joints.e</aliasOf>
+			<kind>variable</kind>
+			<type>real</type>
+			<value>0.0; 0.0; 0.0; 0.0; 0.0; 0.0; 0.0; 0.0</value>
+			<description></description>
+			<size>
+				<rows>8</rows>
+				<columns>1</columns>
+			</size>
+			<storage>
+				<name>V</name>
+				<index>449</index>
 			</storage>
 			<iconindex>179</iconindex>
 		</modelVariable>
@@ -12090,38 +12091,6 @@ code
 			<iconindex>1</iconindex>
 		</modelVariable>
 		<modelVariable id="745">
-			<name>xyzypr</name>
-			<kind>input</kind>
-			<type>real</type>
-			<value>0.0; 0.0; 0.0; 0.0; 0.0; 0.0</value>
-			<description></description>
-			<size>
-				<rows>6</rows>
-				<columns>1</columns>
-			</size>
-			<storage>
-				<name>V</name>
-				<index>2070</index>
-			</storage>
-			<iconindex>1</iconindex>
-		</modelVariable>
-		<modelVariable id="746">
-			<name>odometry_base</name>
-			<kind>input</kind>
-			<type>real</type>
-			<value>0.0; 0.0; 0.0</value>
-			<description></description>
-			<size>
-				<rows>3</rows>
-				<columns>1</columns>
-			</size>
-			<storage>
-				<name>V</name>
-				<index>2076</index>
-			</storage>
-			<iconindex>1</iconindex>
-		</modelVariable>
-		<modelVariable id="747">
 			<name>measured_angles_arm</name>
 			<kind>input</kind>
 			<type>real</type>
@@ -12133,7 +12102,39 @@ code
 			</size>
 			<storage>
 				<name>V</name>
-				<index>2079</index>
+				<index>2070</index>
+			</storage>
+			<iconindex>1</iconindex>
+		</modelVariable>
+		<modelVariable id="746">
+			<name>xyzypr</name>
+			<kind>input</kind>
+			<type>real</type>
+			<value>0.0; 0.0; 1.0; 0.0; 0.0; 0.0</value>
+			<description></description>
+			<size>
+				<rows>6</rows>
+				<columns>1</columns>
+			</size>
+			<storage>
+				<name>V</name>
+				<index>2075</index>
+			</storage>
+			<iconindex>1</iconindex>
+		</modelVariable>
+		<modelVariable id="747">
+			<name>odometry_base</name>
+			<kind>input</kind>
+			<type>real</type>
+			<value>0.0; 0.0; 0.0</value>
+			<description></description>
+			<size>
+				<rows>3</rows>
+				<columns>1</columns>
+			</size>
+			<storage>
+				<name>V</name>
+				<index>2081</index>
 			</storage>
 			<iconindex>1</iconindex>
 		</modelVariable>

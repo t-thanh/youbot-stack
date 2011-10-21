@@ -6,7 +6,7 @@
  *  model: ModelControl
  *  expmt: ModelControl
  *  date:  October 21, 2011
- *  time:  1:00:09 pm
+ *  time:  3:01:21 pm
  *  user:  Campuslicentie
  *  from:  Universiteit Twente
  *  build: 4.1.2.2
@@ -1033,29 +1033,29 @@ namespace ModelControl
 		/* JointSoftLimits\angle_limits_high = JointSoftLimits\working_range * JointSoftLimits\limits_high; */
 		XXScalarMatrixMul (&M[235], P[213], &M[232]);
 
-		/* JointSoftLimits\substate[1] = (if MuxToControl1\control[1] - JointSoftLimits\angle_limits_high[1] < 0 then 0 else if MuxToControl1\control[1] - JointSoftLimits\angle_limits_high[1] > 10 then 10 else MuxToControl1\control[1] - JointSoftLimits\angle_limits_high[1] end end) + (if MuxToControl1\control[1] - JointSoftLimits\angle_limits_low[1] < -10 then -10 else if MuxToControl1\control[1] - JointSoftLimits\angle_limits_low[1] > 0 then 0 else MuxToControl1\control[1] - JointSoftLimits\angle_limits_low[1] end end); */
-		M[233].mat[0] = ((M[246].mat[0] - M[235].mat[0] < 0.0) ? 0.0 : ((M[246].mat[0] - M[235].mat[0] > 10.0) ? 10.0 : (M[246].mat[0] - M[235].mat[0]))) + ((M[246].mat[0] - M[234].mat[0] < -10.0) ? -10.0 : ((M[246].mat[0] - M[234].mat[0] > 0.0) ? 0.0 : (M[246].mat[0] - M[234].mat[0])));
+		/* JointSoftLimits\substate[1] = if MuxToControl1\control[1] - JointSoftLimits\angle_limits_high[1] < 0 then 0 else if MuxToControl1\control[1] - JointSoftLimits\angle_limits_high[1] > 10 then 10 else MuxToControl1\control[1] - JointSoftLimits\angle_limits_high[1] end end + if MuxToControl1\control[1] - JointSoftLimits\angle_limits_low[1] < -10 then -10 else if MuxToControl1\control[1] - JointSoftLimits\angle_limits_low[1] > 0 then 0 else MuxToControl1\control[1] - JointSoftLimits\angle_limits_low[1] end end; */
+		M[233].mat[0] = (M[246].mat[0] - M[235].mat[0] < 0.0) ? 0.0 : ((M[246].mat[0] - M[235].mat[0] > 10.0) ? 10.0 : (M[246].mat[0] - M[235].mat[0])) + (M[246].mat[0] - M[234].mat[0] < -10.0) ? -10.0 : ((M[246].mat[0] - M[234].mat[0] > 0.0) ? 0.0 : (M[246].mat[0] - M[234].mat[0]));
 
-		/* JointSoftLimits\substate[2] = (if MuxToControl1\control[2] - JointSoftLimits\angle_limits_high[2] < 0 then 0 else if MuxToControl1\control[2] - JointSoftLimits\angle_limits_high[2] > 10 then 10 else MuxToControl1\control[2] - JointSoftLimits\angle_limits_high[2] end end) + (if MuxToControl1\control[2] - JointSoftLimits\angle_limits_low[2] < -10 then -10 else if MuxToControl1\control[2] - JointSoftLimits\angle_limits_low[2] > 0 then 0 else MuxToControl1\control[2] - JointSoftLimits\angle_limits_low[2] end end); */
-		M[233].mat[1] = ((M[246].mat[1] - M[235].mat[1] < 0.0) ? 0.0 : ((M[246].mat[1] - M[235].mat[1] > 10.0) ? 10.0 : (M[246].mat[1] - M[235].mat[1]))) + ((M[246].mat[1] - M[234].mat[1] < -10.0) ? -10.0 : ((M[246].mat[1] - M[234].mat[1] > 0.0) ? 0.0 : (M[246].mat[1] - M[234].mat[1])));
+		/* JointSoftLimits\substate[2] = if MuxToControl1\control[2] - JointSoftLimits\angle_limits_high[2] < 0 then 0 else if MuxToControl1\control[2] - JointSoftLimits\angle_limits_high[2] > 10 then 10 else MuxToControl1\control[2] - JointSoftLimits\angle_limits_high[2] end end + if MuxToControl1\control[2] - JointSoftLimits\angle_limits_low[2] < -10 then -10 else if MuxToControl1\control[2] - JointSoftLimits\angle_limits_low[2] > 0 then 0 else MuxToControl1\control[2] - JointSoftLimits\angle_limits_low[2] end end; */
+		M[233].mat[1] = (M[246].mat[1] - M[235].mat[1] < 0.0) ? 0.0 : ((M[246].mat[1] - M[235].mat[1] > 10.0) ? 10.0 : (M[246].mat[1] - M[235].mat[1])) + (M[246].mat[1] - M[234].mat[1] < -10.0) ? -10.0 : ((M[246].mat[1] - M[234].mat[1] > 0.0) ? 0.0 : (M[246].mat[1] - M[234].mat[1]));
 
-		/* JointSoftLimits\substate[3] = (if MuxToControl1\control[3] - JointSoftLimits\angle_limits_high[3] < 0 then 0 else if MuxToControl1\control[3] - JointSoftLimits\angle_limits_high[3] > 10 then 10 else MuxToControl1\control[3] - JointSoftLimits\angle_limits_high[3] end end) + (if MuxToControl1\control[3] - JointSoftLimits\angle_limits_low[3] < -10 then -10 else if MuxToControl1\control[3] - JointSoftLimits\angle_limits_low[3] > 0 then 0 else MuxToControl1\control[3] - JointSoftLimits\angle_limits_low[3] end end); */
-		M[233].mat[2] = ((M[246].mat[2] - M[235].mat[2] < 0.0) ? 0.0 : ((M[246].mat[2] - M[235].mat[2] > 10.0) ? 10.0 : (M[246].mat[2] - M[235].mat[2]))) + ((M[246].mat[2] - M[234].mat[2] < -10.0) ? -10.0 : ((M[246].mat[2] - M[234].mat[2] > 0.0) ? 0.0 : (M[246].mat[2] - M[234].mat[2])));
+		/* JointSoftLimits\substate[3] = if MuxToControl1\control[3] - JointSoftLimits\angle_limits_high[3] < 0 then 0 else if MuxToControl1\control[3] - JointSoftLimits\angle_limits_high[3] > 10 then 10 else MuxToControl1\control[3] - JointSoftLimits\angle_limits_high[3] end end + if MuxToControl1\control[3] - JointSoftLimits\angle_limits_low[3] < -10 then -10 else if MuxToControl1\control[3] - JointSoftLimits\angle_limits_low[3] > 0 then 0 else MuxToControl1\control[3] - JointSoftLimits\angle_limits_low[3] end end; */
+		M[233].mat[2] = (M[246].mat[2] - M[235].mat[2] < 0.0) ? 0.0 : ((M[246].mat[2] - M[235].mat[2] > 10.0) ? 10.0 : (M[246].mat[2] - M[235].mat[2])) + (M[246].mat[2] - M[234].mat[2] < -10.0) ? -10.0 : ((M[246].mat[2] - M[234].mat[2] > 0.0) ? 0.0 : (M[246].mat[2] - M[234].mat[2]));
 
-		/* JointSoftLimits\substate[4] = (if MuxToControl1\control[4] - JointSoftLimits\angle_limits_high[4] < 0 then 0 else if MuxToControl1\control[4] - JointSoftLimits\angle_limits_high[4] > 10 then 10 else MuxToControl1\control[4] - JointSoftLimits\angle_limits_high[4] end end) + (if MuxToControl1\control[4] - JointSoftLimits\angle_limits_low[4] < -10 then -10 else if MuxToControl1\control[4] - JointSoftLimits\angle_limits_low[4] > 0 then 0 else MuxToControl1\control[4] - JointSoftLimits\angle_limits_low[4] end end); */
-		M[233].mat[3] = ((M[246].mat[3] - M[235].mat[3] < 0.0) ? 0.0 : ((M[246].mat[3] - M[235].mat[3] > 10.0) ? 10.0 : (M[246].mat[3] - M[235].mat[3]))) + ((M[246].mat[3] - M[234].mat[3] < -10.0) ? -10.0 : ((M[246].mat[3] - M[234].mat[3] > 0.0) ? 0.0 : (M[246].mat[3] - M[234].mat[3])));
+		/* JointSoftLimits\substate[4] = if MuxToControl1\control[4] - JointSoftLimits\angle_limits_high[4] < 0 then 0 else if MuxToControl1\control[4] - JointSoftLimits\angle_limits_high[4] > 10 then 10 else MuxToControl1\control[4] - JointSoftLimits\angle_limits_high[4] end end + if MuxToControl1\control[4] - JointSoftLimits\angle_limits_low[4] < -10 then -10 else if MuxToControl1\control[4] - JointSoftLimits\angle_limits_low[4] > 0 then 0 else MuxToControl1\control[4] - JointSoftLimits\angle_limits_low[4] end end; */
+		M[233].mat[3] = (M[246].mat[3] - M[235].mat[3] < 0.0) ? 0.0 : ((M[246].mat[3] - M[235].mat[3] > 10.0) ? 10.0 : (M[246].mat[3] - M[235].mat[3])) + (M[246].mat[3] - M[234].mat[3] < -10.0) ? -10.0 : ((M[246].mat[3] - M[234].mat[3] > 0.0) ? 0.0 : (M[246].mat[3] - M[234].mat[3]));
 
-		/* JointSoftLimits\substate[5] = (if MuxToControl1\control[5] - JointSoftLimits\angle_limits_high[5] < 0 then 0 else if MuxToControl1\control[5] - JointSoftLimits\angle_limits_high[5] > 10 then 10 else MuxToControl1\control[5] - JointSoftLimits\angle_limits_high[5] end end) + (if MuxToControl1\control[5] - JointSoftLimits\angle_limits_low[5] < -10 then -10 else if MuxToControl1\control[5] - JointSoftLimits\angle_limits_low[5] > 0 then 0 else MuxToControl1\control[5] - JointSoftLimits\angle_limits_low[5] end end); */
-		M[233].mat[4] = ((M[246].mat[4] - M[235].mat[4] < 0.0) ? 0.0 : ((M[246].mat[4] - M[235].mat[4] > 10.0) ? 10.0 : (M[246].mat[4] - M[235].mat[4]))) + ((M[246].mat[4] - M[234].mat[4] < -10.0) ? -10.0 : ((M[246].mat[4] - M[234].mat[4] > 0.0) ? 0.0 : (M[246].mat[4] - M[234].mat[4])));
+		/* JointSoftLimits\substate[5] = if MuxToControl1\control[5] - JointSoftLimits\angle_limits_high[5] < 0 then 0 else if MuxToControl1\control[5] - JointSoftLimits\angle_limits_high[5] > 10 then 10 else MuxToControl1\control[5] - JointSoftLimits\angle_limits_high[5] end end + if MuxToControl1\control[5] - JointSoftLimits\angle_limits_low[5] < -10 then -10 else if MuxToControl1\control[5] - JointSoftLimits\angle_limits_low[5] > 0 then 0 else MuxToControl1\control[5] - JointSoftLimits\angle_limits_low[5] end end; */
+		M[233].mat[4] = (M[246].mat[4] - M[235].mat[4] < 0.0) ? 0.0 : ((M[246].mat[4] - M[235].mat[4] > 10.0) ? 10.0 : (M[246].mat[4] - M[235].mat[4])) + (M[246].mat[4] - M[234].mat[4] < -10.0) ? -10.0 : ((M[246].mat[4] - M[234].mat[4] > 0.0) ? 0.0 : (M[246].mat[4] - M[234].mat[4]));
 
-		/* JointSoftLimits\substate[6] = (if MuxToControl1\control[6] - JointSoftLimits\angle_limits_high[6] < 0 then 0 else if MuxToControl1\control[6] - JointSoftLimits\angle_limits_high[6] > 10 then 10 else MuxToControl1\control[6] - JointSoftLimits\angle_limits_high[6] end end) + (if MuxToControl1\control[6] - JointSoftLimits\angle_limits_low[6] < -10 then -10 else if MuxToControl1\control[6] - JointSoftLimits\angle_limits_low[6] > 0 then 0 else MuxToControl1\control[6] - JointSoftLimits\angle_limits_low[6] end end); */
-		M[233].mat[5] = ((M[246].mat[5] - M[235].mat[5] < 0.0) ? 0.0 : ((M[246].mat[5] - M[235].mat[5] > 10.0) ? 10.0 : (M[246].mat[5] - M[235].mat[5]))) + ((M[246].mat[5] - M[234].mat[5] < -10.0) ? -10.0 : ((M[246].mat[5] - M[234].mat[5] > 0.0) ? 0.0 : (M[246].mat[5] - M[234].mat[5])));
+		/* JointSoftLimits\substate[6] = if MuxToControl1\control[6] - JointSoftLimits\angle_limits_high[6] < 0 then 0 else if MuxToControl1\control[6] - JointSoftLimits\angle_limits_high[6] > 10 then 10 else MuxToControl1\control[6] - JointSoftLimits\angle_limits_high[6] end end + if MuxToControl1\control[6] - JointSoftLimits\angle_limits_low[6] < -10 then -10 else if MuxToControl1\control[6] - JointSoftLimits\angle_limits_low[6] > 0 then 0 else MuxToControl1\control[6] - JointSoftLimits\angle_limits_low[6] end end; */
+		M[233].mat[5] = (M[246].mat[5] - M[235].mat[5] < 0.0) ? 0.0 : ((M[246].mat[5] - M[235].mat[5] > 10.0) ? 10.0 : (M[246].mat[5] - M[235].mat[5])) + (M[246].mat[5] - M[234].mat[5] < -10.0) ? -10.0 : ((M[246].mat[5] - M[234].mat[5] > 0.0) ? 0.0 : (M[246].mat[5] - M[234].mat[5]));
 
-		/* JointSoftLimits\substate[7] = (if MuxToControl1\control[7] - JointSoftLimits\angle_limits_high[7] < 0 then 0 else if MuxToControl1\control[7] - JointSoftLimits\angle_limits_high[7] > 10 then 10 else MuxToControl1\control[7] - JointSoftLimits\angle_limits_high[7] end end) + (if MuxToControl1\control[7] - JointSoftLimits\angle_limits_low[7] < -10 then -10 else if MuxToControl1\control[7] - JointSoftLimits\angle_limits_low[7] > 0 then 0 else MuxToControl1\control[7] - JointSoftLimits\angle_limits_low[7] end end); */
-		M[233].mat[6] = ((M[246].mat[6] - M[235].mat[6] < 0.0) ? 0.0 : ((M[246].mat[6] - M[235].mat[6] > 10.0) ? 10.0 : (M[246].mat[6] - M[235].mat[6]))) + ((M[246].mat[6] - M[234].mat[6] < -10.0) ? -10.0 : ((M[246].mat[6] - M[234].mat[6] > 0.0) ? 0.0 : (M[246].mat[6] - M[234].mat[6])));
+		/* JointSoftLimits\substate[7] = if MuxToControl1\control[7] - JointSoftLimits\angle_limits_high[7] < 0 then 0 else if MuxToControl1\control[7] - JointSoftLimits\angle_limits_high[7] > 10 then 10 else MuxToControl1\control[7] - JointSoftLimits\angle_limits_high[7] end end + if MuxToControl1\control[7] - JointSoftLimits\angle_limits_low[7] < -10 then -10 else if MuxToControl1\control[7] - JointSoftLimits\angle_limits_low[7] > 0 then 0 else MuxToControl1\control[7] - JointSoftLimits\angle_limits_low[7] end end; */
+		M[233].mat[6] = (M[246].mat[6] - M[235].mat[6] < 0.0) ? 0.0 : ((M[246].mat[6] - M[235].mat[6] > 10.0) ? 10.0 : (M[246].mat[6] - M[235].mat[6])) + (M[246].mat[6] - M[234].mat[6] < -10.0) ? -10.0 : ((M[246].mat[6] - M[234].mat[6] > 0.0) ? 0.0 : (M[246].mat[6] - M[234].mat[6]));
 
-		/* JointSoftLimits\substate[8] = (if MuxToControl1\control[8] - JointSoftLimits\angle_limits_high[8] < 0 then 0 else if MuxToControl1\control[8] - JointSoftLimits\angle_limits_high[8] > 10 then 10 else MuxToControl1\control[8] - JointSoftLimits\angle_limits_high[8] end end) + (if MuxToControl1\control[8] - JointSoftLimits\angle_limits_low[8] < -10 then -10 else if MuxToControl1\control[8] - JointSoftLimits\angle_limits_low[8] > 0 then 0 else MuxToControl1\control[8] - JointSoftLimits\angle_limits_low[8] end end); */
-		M[233].mat[7] = ((M[246].mat[7] - M[235].mat[7] < 0.0) ? 0.0 : ((M[246].mat[7] - M[235].mat[7] > 10.0) ? 10.0 : (M[246].mat[7] - M[235].mat[7]))) + ((M[246].mat[7] - M[234].mat[7] < -10.0) ? -10.0 : ((M[246].mat[7] - M[234].mat[7] > 0.0) ? 0.0 : (M[246].mat[7] - M[234].mat[7])));
+		/* JointSoftLimits\substate[8] = if MuxToControl1\control[8] - JointSoftLimits\angle_limits_high[8] < 0 then 0 else if MuxToControl1\control[8] - JointSoftLimits\angle_limits_high[8] > 10 then 10 else MuxToControl1\control[8] - JointSoftLimits\angle_limits_high[8] end end + if MuxToControl1\control[8] - JointSoftLimits\angle_limits_low[8] < -10 then -10 else if MuxToControl1\control[8] - JointSoftLimits\angle_limits_low[8] > 0 then 0 else MuxToControl1\control[8] - JointSoftLimits\angle_limits_low[8] end end; */
+		M[233].mat[7] = (M[246].mat[7] - M[235].mat[7] < 0.0) ? 0.0 : ((M[246].mat[7] - M[235].mat[7] > 10.0) ? 10.0 : (M[246].mat[7] - M[235].mat[7])) + (M[246].mat[7] - M[234].mat[7] < -10.0) ? -10.0 : ((M[246].mat[7] - M[234].mat[7] > 0.0) ? 0.0 : (M[246].mat[7] - M[234].mat[7]));
 
 		/* JointSoftLimits\p.e = diag (JointSoftLimits\c) * JointSoftLimits\substate; */
 		XXMatrixDiag (&M[317], &M[230]);
@@ -1066,28 +1066,28 @@ namespace ModelControl
 	XXMatrixSub (&M[319], &M[246], &M[244]);
 	XXMatrixMul (&M[245], &M[318], &M[319]);
 
-	/* JointSpaceStiffness\joints.e[1] = (if JointSpaceStiffness\substate[1] < -JointSpaceStiffness\force_lim then -JointSpaceStiffness\force_lim else if JointSpaceStiffness\substate[1] > JointSpaceStiffness\force_lim then JointSpaceStiffness\force_lim else JointSpaceStiffness\substate[1] end end); */
+	/* JointSpaceStiffness\joints.e[1] = if JointSpaceStiffness\substate[1] < -JointSpaceStiffness\force_lim then -JointSpaceStiffness\force_lim else if JointSpaceStiffness\substate[1] > JointSpaceStiffness\force_lim then JointSpaceStiffness\force_lim else JointSpaceStiffness\substate[1] end end; */
 	M[242].mat[0] = (M[245].mat[0] < -P[254]) ? (-P[254]) : ((M[245].mat[0] > P[254]) ? P[254] : M[245].mat[0]);
 
-	/* JointSpaceStiffness\joints.e[2] = (if JointSpaceStiffness\substate[2] < -JointSpaceStiffness\force_lim then -JointSpaceStiffness\force_lim else if JointSpaceStiffness\substate[2] > JointSpaceStiffness\force_lim then JointSpaceStiffness\force_lim else JointSpaceStiffness\substate[2] end end); */
+	/* JointSpaceStiffness\joints.e[2] = if JointSpaceStiffness\substate[2] < -JointSpaceStiffness\force_lim then -JointSpaceStiffness\force_lim else if JointSpaceStiffness\substate[2] > JointSpaceStiffness\force_lim then JointSpaceStiffness\force_lim else JointSpaceStiffness\substate[2] end end; */
 	M[242].mat[1] = (M[245].mat[1] < -P[254]) ? (-P[254]) : ((M[245].mat[1] > P[254]) ? P[254] : M[245].mat[1]);
 
-	/* JointSpaceStiffness\joints.e[3] = (if JointSpaceStiffness\substate[3] < -JointSpaceStiffness\force_lim then -JointSpaceStiffness\force_lim else if JointSpaceStiffness\substate[3] > JointSpaceStiffness\force_lim then JointSpaceStiffness\force_lim else JointSpaceStiffness\substate[3] end end); */
+	/* JointSpaceStiffness\joints.e[3] = if JointSpaceStiffness\substate[3] < -JointSpaceStiffness\force_lim then -JointSpaceStiffness\force_lim else if JointSpaceStiffness\substate[3] > JointSpaceStiffness\force_lim then JointSpaceStiffness\force_lim else JointSpaceStiffness\substate[3] end end; */
 	M[242].mat[2] = (M[245].mat[2] < -P[254]) ? (-P[254]) : ((M[245].mat[2] > P[254]) ? P[254] : M[245].mat[2]);
 
-	/* JointSpaceStiffness\joints.e[4] = (if JointSpaceStiffness\substate[4] < -JointSpaceStiffness\force_lim then -JointSpaceStiffness\force_lim else if JointSpaceStiffness\substate[4] > JointSpaceStiffness\force_lim then JointSpaceStiffness\force_lim else JointSpaceStiffness\substate[4] end end); */
+	/* JointSpaceStiffness\joints.e[4] = if JointSpaceStiffness\substate[4] < -JointSpaceStiffness\force_lim then -JointSpaceStiffness\force_lim else if JointSpaceStiffness\substate[4] > JointSpaceStiffness\force_lim then JointSpaceStiffness\force_lim else JointSpaceStiffness\substate[4] end end; */
 	M[242].mat[3] = (M[245].mat[3] < -P[254]) ? (-P[254]) : ((M[245].mat[3] > P[254]) ? P[254] : M[245].mat[3]);
 
-	/* JointSpaceStiffness\joints.e[5] = (if JointSpaceStiffness\substate[5] < -JointSpaceStiffness\force_lim then -JointSpaceStiffness\force_lim else if JointSpaceStiffness\substate[5] > JointSpaceStiffness\force_lim then JointSpaceStiffness\force_lim else JointSpaceStiffness\substate[5] end end); */
+	/* JointSpaceStiffness\joints.e[5] = if JointSpaceStiffness\substate[5] < -JointSpaceStiffness\force_lim then -JointSpaceStiffness\force_lim else if JointSpaceStiffness\substate[5] > JointSpaceStiffness\force_lim then JointSpaceStiffness\force_lim else JointSpaceStiffness\substate[5] end end; */
 	M[242].mat[4] = (M[245].mat[4] < -P[254]) ? (-P[254]) : ((M[245].mat[4] > P[254]) ? P[254] : M[245].mat[4]);
 
-	/* JointSpaceStiffness\joints.e[6] = (if JointSpaceStiffness\substate[6] < -JointSpaceStiffness\force_lim then -JointSpaceStiffness\force_lim else if JointSpaceStiffness\substate[6] > JointSpaceStiffness\force_lim then JointSpaceStiffness\force_lim else JointSpaceStiffness\substate[6] end end); */
+	/* JointSpaceStiffness\joints.e[6] = if JointSpaceStiffness\substate[6] < -JointSpaceStiffness\force_lim then -JointSpaceStiffness\force_lim else if JointSpaceStiffness\substate[6] > JointSpaceStiffness\force_lim then JointSpaceStiffness\force_lim else JointSpaceStiffness\substate[6] end end; */
 	M[242].mat[5] = (M[245].mat[5] < -P[254]) ? (-P[254]) : ((M[245].mat[5] > P[254]) ? P[254] : M[245].mat[5]);
 
-	/* JointSpaceStiffness\joints.e[7] = (if JointSpaceStiffness\substate[7] < -JointSpaceStiffness\force_lim then -JointSpaceStiffness\force_lim else if JointSpaceStiffness\substate[7] > JointSpaceStiffness\force_lim then JointSpaceStiffness\force_lim else JointSpaceStiffness\substate[7] end end); */
+	/* JointSpaceStiffness\joints.e[7] = if JointSpaceStiffness\substate[7] < -JointSpaceStiffness\force_lim then -JointSpaceStiffness\force_lim else if JointSpaceStiffness\substate[7] > JointSpaceStiffness\force_lim then JointSpaceStiffness\force_lim else JointSpaceStiffness\substate[7] end end; */
 	M[242].mat[6] = (M[245].mat[6] < -P[254]) ? (-P[254]) : ((M[245].mat[6] > P[254]) ? P[254] : M[245].mat[6]);
 
-	/* JointSpaceStiffness\joints.e[8] = (if JointSpaceStiffness\substate[8] < -JointSpaceStiffness\force_lim then -JointSpaceStiffness\force_lim else if JointSpaceStiffness\substate[8] > JointSpaceStiffness\force_lim then JointSpaceStiffness\force_lim else JointSpaceStiffness\substate[8] end end); */
+	/* JointSpaceStiffness\joints.e[8] = if JointSpaceStiffness\substate[8] < -JointSpaceStiffness\force_lim then -JointSpaceStiffness\force_lim else if JointSpaceStiffness\substate[8] > JointSpaceStiffness\force_lim then JointSpaceStiffness\force_lim else JointSpaceStiffness\substate[8] end end; */
 	M[242].mat[7] = (M[245].mat[7] < -P[254]) ? (-P[254]) : ((M[245].mat[7] > P[254]) ? P[254] : M[245].mat[7]);
 
 	/* CartesianSpaceStiffness\state = inverse (Gain\H) * CalculateJ\Htip0; */
@@ -1208,29 +1208,29 @@ namespace ModelControl
 	/* GravityCompensation1\Submodel13\port5 = MuxToControl1\control[8]; */
 	V[1883] = M[246].mat[7];
 
-	/* JointSpaceDamping\substate[1] = (if (DemuxHW1\control.f[1] - JointSpaceDamping\n_deadzone[1]) < -30 then -30 else if (DemuxHW1\control.f[1] - JointSpaceDamping\n_deadzone[1]) > 0 then 0 else (DemuxHW1\control.f[1] - JointSpaceDamping\n_deadzone[1]) end end) + (if (DemuxHW1\control.f[1] - JointSpaceDamping\p_deadzone[1]) < 0 then 0 else if (DemuxHW1\control.f[1] - JointSpaceDamping\p_deadzone[1]) > 30 then 30 else (DemuxHW1\control.f[1] - JointSpaceDamping\p_deadzone[1]) end end); */
-	M[241].mat[0] = (((M[59].mat[0] - M[239].mat[0]) < -30.0) ? -30.0 : (((M[59].mat[0] - M[239].mat[0]) > 0.0) ? 0.0 : (M[59].mat[0] - M[239].mat[0]))) + (((M[59].mat[0] - M[238].mat[0]) < 0.0) ? 0.0 : (((M[59].mat[0] - M[238].mat[0]) > 30.0) ? 30.0 : (M[59].mat[0] - M[238].mat[0])));
+	/* JointSpaceDamping\substate[1] = if (DemuxHW1\control.f[1] - JointSpaceDamping\n_deadzone[1]) < -30 then -30 else if (DemuxHW1\control.f[1] - JointSpaceDamping\n_deadzone[1]) > 0 then 0 else (DemuxHW1\control.f[1] - JointSpaceDamping\n_deadzone[1]) end end + if (DemuxHW1\control.f[1] - JointSpaceDamping\p_deadzone[1]) < 0 then 0 else if (DemuxHW1\control.f[1] - JointSpaceDamping\p_deadzone[1]) > 30 then 30 else (DemuxHW1\control.f[1] - JointSpaceDamping\p_deadzone[1]) end end; */
+	M[241].mat[0] = ((M[59].mat[0] - M[239].mat[0]) < -30.0) ? -30.0 : (((M[59].mat[0] - M[239].mat[0]) > 0.0) ? 0.0 : (M[59].mat[0] - M[239].mat[0])) + ((M[59].mat[0] - M[238].mat[0]) < 0.0) ? 0.0 : (((M[59].mat[0] - M[238].mat[0]) > 30.0) ? 30.0 : (M[59].mat[0] - M[238].mat[0]));
 
-	/* JointSpaceDamping\substate[2] = (if (DemuxHW1\control.f[2] - JointSpaceDamping\n_deadzone[2]) < -30 then -30 else if (DemuxHW1\control.f[2] - JointSpaceDamping\n_deadzone[2]) > 0 then 0 else (DemuxHW1\control.f[2] - JointSpaceDamping\n_deadzone[2]) end end) + (if (DemuxHW1\control.f[2] - JointSpaceDamping\p_deadzone[2]) < 0 then 0 else if (DemuxHW1\control.f[2] - JointSpaceDamping\p_deadzone[2]) > 30 then 30 else (DemuxHW1\control.f[2] - JointSpaceDamping\p_deadzone[2]) end end); */
-	M[241].mat[1] = (((M[59].mat[1] - M[239].mat[1]) < -30.0) ? -30.0 : (((M[59].mat[1] - M[239].mat[1]) > 0.0) ? 0.0 : (M[59].mat[1] - M[239].mat[1]))) + (((M[59].mat[1] - M[238].mat[1]) < 0.0) ? 0.0 : (((M[59].mat[1] - M[238].mat[1]) > 30.0) ? 30.0 : (M[59].mat[1] - M[238].mat[1])));
+	/* JointSpaceDamping\substate[2] = if (DemuxHW1\control.f[2] - JointSpaceDamping\n_deadzone[2]) < -30 then -30 else if (DemuxHW1\control.f[2] - JointSpaceDamping\n_deadzone[2]) > 0 then 0 else (DemuxHW1\control.f[2] - JointSpaceDamping\n_deadzone[2]) end end + if (DemuxHW1\control.f[2] - JointSpaceDamping\p_deadzone[2]) < 0 then 0 else if (DemuxHW1\control.f[2] - JointSpaceDamping\p_deadzone[2]) > 30 then 30 else (DemuxHW1\control.f[2] - JointSpaceDamping\p_deadzone[2]) end end; */
+	M[241].mat[1] = ((M[59].mat[1] - M[239].mat[1]) < -30.0) ? -30.0 : (((M[59].mat[1] - M[239].mat[1]) > 0.0) ? 0.0 : (M[59].mat[1] - M[239].mat[1])) + ((M[59].mat[1] - M[238].mat[1]) < 0.0) ? 0.0 : (((M[59].mat[1] - M[238].mat[1]) > 30.0) ? 30.0 : (M[59].mat[1] - M[238].mat[1]));
 
-	/* JointSpaceDamping\substate[3] = (if (DemuxHW1\control.f[3] - JointSpaceDamping\n_deadzone[3]) < -30 then -30 else if (DemuxHW1\control.f[3] - JointSpaceDamping\n_deadzone[3]) > 0 then 0 else (DemuxHW1\control.f[3] - JointSpaceDamping\n_deadzone[3]) end end) + (if (DemuxHW1\control.f[3] - JointSpaceDamping\p_deadzone[3]) < 0 then 0 else if (DemuxHW1\control.f[3] - JointSpaceDamping\p_deadzone[3]) > 30 then 30 else (DemuxHW1\control.f[3] - JointSpaceDamping\p_deadzone[3]) end end); */
-	M[241].mat[2] = (((M[59].mat[2] - M[239].mat[2]) < -30.0) ? -30.0 : (((M[59].mat[2] - M[239].mat[2]) > 0.0) ? 0.0 : (M[59].mat[2] - M[239].mat[2]))) + (((M[59].mat[2] - M[238].mat[2]) < 0.0) ? 0.0 : (((M[59].mat[2] - M[238].mat[2]) > 30.0) ? 30.0 : (M[59].mat[2] - M[238].mat[2])));
+	/* JointSpaceDamping\substate[3] = if (DemuxHW1\control.f[3] - JointSpaceDamping\n_deadzone[3]) < -30 then -30 else if (DemuxHW1\control.f[3] - JointSpaceDamping\n_deadzone[3]) > 0 then 0 else (DemuxHW1\control.f[3] - JointSpaceDamping\n_deadzone[3]) end end + if (DemuxHW1\control.f[3] - JointSpaceDamping\p_deadzone[3]) < 0 then 0 else if (DemuxHW1\control.f[3] - JointSpaceDamping\p_deadzone[3]) > 30 then 30 else (DemuxHW1\control.f[3] - JointSpaceDamping\p_deadzone[3]) end end; */
+	M[241].mat[2] = ((M[59].mat[2] - M[239].mat[2]) < -30.0) ? -30.0 : (((M[59].mat[2] - M[239].mat[2]) > 0.0) ? 0.0 : (M[59].mat[2] - M[239].mat[2])) + ((M[59].mat[2] - M[238].mat[2]) < 0.0) ? 0.0 : (((M[59].mat[2] - M[238].mat[2]) > 30.0) ? 30.0 : (M[59].mat[2] - M[238].mat[2]));
 
-	/* JointSpaceDamping\substate[4] = (if (DemuxHW1\control.f[4] - JointSpaceDamping\n_deadzone[4]) < -30 then -30 else if (DemuxHW1\control.f[4] - JointSpaceDamping\n_deadzone[4]) > 0 then 0 else (DemuxHW1\control.f[4] - JointSpaceDamping\n_deadzone[4]) end end) + (if (DemuxHW1\control.f[4] - JointSpaceDamping\p_deadzone[4]) < 0 then 0 else if (DemuxHW1\control.f[4] - JointSpaceDamping\p_deadzone[4]) > 30 then 30 else (DemuxHW1\control.f[4] - JointSpaceDamping\p_deadzone[4]) end end); */
-	M[241].mat[3] = (((M[59].mat[3] - M[239].mat[3]) < -30.0) ? -30.0 : (((M[59].mat[3] - M[239].mat[3]) > 0.0) ? 0.0 : (M[59].mat[3] - M[239].mat[3]))) + (((M[59].mat[3] - M[238].mat[3]) < 0.0) ? 0.0 : (((M[59].mat[3] - M[238].mat[3]) > 30.0) ? 30.0 : (M[59].mat[3] - M[238].mat[3])));
+	/* JointSpaceDamping\substate[4] = if (DemuxHW1\control.f[4] - JointSpaceDamping\n_deadzone[4]) < -30 then -30 else if (DemuxHW1\control.f[4] - JointSpaceDamping\n_deadzone[4]) > 0 then 0 else (DemuxHW1\control.f[4] - JointSpaceDamping\n_deadzone[4]) end end + if (DemuxHW1\control.f[4] - JointSpaceDamping\p_deadzone[4]) < 0 then 0 else if (DemuxHW1\control.f[4] - JointSpaceDamping\p_deadzone[4]) > 30 then 30 else (DemuxHW1\control.f[4] - JointSpaceDamping\p_deadzone[4]) end end; */
+	M[241].mat[3] = ((M[59].mat[3] - M[239].mat[3]) < -30.0) ? -30.0 : (((M[59].mat[3] - M[239].mat[3]) > 0.0) ? 0.0 : (M[59].mat[3] - M[239].mat[3])) + ((M[59].mat[3] - M[238].mat[3]) < 0.0) ? 0.0 : (((M[59].mat[3] - M[238].mat[3]) > 30.0) ? 30.0 : (M[59].mat[3] - M[238].mat[3]));
 
-	/* JointSpaceDamping\substate[5] = (if (DemuxHW1\control.f[5] - JointSpaceDamping\n_deadzone[5]) < -30 then -30 else if (DemuxHW1\control.f[5] - JointSpaceDamping\n_deadzone[5]) > 0 then 0 else (DemuxHW1\control.f[5] - JointSpaceDamping\n_deadzone[5]) end end) + (if (DemuxHW1\control.f[5] - JointSpaceDamping\p_deadzone[5]) < 0 then 0 else if (DemuxHW1\control.f[5] - JointSpaceDamping\p_deadzone[5]) > 30 then 30 else (DemuxHW1\control.f[5] - JointSpaceDamping\p_deadzone[5]) end end); */
-	M[241].mat[4] = (((M[59].mat[4] - M[239].mat[4]) < -30.0) ? -30.0 : (((M[59].mat[4] - M[239].mat[4]) > 0.0) ? 0.0 : (M[59].mat[4] - M[239].mat[4]))) + (((M[59].mat[4] - M[238].mat[4]) < 0.0) ? 0.0 : (((M[59].mat[4] - M[238].mat[4]) > 30.0) ? 30.0 : (M[59].mat[4] - M[238].mat[4])));
+	/* JointSpaceDamping\substate[5] = if (DemuxHW1\control.f[5] - JointSpaceDamping\n_deadzone[5]) < -30 then -30 else if (DemuxHW1\control.f[5] - JointSpaceDamping\n_deadzone[5]) > 0 then 0 else (DemuxHW1\control.f[5] - JointSpaceDamping\n_deadzone[5]) end end + if (DemuxHW1\control.f[5] - JointSpaceDamping\p_deadzone[5]) < 0 then 0 else if (DemuxHW1\control.f[5] - JointSpaceDamping\p_deadzone[5]) > 30 then 30 else (DemuxHW1\control.f[5] - JointSpaceDamping\p_deadzone[5]) end end; */
+	M[241].mat[4] = ((M[59].mat[4] - M[239].mat[4]) < -30.0) ? -30.0 : (((M[59].mat[4] - M[239].mat[4]) > 0.0) ? 0.0 : (M[59].mat[4] - M[239].mat[4])) + ((M[59].mat[4] - M[238].mat[4]) < 0.0) ? 0.0 : (((M[59].mat[4] - M[238].mat[4]) > 30.0) ? 30.0 : (M[59].mat[4] - M[238].mat[4]));
 
-	/* JointSpaceDamping\substate[6] = (if (DemuxHW1\control.f[6] - JointSpaceDamping\n_deadzone[6]) < -30 then -30 else if (DemuxHW1\control.f[6] - JointSpaceDamping\n_deadzone[6]) > 0 then 0 else (DemuxHW1\control.f[6] - JointSpaceDamping\n_deadzone[6]) end end) + (if (DemuxHW1\control.f[6] - JointSpaceDamping\p_deadzone[6]) < 0 then 0 else if (DemuxHW1\control.f[6] - JointSpaceDamping\p_deadzone[6]) > 30 then 30 else (DemuxHW1\control.f[6] - JointSpaceDamping\p_deadzone[6]) end end); */
-	M[241].mat[5] = (((M[59].mat[5] - M[239].mat[5]) < -30.0) ? -30.0 : (((M[59].mat[5] - M[239].mat[5]) > 0.0) ? 0.0 : (M[59].mat[5] - M[239].mat[5]))) + (((M[59].mat[5] - M[238].mat[5]) < 0.0) ? 0.0 : (((M[59].mat[5] - M[238].mat[5]) > 30.0) ? 30.0 : (M[59].mat[5] - M[238].mat[5])));
+	/* JointSpaceDamping\substate[6] = if (DemuxHW1\control.f[6] - JointSpaceDamping\n_deadzone[6]) < -30 then -30 else if (DemuxHW1\control.f[6] - JointSpaceDamping\n_deadzone[6]) > 0 then 0 else (DemuxHW1\control.f[6] - JointSpaceDamping\n_deadzone[6]) end end + if (DemuxHW1\control.f[6] - JointSpaceDamping\p_deadzone[6]) < 0 then 0 else if (DemuxHW1\control.f[6] - JointSpaceDamping\p_deadzone[6]) > 30 then 30 else (DemuxHW1\control.f[6] - JointSpaceDamping\p_deadzone[6]) end end; */
+	M[241].mat[5] = ((M[59].mat[5] - M[239].mat[5]) < -30.0) ? -30.0 : (((M[59].mat[5] - M[239].mat[5]) > 0.0) ? 0.0 : (M[59].mat[5] - M[239].mat[5])) + ((M[59].mat[5] - M[238].mat[5]) < 0.0) ? 0.0 : (((M[59].mat[5] - M[238].mat[5]) > 30.0) ? 30.0 : (M[59].mat[5] - M[238].mat[5]));
 
-	/* JointSpaceDamping\substate[7] = (if (DemuxHW1\control.f[7] - JointSpaceDamping\n_deadzone[7]) < -30 then -30 else if (DemuxHW1\control.f[7] - JointSpaceDamping\n_deadzone[7]) > 0 then 0 else (DemuxHW1\control.f[7] - JointSpaceDamping\n_deadzone[7]) end end) + (if (DemuxHW1\control.f[7] - JointSpaceDamping\p_deadzone[7]) < 0 then 0 else if (DemuxHW1\control.f[7] - JointSpaceDamping\p_deadzone[7]) > 30 then 30 else (DemuxHW1\control.f[7] - JointSpaceDamping\p_deadzone[7]) end end); */
-	M[241].mat[6] = (((M[59].mat[6] - M[239].mat[6]) < -30.0) ? -30.0 : (((M[59].mat[6] - M[239].mat[6]) > 0.0) ? 0.0 : (M[59].mat[6] - M[239].mat[6]))) + (((M[59].mat[6] - M[238].mat[6]) < 0.0) ? 0.0 : (((M[59].mat[6] - M[238].mat[6]) > 30.0) ? 30.0 : (M[59].mat[6] - M[238].mat[6])));
+	/* JointSpaceDamping\substate[7] = if (DemuxHW1\control.f[7] - JointSpaceDamping\n_deadzone[7]) < -30 then -30 else if (DemuxHW1\control.f[7] - JointSpaceDamping\n_deadzone[7]) > 0 then 0 else (DemuxHW1\control.f[7] - JointSpaceDamping\n_deadzone[7]) end end + if (DemuxHW1\control.f[7] - JointSpaceDamping\p_deadzone[7]) < 0 then 0 else if (DemuxHW1\control.f[7] - JointSpaceDamping\p_deadzone[7]) > 30 then 30 else (DemuxHW1\control.f[7] - JointSpaceDamping\p_deadzone[7]) end end; */
+	M[241].mat[6] = ((M[59].mat[6] - M[239].mat[6]) < -30.0) ? -30.0 : (((M[59].mat[6] - M[239].mat[6]) > 0.0) ? 0.0 : (M[59].mat[6] - M[239].mat[6])) + ((M[59].mat[6] - M[238].mat[6]) < 0.0) ? 0.0 : (((M[59].mat[6] - M[238].mat[6]) > 30.0) ? 30.0 : (M[59].mat[6] - M[238].mat[6]));
 
-	/* JointSpaceDamping\substate[8] = (if (DemuxHW1\control.f[8] - JointSpaceDamping\n_deadzone[8]) < -30 then -30 else if (DemuxHW1\control.f[8] - JointSpaceDamping\n_deadzone[8]) > 0 then 0 else (DemuxHW1\control.f[8] - JointSpaceDamping\n_deadzone[8]) end end) + (if (DemuxHW1\control.f[8] - JointSpaceDamping\p_deadzone[8]) < 0 then 0 else if (DemuxHW1\control.f[8] - JointSpaceDamping\p_deadzone[8]) > 30 then 30 else (DemuxHW1\control.f[8] - JointSpaceDamping\p_deadzone[8]) end end); */
-	M[241].mat[7] = (((M[59].mat[7] - M[239].mat[7]) < -30.0) ? -30.0 : (((M[59].mat[7] - M[239].mat[7]) > 0.0) ? 0.0 : (M[59].mat[7] - M[239].mat[7]))) + (((M[59].mat[7] - M[238].mat[7]) < 0.0) ? 0.0 : (((M[59].mat[7] - M[238].mat[7]) > 30.0) ? 30.0 : (M[59].mat[7] - M[238].mat[7])));
+	/* JointSpaceDamping\substate[8] = if (DemuxHW1\control.f[8] - JointSpaceDamping\n_deadzone[8]) < -30 then -30 else if (DemuxHW1\control.f[8] - JointSpaceDamping\n_deadzone[8]) > 0 then 0 else (DemuxHW1\control.f[8] - JointSpaceDamping\n_deadzone[8]) end end + if (DemuxHW1\control.f[8] - JointSpaceDamping\p_deadzone[8]) < 0 then 0 else if (DemuxHW1\control.f[8] - JointSpaceDamping\p_deadzone[8]) > 30 then 30 else (DemuxHW1\control.f[8] - JointSpaceDamping\p_deadzone[8]) end end; */
+	M[241].mat[7] = ((M[59].mat[7] - M[239].mat[7]) < -30.0) ? -30.0 : (((M[59].mat[7] - M[239].mat[7]) > 0.0) ? 0.0 : (M[59].mat[7] - M[239].mat[7])) + ((M[59].mat[7] - M[238].mat[7]) < 0.0) ? 0.0 : (((M[59].mat[7] - M[238].mat[7]) > 30.0) ? 30.0 : (M[59].mat[7] - M[238].mat[7]));
 
 	/* JointSpaceDamping\p.e = JointSpaceDamping\R * JointSpaceDamping\substate; */
 	XXMatrixMul (&M[236], &M[240], &M[241]);
@@ -1242,28 +1242,28 @@ namespace ModelControl
 	XXMatrixTranspose (&M[340], &M[0]);
 	XXMatrixMul (&M[56], &M[340], &M[250]);
 
-	/* ControllableJ\joints.e[1] = (if ControllableJ\substate[1] < -ControllableJ\force_lim then -ControllableJ\force_lim else if ControllableJ\substate[1] > ControllableJ\force_lim then ControllableJ\force_lim else ControllableJ\substate[1] end end); */
+	/* ControllableJ\joints.e[1] = if ControllableJ\substate[1] < -ControllableJ\force_lim then -ControllableJ\force_lim else if ControllableJ\substate[1] > ControllableJ\force_lim then ControllableJ\force_lim else ControllableJ\substate[1] end end; */
 	M[54].mat[0] = (M[56].mat[0] < -P[44]) ? (-P[44]) : ((M[56].mat[0] > P[44]) ? P[44] : M[56].mat[0]);
 
-	/* ControllableJ\joints.e[2] = (if ControllableJ\substate[2] < -ControllableJ\force_lim then -ControllableJ\force_lim else if ControllableJ\substate[2] > ControllableJ\force_lim then ControllableJ\force_lim else ControllableJ\substate[2] end end); */
+	/* ControllableJ\joints.e[2] = if ControllableJ\substate[2] < -ControllableJ\force_lim then -ControllableJ\force_lim else if ControllableJ\substate[2] > ControllableJ\force_lim then ControllableJ\force_lim else ControllableJ\substate[2] end end; */
 	M[54].mat[1] = (M[56].mat[1] < -P[44]) ? (-P[44]) : ((M[56].mat[1] > P[44]) ? P[44] : M[56].mat[1]);
 
-	/* ControllableJ\joints.e[3] = (if ControllableJ\substate[3] < -ControllableJ\force_lim then -ControllableJ\force_lim else if ControllableJ\substate[3] > ControllableJ\force_lim then ControllableJ\force_lim else ControllableJ\substate[3] end end); */
+	/* ControllableJ\joints.e[3] = if ControllableJ\substate[3] < -ControllableJ\force_lim then -ControllableJ\force_lim else if ControllableJ\substate[3] > ControllableJ\force_lim then ControllableJ\force_lim else ControllableJ\substate[3] end end; */
 	M[54].mat[2] = (M[56].mat[2] < -P[44]) ? (-P[44]) : ((M[56].mat[2] > P[44]) ? P[44] : M[56].mat[2]);
 
-	/* ControllableJ\joints.e[4] = (if ControllableJ\substate[4] < -ControllableJ\force_lim then -ControllableJ\force_lim else if ControllableJ\substate[4] > ControllableJ\force_lim then ControllableJ\force_lim else ControllableJ\substate[4] end end); */
+	/* ControllableJ\joints.e[4] = if ControllableJ\substate[4] < -ControllableJ\force_lim then -ControllableJ\force_lim else if ControllableJ\substate[4] > ControllableJ\force_lim then ControllableJ\force_lim else ControllableJ\substate[4] end end; */
 	M[54].mat[3] = (M[56].mat[3] < -P[44]) ? (-P[44]) : ((M[56].mat[3] > P[44]) ? P[44] : M[56].mat[3]);
 
-	/* ControllableJ\joints.e[5] = (if ControllableJ\substate[5] < -ControllableJ\force_lim then -ControllableJ\force_lim else if ControllableJ\substate[5] > ControllableJ\force_lim then ControllableJ\force_lim else ControllableJ\substate[5] end end); */
+	/* ControllableJ\joints.e[5] = if ControllableJ\substate[5] < -ControllableJ\force_lim then -ControllableJ\force_lim else if ControllableJ\substate[5] > ControllableJ\force_lim then ControllableJ\force_lim else ControllableJ\substate[5] end end; */
 	M[54].mat[4] = (M[56].mat[4] < -P[44]) ? (-P[44]) : ((M[56].mat[4] > P[44]) ? P[44] : M[56].mat[4]);
 
-	/* ControllableJ\joints.e[6] = (if ControllableJ\substate[6] < -ControllableJ\force_lim then -ControllableJ\force_lim else if ControllableJ\substate[6] > ControllableJ\force_lim then ControllableJ\force_lim else ControllableJ\substate[6] end end); */
+	/* ControllableJ\joints.e[6] = if ControllableJ\substate[6] < -ControllableJ\force_lim then -ControllableJ\force_lim else if ControllableJ\substate[6] > ControllableJ\force_lim then ControllableJ\force_lim else ControllableJ\substate[6] end end; */
 	M[54].mat[5] = (M[56].mat[5] < -P[44]) ? (-P[44]) : ((M[56].mat[5] > P[44]) ? P[44] : M[56].mat[5]);
 
-	/* ControllableJ\joints.e[7] = (if ControllableJ\substate[7] < -ControllableJ\force_lim then -ControllableJ\force_lim else if ControllableJ\substate[7] > ControllableJ\force_lim then ControllableJ\force_lim else ControllableJ\substate[7] end end); */
+	/* ControllableJ\joints.e[7] = if ControllableJ\substate[7] < -ControllableJ\force_lim then -ControllableJ\force_lim else if ControllableJ\substate[7] > ControllableJ\force_lim then ControllableJ\force_lim else ControllableJ\substate[7] end end; */
 	M[54].mat[6] = (M[56].mat[6] < -P[44]) ? (-P[44]) : ((M[56].mat[6] > P[44]) ? P[44] : M[56].mat[6]);
 
-	/* ControllableJ\joints.e[8] = (if ControllableJ\substate[8] < -ControllableJ\force_lim then -ControllableJ\force_lim else if ControllableJ\substate[8] > ControllableJ\force_lim then ControllableJ\force_lim else ControllableJ\substate[8] end end); */
+	/* ControllableJ\joints.e[8] = if ControllableJ\substate[8] < -ControllableJ\force_lim then -ControllableJ\force_lim else if ControllableJ\substate[8] > ControllableJ\force_lim then ControllableJ\force_lim else ControllableJ\substate[8] end end; */
 	M[54].mat[7] = (M[56].mat[7] < -P[44]) ? (-P[44]) : ((M[56].mat[7] > P[44]) ? P[44] : M[56].mat[7]);
 
 	/* GravityCompensation1\Joint12\Integrate\R = [cos (GravityCompensation1\Submodel13\port2), 0, sin (GravityCompensation1\Submodel13\port2); 0, 1, 0; -sin (GravityCompensation1\Submodel13\port2), 0, cos (GravityCompensation1\Submodel13\port2)]; */
@@ -1345,6 +1345,9 @@ namespace ModelControl
 	/* GravityCompensation1\Joint12\MatrixMul\output = GravityCompensation1\Link1\Hij\output * GravityCompensation1\Joint12\Integrate\output; */
 	XXMatrixMul (&M[92], &M[140], &M[89]);
 
+	/* GravityCompensation1\Link2\Hij\output = GravityCompensation1\Joint12\MatrixMul\output * GravityCompensation1\Link2\Hij\Hab; */
+	XXMatrixMul (&M[159], &M[92], &M[160]);
+
 		/* GravityCompensation1\Link1\AdHi0\onlyRotH = GravityCompensation1\JointBase1\MatrixMul\output; */
 		XXMatrixMov (&M[129], &M[124]);
 
@@ -1366,19 +1369,19 @@ namespace ModelControl
 		XXMatrixAdjoint (&M[343], &M[129]);
 		XXMatrixMul (&M[127], &M[343], &M[133]);
 
-	/* GravityCompensation1\Link2\Hij\output = GravityCompensation1\Joint12\MatrixMul\output * GravityCompensation1\Link2\Hij\Hab; */
-	XXMatrixMul (&M[159], &M[92], &M[160]);
+	/* GravityCompensation1\Joint23\MatrixMul\output = GravityCompensation1\Link2\Hij\output * GravityCompensation1\Joint23\Integrate\output; */
+	XXMatrixMul (&M[100], &M[159], &M[97]);
 
 	/* GravityCompensation1\Link1\AdHik1\p1.e = (1.0 / transpose (GravityCompensation1\Link1\AdHik1\AdH)) * GravityCompensation1\Link1\AdHi0\p2.e; */
 	XXMatrixTranspose (&M[345], &M[138]);
 	XXScalarMatrixDiv (&M[344], 1.0, &M[345], workarray);
 	XXMatrixMul (&M[132], &M[344], &M[128]);
 
-	/* GravityCompensation1\Joint23\MatrixMul\output = GravityCompensation1\Link2\Hij\output * GravityCompensation1\Joint23\Integrate\output; */
-	XXMatrixMul (&M[100], &M[159], &M[97]);
-
 	/* GravityCompensation1\Link3\Hij\output = GravityCompensation1\Joint23\MatrixMul\output * GravityCompensation1\Link3\Hij\Hab; */
 	XXMatrixMul (&M[178], &M[100], &M[179]);
+
+	/* GravityCompensation1\Joint34\MatrixMul\output = GravityCompensation1\Link3\Hij\output * GravityCompensation1\Joint34\Integrate\output; */
+	XXMatrixMul (&M[108], &M[178], &M[105]);
 
 		/* GravityCompensation1\Link2\AdHi0\onlyRotH = GravityCompensation1\Joint12\MatrixMul\output; */
 		XXMatrixMov (&M[148], &M[92]);
@@ -1400,9 +1403,6 @@ namespace ModelControl
 		/* GravityCompensation1\Link2\AdHi0\p1.f = Adjoint (GravityCompensation1\Link2\AdHi0\onlyRotH) * GravityCompensation1\Link2\AdHik1\p2.f; */
 		XXMatrixAdjoint (&M[348], &M[148]);
 		XXMatrixMul (&M[146], &M[348], &M[152]);
-
-	/* GravityCompensation1\Joint34\MatrixMul\output = GravityCompensation1\Link3\Hij\output * GravityCompensation1\Joint34\Integrate\output; */
-	XXMatrixMul (&M[108], &M[178], &M[105]);
 
 	/* GravityCompensation1\Link2\AdHik1\p1.e = (1.0 / transpose (GravityCompensation1\Link2\AdHik1\AdH)) * GravityCompensation1\Link2\AdHi0\p2.e; */
 	XXMatrixTranspose (&M[350], &M[157]);
@@ -1588,18 +1588,18 @@ namespace ModelControl
 	/* GravityCompensation1\Mux\port.e[4] = GravityCompensation1\JointBase1\uTbai\p1.e * GravityCompensation1\Mux\calibartion; */
 	M[222].mat[3] = V[1053] * P[140];
 
-	/* OneJunction2\p2.e = (ControllableJ\joints.e + GravityCompensation1\Mux\port.e) - ((JointSpaceStiffness\joints.e + JointSpaceDamping\p.e) + JointSoftLimits\p.e); */
-	XXMatrixAdd (&M[389], &M[54], &M[222]);
-	XXMatrixAdd (&M[391], &M[242], &M[236]);
-	XXMatrixAdd (&M[390], &M[391], &M[229]);
-	XXMatrixSub (&M[251], &M[389], &M[390]);
+	/* OneJunction2\p5.e = ((ControllableJ\joints.e + GravityCompensation1\Mux\port.e) - JointSpaceStiffness\joints.e) - (JointSpaceDamping\p.e + JointSoftLimits\p.e); */
+	XXMatrixAdd (&M[390], &M[54], &M[222]);
+	XXMatrixSub (&M[389], &M[390], &M[242]);
+	XXMatrixAdd (&M[391], &M[236], &M[229]);
+	XXMatrixSub (&M[251], &M[389], &M[391]);
 
-	/* DemuxHW1\base.e = OneJunction2\p2.e[1:3]; */
+	/* DemuxHW1\base.e = OneJunction2\p5.e[1:3]; */
 	M[57].mat[0] = M[251].mat[0];
 	M[57].mat[1] = M[251].mat[1];
 	M[57].mat[2] = M[251].mat[2];
 
-	/* DemuxHW1\arm.e = OneJunction2\p2.e[4:8]; */
+	/* DemuxHW1\arm.e = OneJunction2\p5.e[4:8]; */
 	M[60].mat[0] = M[251].mat[3];
 	M[60].mat[1] = M[251].mat[4];
 	M[60].mat[2] = M[251].mat[5];
@@ -2952,7 +2952,7 @@ namespace ModelControl
 	M[250].mat = &V[2040];		/* OneJunction\p2.e */
 	M[250].rows = 6;
 	M[250].columns = 1;
-	M[251].mat = &V[2046];		/* OneJunction2\p2.e */
+	M[251].mat = &V[2046];		/* OneJunction2\p5.e */
 	M[251].rows = 8;
 	M[251].columns = 1;
 	M[252].mat = &V[2054];		/* bond_to_base.F */
