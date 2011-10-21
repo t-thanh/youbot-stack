@@ -1,3 +1,17 @@
 YouBot-stack development repository.
 
-We are not liable for any damage arising directly or indirectly from using the code in this repository.
+The University of Twente(www.utwente.nl) is not liable for any damage arising directly or indirectly from using the code in this repository.
+
+INSTALLATION (not verified yet)
+
+Prerequisites:
+* ROS (diamondback) installed and setup (www.ros.org)
+* orocos_toolchain_ros installed and setup (www.orocos.org)
+* KUL motion_control stack installed (git clone http://git.mech.kuleuven.be/robotics/motion_control.git; git checkout devel), however you only need the motion_control_msgs and rtt_motion_control_msgs directories.
+
+Steps:
+git clone git@github.com:b-it-bots/youbot-stack.git
+git submodule init
+git submodule update
+cd youbot-stack
+rosmake
