@@ -11,7 +11,7 @@ Prerequisites:
 
 Steps:
 git clone git@github.com:b-it-bots/youbot-stack.git
+cd youbot-stack
 git submodule init
 git submodule update
-cd youbot-stack
 rosmake
