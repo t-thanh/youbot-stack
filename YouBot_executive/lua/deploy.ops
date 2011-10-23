@@ -1,4 +1,23 @@
 import("ocl");
+import("rtt_rospack")
+loadService("Deployer","rospack")
 loadComponent("FSM","OCL::LuaComponent");
-FSM.exec_file(rospack.find("YouBot_executive")+"/lua/test_component.lua");
+FSM.exec_file(rospack.find("YouBot_executive")+"/lua/fsm_component.lua");
+loadComponent("fakeMonitor","OCL::LuaComponent");
+fakeMonitor.exec_file(rospack.find("YouBot_executive")+"/lua/test.lua");
+import("YouBot_executive")
+loadComponent("executive","YouBot::YouBot_executive")
+//connectig peersmust be done befoe the configuring hook because
+//other wise it will fail
+connectPeers("executive","FSM")
+fakeMonitor.configure;
 FSM.configure;
+executive.configure;
+var ConnPolicy cp_1;
+connect("FSM.events","fakeMonitor.events_out",cp_1);
+var ConnPolicy cp_2;
+connect("FSM.state","fakeMonitor.state_in",cp_2);
+
+FSM.start;
+fakeMonitor.start;
+executive.start;

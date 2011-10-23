@@ -79,6 +79,7 @@ void YouBot_executive::cleanupHook()
 }
 void YouBot_executive::unfoldArm()
 {
+   RTT::log(Fatal)<<"This was a success unfoldArm"<<endlog();
 	double d_setpoint_j[8]= {0,0,0,0,0,0,0,0};
 	double d_stiffness_j[8]= {0,0,0,5,5,5,5,5};
 	vector<double> v_setpoint_j,v_stiffness_j;
@@ -94,6 +95,7 @@ void YouBot_executive::unfoldArm()
 }
 void YouBot_executive::gravityMode()
 {
+   RTT::log(Fatal)<<"This was a success gravityMode"<<endlog();
 	double d_setpoint_j[8]= {0,0,0,0,0,0,0,0};
 	double d_stiffness_j[8]= {0,0,0,0,0,0,0,0};
 	vector<double> v_setpoint_j,v_stiffness_j;
@@ -109,6 +111,7 @@ void YouBot_executive::gravityMode()
 }
 void YouBot_executive::positionArm()
 {
+   RTT::log(Fatal)<<"This was a success positionArm"<<endlog();
 
 	double d_setpoint_c[6]= {0,0,1,0,0,0,};
 	double d_stiffness_c[2]= {0,0};
@@ -119,6 +122,7 @@ void YouBot_executive::positionArm()
 }
 void YouBot_executive::positionGripper()
 {
+   RTT::log(Fatal)<<"This was a success positionGripper"<<endlog();
 	double d_setpoint_j[8]= {0,0,0,0,0,0,0,0};
 	double d_stiffness_j[8]= {0,0,0,0,0,0,0,0};
 	vector<double> v_setpoint_j,v_stiffness_j;
@@ -173,6 +177,7 @@ void YouBot_executive::writeSetpoints(const vector<double>& position_j,const vec
 }
 void YouBot_executive::getArmPose()
 {
+   RTT::log(Fatal)<<"This was a success getArmPose"<<endlog();
 	std_msgs::Float64MultiArray sample;
 	if(m_JointGripperPose.read(sample)==RTT::NewData)
 	{
@@ -183,6 +188,7 @@ void YouBot_executive::getArmPose()
 }
 void YouBot_executive::getGripperPose()
 {
+   RTT::log(Fatal)<<"This was a success getGripperPose"<<endlog();
 	std_msgs::Float64MultiArray sample;
 	if(m_CartGripperPose.read(sample)==RTT::NewData)
 	{

@@ -5,7 +5,6 @@ require "rfsm_rtt"
 local tc=rtt.getTC();
 local fsm
 local fqn_out, events_in
- 
 function configureHook()
    -- load state machine
    fsm = rfsm.init(rfsm.load("fsm.lua"))
@@ -23,8 +22,10 @@ function configureHook()
    -- state of the FSM will be written. gen_write_fqn generates a
    -- function suitable to be added to the rFSM step hook to do this.
    fqn_out = rtt.OutputPort("string")
-   tc:addProperty(fqn_out,"state","Current state of the FSM")
+   tc:addPort(fqn_out,"state","Current state of the FSM")
    fsm.step_hook=rfsm_rtt.gen_write_fqn(fqn_out)
+   -- NOTE: executive is a global variable !!!!
+   executive=tc:getPeer("executive")
    return true
 end
  
