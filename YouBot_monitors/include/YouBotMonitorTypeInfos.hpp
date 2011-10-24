@@ -8,6 +8,7 @@
 #include <boost/algorithm/string.hpp>
 
 #include <rtt/types/TemplateTypeInfo.hpp>
+#include <rtt/types/StructTypeInfo.hpp>
 #include <rtt/RTT.hpp>
 #include <rtt/Property.hpp>
 
@@ -56,9 +57,10 @@ namespace RTT
 		std::istream& operator>>(std::istream& is, compare_type& cd) {
 			return is >> cd;
 		}
-
 	}
 }
+
+// UGLY: How to do this properly?
 
 namespace YouBot
 {
@@ -97,6 +99,7 @@ namespace YouBot
 				}
 				else
 				{
+					log(Error) << "Enum value (control_space) not recognized." << endlog();
 					return false;
 				}
 
@@ -124,8 +127,34 @@ namespace YouBot
 
 		virtual bool composeTypeImpl(const RTT::PropertyBag& bag, physical_part& out ) const
 		{
-			log(Error) << "Not implemented!" << endlog();
-			return true; // unknown type !
+			if ( bag.getType() == std::string("physical_part") ) // check the type
+			{
+				Property<std::string>* cs = dynamic_cast<Property<std::string>*>(bag.getProperty("physical_part"));
+
+				if ( !cs )
+					return false;
+
+				std::string str = cs->get();
+				if(boost::equals(str, "ARM"))
+				{
+					out = ARM;
+				}
+				else if(boost::equals(str, "BASE"))
+				{
+					out = BASE;
+				}
+				else
+				{
+					log(Error) << "Enum value (physical_part) not recognized." << endlog();
+					return false;
+				}
+
+				return true;
+			}
+			else
+			{
+				return false; // unknown type !
+			}
 		}
 	};
 
@@ -144,8 +173,42 @@ namespace YouBot
 
 		virtual bool composeTypeImpl(const RTT::PropertyBag& bag, physical_quantity& out ) const
 		{
-			log(Error) << "Not implemented!" << endlog();
-			return true; // unknown type !
+			if ( bag.getType() == std::string("physical_quantity") ) // check the type
+			{
+				Property<std::string>* cs = dynamic_cast<Property<std::string>*>(bag.getProperty("physical_quantity"));
+
+				if ( !cs )
+					return false;
+
+				std::string str = cs->get();
+				if(boost::equals(str, "POSITION"))
+				{
+					out = POSITION;
+				}
+				else if(boost::equals(str, "VELOCITY"))
+				{
+					out = VELOCITY;
+				}
+				else if(boost::equals(str, "FORCE"))
+				{
+					out = FORCE;
+				}
+				else if(boost::equals(str, "TORQUE"))
+				{
+					out = TORQUE;
+				}
+				else
+				{
+					log(Error) << "Enum value (physical_quantity) not recognized." << endlog();
+					return false;
+				}
+
+				return true;
+			}
+			else
+			{
+				return false; // unknown type !
+			}
 		}
 	};
 
@@ -164,8 +227,34 @@ namespace YouBot
 
 		virtual bool composeTypeImpl(const RTT::PropertyBag& bag, event_type& out ) const
 		{
-			log(Error) << "Not implemented!" << endlog();
-			return true; // unknown type !
+			if ( bag.getType() == std::string("event_type") ) // check the type
+			{
+				Property<std::string>* cs = dynamic_cast<Property<std::string>*>(bag.getProperty("event_type"));
+
+				if ( !cs )
+					return false;
+
+				std::string str = cs->get();
+				if(boost::equals(str, "LEVEL"))
+				{
+					out = LEVEL;
+				}
+				else if(boost::equals(str, "EDGE"))
+				{
+					out = EDGE;
+				}
+				else
+				{
+					log(Error) << "Enum value (event_type) not recognized." << endlog();
+					return false;
+				}
+
+				return true;
+			}
+			else
+			{
+				return false; // unknown type !
+			}
 		}
 	};
 
@@ -184,8 +273,46 @@ namespace YouBot
 
 		virtual bool composeTypeImpl(const RTT::PropertyBag& bag, compare_type& out ) const
 		{
-			log(Error) << "Not implemented!" << endlog();
-			return true; // unknown type !
+			if ( bag.getType() == std::string("compare_type") ) // check the type
+			{
+				Property<std::string>* cs = dynamic_cast<Property<std::string>*>(bag.getProperty("compare_type"));
+
+				if ( !cs )
+					return false;
+
+				std::string str = cs->get();
+				if(boost::equals(str, "LESS"))
+				{
+					out = LESS;
+				}
+				else if(boost::equals(str, "LESS_EQUAL"))
+				{
+					out = LESS_EQUAL;
+				}
+				else if(boost::equals(str, "EQUAL"))
+				{
+					out = EQUAL;
+				}
+				else if(boost::equals(str, "GREATER_EQUAL"))
+				{
+					out = GREATER_EQUAL;
+				}
+				else if(boost::equals(str, "GREATER"))
+				{
+					out = GREATER;
+				}
+				else
+				{
+					log(Error) << "Enum value (compare_type) not recognized." << endlog();
+					return false;
+				}
+
+				return true;
+			}
+			else
+			{
+				return false; // unknown type !
+			}
 		}
 	};
 

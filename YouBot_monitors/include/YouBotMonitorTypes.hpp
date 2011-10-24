@@ -1,22 +1,10 @@
 #pragma once
 
-#include <rtt/Service.hpp>
-#include <rtt/Port.hpp>
-#include <rtt/RTT.hpp>
-
-#include <sensor_msgs/typekit/Types.h>
-#include <nav_msgs/typekit/Types.h>
-#include <geometry_msgs/typekit/Types.h>
-#include <tf/tf.h>
-
 #include <boost/function.hpp>
 #include <vector>
 
 namespace YouBot
 {
-	using namespace RTT;
-	using namespace std;
-
 	const size_t max_event_length = 255;
 
 	enum control_space 		{JOINT = 1, CARTESIAN = 2};
@@ -45,8 +33,8 @@ namespace YouBot
 
 		bool is_single_value;
 		double epsilon;
-		vector<unsigned int> indices;
-		vector<double> values;
+		std::vector<unsigned int> indices;
+		std::vector<double> values;
 
 		monitor_fp check;
 
