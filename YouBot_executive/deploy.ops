@@ -27,6 +27,15 @@ loadComponent("executive","YouBot::YouBot_executive")
    connect("executive.CartSpaceSetpoint","control.xyzypr",cp_CartSpaceSetpoint)
 
   
+   var ConnPolicy cp_CartPose;
+   cp_CartPose.type = DATA;  // Use ''BUFFER'' or ''DATA''
+   cp_CartPose.lock_policy = LOCK_FREE; // Use  ''LOCKED'', ''LOCK_FREE'' or ''UNSYNC''
+   connect("executive.GripperPose","control.CartesianSpaceStiffness_Htip0",cp_CartPose)
+
+   var ConnPolicy cp_JointPose;
+   cp_JointPose.type = DATA;  // Use ''BUFFER'' or ''DATA''
+   cp_JointPose.lock_policy = LOCK_FREE; // Use  ''LOCKED'', ''LOCK_FREE'' or ''UNSYNC''
+   connect("executive.ArmPose","control.JointSoftLimits_state",cp_JointPose)
 
 executive.configure
 executive.start

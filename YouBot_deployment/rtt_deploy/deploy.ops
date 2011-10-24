@@ -12,6 +12,6 @@ runScript(rospack.find("YouBot_executive")+"/deploy.ops")
 //make final conncetions between the adaptes and youBot
 runScript(rospack.find("YouBot_deployment")+"/rtt_deploy/adapter_connections.ops")
 //control.setPeriod(0)
-
+runScript(rospack.find("YouBot_executive")+"/lua/deploy.ops")
 
 
