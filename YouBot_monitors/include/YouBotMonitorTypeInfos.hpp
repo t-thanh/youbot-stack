@@ -5,8 +5,11 @@
 #include <vector>
 #include <iostream>
 
+#include <boost/algorithm/string.hpp>
+
 #include <rtt/types/TemplateTypeInfo.hpp>
 #include <rtt/RTT.hpp>
+#include <rtt/Property.hpp>
 
 namespace RTT
 {
@@ -59,6 +62,7 @@ namespace RTT
 
 namespace YouBot
 {
+	using namespace RTT;
 
 	struct ControlSpaceTypeInfo : public RTT::types::TemplateTypeInfo<control_space, true>
 	{
@@ -68,14 +72,40 @@ namespace YouBot
 		// this is a helper function, which is called by composeType() of the same class:
 		virtual bool decomposeTypeImpl(const control_space& in, RTT::PropertyBag& targetbag ) const
 		{
-			log(Error) << "Not implemented!" << endlog();
-			return false;
+			targetbag.setType("control_space");
+			targetbag.add( new Property<std::string>("control_space", "", control_space_tostring(in) ) );
+			return true;
 		}
 
 		virtual bool composeTypeImpl(const RTT::PropertyBag& bag, control_space& out ) const
 		{
-			log(Error) << "Not implemented!" << endlog();
-			return false; // unknown type !
+			if ( bag.getType() == std::string("control_space") ) // check the type
+			{
+				Property<std::string>* cs = dynamic_cast<Property<std::string>*>(bag.getProperty("control_space"));
+
+				if ( !cs )
+					return false;
+
+				std::string str = cs->get();
+				if(boost::equals(str, "JOINT"))
+				{
+					out = JOINT;
+				}
+				else if(boost::equals(str, "CARTESIAN"))
+				{
+					out = CARTESIAN;
+				}
+				else
+				{
+					return false;
+				}
+
+				return true;
+			}
+			else
+			{
+				return false; // unknown type !
+			}
 		}
 	};
 
@@ -87,14 +117,15 @@ namespace YouBot
 		// this is a helper function, which is called by composeType() of the same class:
 		virtual bool decomposeTypeImpl(const physical_part& in, RTT::PropertyBag& targetbag ) const
 		{
-			log(Error) << "Not implemented!" << endlog();
-			return false;
+			targetbag.setType("physical_part");
+			targetbag.add( new Property<std::string>("physical_part", "", physical_part_tostring(in) ) );
+			return true;
 		}
 
 		virtual bool composeTypeImpl(const RTT::PropertyBag& bag, physical_part& out ) const
 		{
 			log(Error) << "Not implemented!" << endlog();
-			return false; // unknown type !
+			return true; // unknown type !
 		}
 	};
 
@@ -106,14 +137,15 @@ namespace YouBot
 		// this is a helper function, which is called by composeType() of the same class:
 		virtual bool decomposeTypeImpl(const physical_quantity& in, RTT::PropertyBag& targetbag ) const
 		{
-			log(Error) << "Not implemented!" << endlog();
-			return false;
+			targetbag.setType("physical_quantity");
+			targetbag.add( new Property<std::string>("physical_quantity", "", physical_quantity_tostring(in) ) );
+			return true;
 		}
 
 		virtual bool composeTypeImpl(const RTT::PropertyBag& bag, physical_quantity& out ) const
 		{
 			log(Error) << "Not implemented!" << endlog();
-			return false; // unknown type !
+			return true; // unknown type !
 		}
 	};
 
@@ -125,14 +157,15 @@ namespace YouBot
 		// this is a helper function, which is called by composeType() of the same class:
 		virtual bool decomposeTypeImpl(const event_type& in, RTT::PropertyBag& targetbag ) const
 		{
-			log(Error) << "Not implemented!" << endlog();
-			return false;
+			targetbag.setType("event_type");
+			targetbag.add( new Property<std::string>("event_type", "", event_type_tostring(in) ) );
+			return true;
 		}
 
 		virtual bool composeTypeImpl(const RTT::PropertyBag& bag, event_type& out ) const
 		{
 			log(Error) << "Not implemented!" << endlog();
-			return false; // unknown type !
+			return true; // unknown type !
 		}
 	};
 
@@ -144,14 +177,15 @@ namespace YouBot
 		// this is a helper function, which is called by composeType() of the same class:
 		virtual bool decomposeTypeImpl(const compare_type& in, RTT::PropertyBag& targetbag ) const
 		{
-			log(Error) << "Not implemented!" << endlog();
-			return false;
+			targetbag.setType("compare_type");
+			targetbag.add( new Property<std::string>("compare_type", "", compare_type_tostring(in) ) );
+			return true;
 		}
 
 		virtual bool composeTypeImpl(const RTT::PropertyBag& bag, compare_type& out ) const
 		{
 			log(Error) << "Not implemented!" << endlog();
-			return false; // unknown type !
+			return true; // unknown type !
 		}
 	};
 
