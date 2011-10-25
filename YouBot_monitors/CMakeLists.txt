@@ -48,6 +48,8 @@ SET(COMMON_INCLUDE_DIR ${CMAKE_HOME_DIRECTORY}/include)
 
 SET(CMAKE_BUILD_TYPE Debug)
 
+#orocos_typegen_headers(include/YouBotMonitorTypes.hpp)
+
 #include all CMakeList.txt files within this package
 #each generates one library or application	
 ADD_SUBDIRECTORY(src)

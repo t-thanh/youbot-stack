@@ -80,27 +80,27 @@ namespace YouBot
 
 	std::string physical_quantity_tostring(const physical_quantity& quantity)
 	{
-		if(quantity == POSITION)
-			return "POSITION";
-		else if(quantity == VELOCITY)
-			return "VELOCITY";
-		else if(quantity == FORCE)
-			return "FORCE";
-		else if(quantity == TORQUE)
-			return "TORQUE";
+		if(quantity == MONITOR_POSITION)
+			return "MONITOR_POSITION";
+		else if(quantity == MONITOR_VELOCITY)
+			return "MONITOR_VELOCITY";
+		else if(quantity == MONITOR_FORCE)
+			return "MONITOR_FORCE";
+		else if(quantity == MONITOR_TORQUE)
+			return "MONITOR_TORQUE";
 		else
 			return "error";
 	}
 
 	std::string physical_quantity_toeventstring(const physical_quantity& quantity)
 	{
-		if(quantity == POSITION)
+		if(quantity == MONITOR_POSITION)
 			return "pos";
-		else if(quantity == VELOCITY)
+		else if(quantity == MONITOR_VELOCITY)
 			return "vel";
-		else if(quantity == FORCE)
+		else if(quantity == MONITOR_FORCE)
 			return "for";
-		else if(quantity == TORQUE)
+		else if(quantity == MONITOR_TORQUE)
 			return "tor";
 		else
 			return "error";

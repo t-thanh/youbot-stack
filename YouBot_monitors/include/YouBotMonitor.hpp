@@ -30,13 +30,15 @@ namespace YouBot
 
 			virtual void updateHook();
 
-			virtual void setup_monitor(std::string descriptive_name);
+			virtual bool setup_monitor(std::string descriptive_name);
 
-			virtual void activate_monitor(std::string name);
+			virtual bool activate_monitor(std::string name);
 
-			virtual void deactivate_monitor(std::string name);
+			virtual bool copy_monitor(std::string source, std::string target);
 
-//			virtual void remove_monitors(std::string& name);
+			virtual bool deactivate_monitor(std::string name);
+
+			virtual bool remove_monitor(std::string name);
 
 			virtual void setupComponentInterface();
 			void emitEvent(std::string id, std::string message);
@@ -76,22 +78,22 @@ namespace YouBot
 	{
 		switch(quantity)
 		{
-			case(POSITION):
+			case(MONITOR_POSITION):
 			{
 				return compare(indices, cmp_value, imp->position, c_type, epsilon);
 				break;
 			}
-			case(VELOCITY):
+			case(MONITOR_VELOCITY):
 			{
 				return compare(indices, cmp_value, imp->velocity, c_type, epsilon);
 				break;
 			}
-			case(FORCE):
+			case(MONITOR_FORCE):
 			{
 				return compare(indices, cmp_value, imp->effort, c_type, epsilon);
 				break;
 			}
-			case(TORQUE):
+			case(MONITOR_TORQUE):
 			{
 				return compare(indices, cmp_value, imp->effort, c_type, epsilon);
 				break;
@@ -112,7 +114,7 @@ namespace YouBot
 	{
 		switch(quantity)
 		{
-			case(POSITION):
+			case(MONITOR_POSITION):
 			{
 				vector<double> tmp2(3,0);
 				tmp2[0] = imp->pose.pose.position.x;
@@ -122,7 +124,7 @@ namespace YouBot
 				return compare(indices, vector_value, tmp2, c_type, epsilon);
 				break;
 			}
-			case(VELOCITY):
+			case(MONITOR_VELOCITY):
 			{
 				vector<double> tmp2(6,0);
 				tmp2[0] = imp->twist.twist.linear.x;
@@ -134,13 +136,13 @@ namespace YouBot
 				return compare(indices, vector_value, tmp2, c_type, epsilon);
 				break;
 			}
-			case(FORCE):
+			case(MONITOR_FORCE):
 			{
 				log(Error) << "FORCE not included in message." << endlog();
 				this->error();
 				break;
 			}
-			case(TORQUE):
+			case(MONITOR_TORQUE):
 			{
 				log(Error) << "TORQUE not included in message." << endlog();
 				this->error();

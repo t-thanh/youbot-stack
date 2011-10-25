@@ -43,9 +43,10 @@ namespace YouBot
 		this->addPort("base_cart_state", base_cart_state).doc("Base cartesian states");
 
         this->addOperation("setup_monitor",&YouBotMonitorService::setup_monitor,this, OwnThread);
+        this->addOperation("copy_monitor",&YouBotMonitorService::copy_monitor,this, OwnThread);
         this->addOperation("activate_monitor",&YouBotMonitorService::activate_monitor,this, OwnThread);
         this->addOperation("deactivate_monitor",&YouBotMonitorService::deactivate_monitor,this, OwnThread);
-//        this->addOperation("remove_monitors",&YouBotMonitorService::remove_monitors,this, OwnThread);
+        this->addOperation("remove_monitor",&YouBotMonitorService::remove_monitor,this, OwnThread);
 	}
 
 	void YouBotMonitorService::emitEvent(std::string id, std::string message)
@@ -110,7 +111,7 @@ namespace YouBot
 		return list.end();
 	}
 
-	void YouBotMonitorService::setup_monitor(std::string descriptive_name)
+	bool YouBotMonitorService::setup_monitor(std::string descriptive_name)
 	{
 		vector<monitor*>::iterator i;
 		monitor* m = (i = getMonitor(m_monitors, descriptive_name)) == m_monitors.end() ? NULL : *i;
@@ -118,7 +119,7 @@ namespace YouBot
 		if(m != NULL)
 		{
 			log(Error) << "Monitor already in database." << endlog();
-			return;
+			return false;
 		}
 
 		PropertyBag* p = new PropertyBag;
@@ -138,11 +139,68 @@ namespace YouBot
 		p->addProperty("values", m->values).doc("Triggering state set-points");
 
 		this->addProperty(m->descriptive_name, *p);
+
+		if(m_monitors.size() + 1 > m_monitors.capacity())
+		{
+			m_monitors.reserve(m_monitors.size() + 1);
+			m_active_monitors.reserve(m_monitors.size() + 1);
+		}
+
 		m_monitors.push_back(m);
-		m_active_monitors.reserve(m_monitors.size());
+
+		return true;
 	}
 
-	void YouBotMonitorService::activate_monitor(std::string name)
+	bool YouBotMonitorService::copy_monitor(std::string source, std::string target)
+	{
+		vector<monitor*>::iterator i;
+		monitor* m(NULL);
+		monitor* m2(NULL);
+
+		m = (i = getMonitor(m_monitors, source)) == m_monitors.end() ? NULL : *i;
+		if(m == NULL)
+		{
+			log(Error) << "Monitor not in database." << endlog();
+			return false;
+		}
+
+		m2 = (i = getMonitor(m_monitors, target)) == m_monitors.end() ? NULL : *i;
+		if(m2 != NULL)
+		{
+			log(Error) << "Monitor already in database." << endlog();
+			return false;
+		}
+
+		PropertyBag* p = new PropertyBag;
+		m = new monitor(*m);
+
+		m->descriptive_name = target;
+		p->addProperty("descriptive_name", m->descriptive_name).doc("Descriptive name of the monitor");
+		p->addProperty("active", m->active).doc("Is the monitor active?");
+		p->addProperty("physical_part", m->part).doc("Robot part: ARM, BASE or BOTH");
+		p->addProperty("control_space", m->space).doc("Compare in JOINT or CARTESIAN space");
+		p->addProperty("physical_quantity", m->quantity).doc("Interesting quantity: POSITION, VELOCITY, FORCE or TORQUE");
+		p->addProperty("event_type", m->e_type).doc("LEVEL or EDGE triggered event(s)");
+		p->addProperty("compare_type", m->c_type).doc("LESS, LESS_EQUAL, EQUAL, GREATER, GREATER_EQUAL");
+		p->addProperty("msg", m->msg).doc("Event's message");
+		p->addProperty("epsilon", m->epsilon).doc("Epsilon range for the EQUAL compare_type (only).");
+		p->addProperty("indices", m->indices).doc("Interesting states (indices).");
+		p->addProperty("values", m->values).doc("Triggering state set-points");
+
+		this->addProperty(m->descriptive_name, *p);
+
+		if(m_monitors.size() + 1 > m_monitors.capacity())
+		{
+			m_monitors.reserve(m_monitors.size() + 1);
+			m_active_monitors.reserve(m_monitors.size() + 1);
+		}
+
+		m_monitors.push_back(m);
+
+		return true;
+	}
+
+	bool YouBotMonitorService::activate_monitor(std::string name)
 	{
 		vector<monitor*>::iterator i;
 		monitor* m = (i = getMonitor(m_monitors, name)) != m_monitors.end() ? *i : NULL;
@@ -150,14 +208,13 @@ namespace YouBot
 		if(m == NULL)
 		{
 			log(Error) << "Monitor not found" << endlog();
-			this->error();
-			return;
+			return false;
 		}
 
 		if(m->active)
 		{
 			log(Warning) << "Cannot activate an already active monitor." << endlog();
-			return;
+			return false;
 		}
 
 		if(m->indices.size() == 1)
@@ -169,11 +226,10 @@ namespace YouBot
 			m->is_single_value = false;
 		}
 
-		if(m->space == CARTESIAN && (m->quantity == FORCE || m->quantity == TORQUE) )
+		if(m->space == CARTESIAN && (m->quantity == MONITOR_FORCE || m->quantity == MONITOR_TORQUE) )
 		{
 			log(Error) << "Cannot monitor cartesian FORCE or TORQUE at the moment." << endlog();
-			this->error();
-			return;
+			return false;
 		}
 
 		if(m->space == CARTESIAN)
@@ -195,14 +251,16 @@ namespace YouBot
 		if(!bind_function(m))
 		{
 			m->check = NULL;
-			return;
+			return false;
 		}
 
 		m->active = true;
 		m_active_monitors.push_back(m);
+
+		return true;
 	}
 
-	void YouBotMonitorService::deactivate_monitor(std::string name)
+	bool YouBotMonitorService::deactivate_monitor(std::string name)
 	{
 		vector<monitor*>::iterator i;
 		monitor* m = (i = getMonitor(m_monitors, name)) == m_monitors.end() ? NULL : *i;
@@ -210,8 +268,7 @@ namespace YouBot
 		if(m == NULL)
 		{
 			log(Error) << "Monitor not found." << endlog();
-			this->error();
-			return;
+			return false;
 		}
 
 		m->active = false;
@@ -220,10 +277,36 @@ namespace YouBot
 		if(m == NULL)
 		{
 			log(Warning) << "Monitor was not active." << endlog();
-			return;
+			return false;
 		}
 
 		m_active_monitors.erase(i);
+
+		return true;
+	}
+
+	bool YouBotMonitorService::remove_monitor(std::string name)
+	{
+		vector<monitor*>::iterator i;
+		monitor* m = (i = getMonitor(m_monitors, name)) == m_monitors.end() ? NULL : *i;
+		base::PropertyBase* pb = this->getProperty(name);
+
+		if(m == NULL || pb == NULL)
+		{
+			log(Error) << "Monitor not found." << endlog();
+			return false;
+		}
+
+		if(m->active)
+		{
+			log(Error) << "Cannot remove an active monitor." << endlog();
+			return false;
+		}
+
+		m_monitors.erase(i);
+		this->properties()->remove(pb);
+
+		return true;
 	}
 
 	bool YouBotMonitorService::bind_function(monitor* m)

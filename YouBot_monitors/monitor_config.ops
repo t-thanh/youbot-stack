@@ -1,0 +1,104 @@
+runScript("deploy.ops");
+
+var ConnPolicy cp_2;
+cp_2.type = BUFFER;
+cp_2.lock_policy = LOCK_FREE;
+cp_2.size = 20;
+
+connectPeers("monitor", "EventLogger");
+connect("monitor.events", "EventLogger.events", cp_2);
+
+#
+# joint space
+#
+
+monitor.setup_monitor("jnt_pos_reached");
+monitor.jnt_pos_reached.physical_part = ARM;
+monitor.jnt_pos_reached.control_space = JOINT;
+monitor.jnt_pos_reached.physical_quantity = MONITOR_POSITION;
+monitor.jnt_pos_reached.event_type = LEVEL;
+monitor.jnt_pos_reached.compare_type = EQUAL;
+monitor.jnt_pos_reached.epsilon = 0.1;
+monitor.jnt_pos_reached.msg = string("e_POS_REACHED");
+monitor.jnt_pos_reached.indices = uint32[](uint32(0));
+monitor.jnt_pos_reached.values = std.vector<double>(0.0);
+
+monitor.setup_monitor("jnt_velocity_non_zero");
+monitor.jnt_velocity_non_zero.physical_part = ARM;
+monitor.jnt_velocity_non_zero.control_space = JOINT;
+monitor.jnt_velocity_non_zero.physical_quantity = MONITOR_VELOCITY;
+monitor.jnt_velocity_non_zero.event_type = EDGE;
+monitor.jnt_velocity_non_zero.compare_type = GREATER;
+monitor.jnt_velocity_non_zero.epsilon = 0.1;
+monitor.jnt_velocity_non_zero.msg = string("e_VEL_NON_ZERO");
+monitor.jnt_velocity_non_zero.indices = uint32[](uint32(0), uint32(1), uint32(2), uint32(3), uint32(4));
+monitor.jnt_velocity_non_zero.values = std.vector<double>(0.0, 0.0, 0.0, 0.0, 0.0);
+
+monitor.setup_monitor("jnt_velocity_zero");
+monitor.jnt_velocity_zero.physical_part = ARM;
+monitor.jnt_velocity_zero.control_space = JOINT;
+monitor.jnt_velocity_zero.physical_quantity = MONITOR_VELOCITY;
+monitor.jnt_velocity_zero.event_type = EDGE;
+monitor.jnt_velocity_zero.compare_type = LESS;
+monitor.jnt_velocity_zero.epsilon = 0.1;
+monitor.jnt_velocity_zero.msg = string("e_VEL_ZERO");
+monitor.jnt_velocity_zero.indices = uint32[](uint32(0), uint32(1), uint32(2), uint32(3), uint32(4));
+monitor.jnt_velocity_zero.values = std.vector<double>(0.1, 0.1, 0.1, 0.1, 0.1);
+
+monitor.setup_monitor("jnt_torque_lim_exceeded");
+monitor.jnt_torque_lim_exceeded.physical_part = ARM;
+monitor.jnt_torque_lim_exceeded.control_space = JOINT;
+monitor.jnt_torque_lim_exceeded.physical_quantity = MONITOR_TORQUE;
+monitor.jnt_torque_lim_exceeded.event_type = EDGE;
+monitor.jnt_torque_lim_exceeded.compare_type = GREATER;
+monitor.jnt_torque_lim_exceeded.msg = string("e_LIM_EXCEEDED");
+monitor.jnt_torque_lim_exceeded.indices = uint32[](uint32(0));
+monitor.jnt_torque_lim_exceeded.values = std.vector<double>(0.0);
+
+monitor.setup_monitor("jnt_pos_lim_exceeded");
+monitor.jnt_pos_lim_exceeded.physical_part = ARM;
+monitor.jnt_pos_lim_exceeded.control_space = JOINT;
+monitor.jnt_pos_lim_exceeded.physical_quantity = MONITOR_POSITION;
+monitor.jnt_pos_lim_exceeded.event_type = EDGE;
+monitor.jnt_pos_lim_exceeded.compare_type = GREATER;
+monitor.jnt_pos_lim_exceeded.msg = string("e_LIM_EXCEEDED");
+monitor.jnt_pos_lim_exceeded.indices = uint32[](uint32(0));
+monitor.jnt_pos_lim_exceeded.values = std.vector<double>(0.0);
+
+
+#
+# Cartesian space
+#
+
+monitor.setup_monitor("cart_force_lim_exceeded");    
+monitor.cart_force_lim_exceeded.physical_part = ARM;
+monitor.cart_force_lim_exceeded.control_space = CARTESIAN;   
+monitor.cart_force_lim_exceeded.physical_quantity = MONITOR_FORCE;
+monitor.cart_force_lim_exceeded.event_type = EDGE;
+monitor.cart_force_lim_exceeded.compare_type = GREATER;
+monitor.cart_force_lim_exceeded.msg = string("e_LIM_EXCEEDED");  
+monitor.cart_force_lim_exceeded.indices = uint32[](uint32(0));
+monitor.cart_force_lim_exceeded.values = std.vector<double>(0.0);
+
+monitor.setup_monitor("cart_torque_lim_exceeded");           
+monitor.cart_torque_lim_exceeded.physical_part = ARM;
+monitor.cart_torque_lim_exceeded.control_space = CARTESIAN;   
+monitor.cart_torque_lim_exceeded.physical_quantity = MONITOR_TORQUE;
+monitor.cart_torque_lim_exceeded.event_type = EDGE;  
+monitor.cart_torque_lim_exceeded.compare_type = GREATER;
+monitor.cart_torque_lim_exceeded.msg = string("e_LIM_EXCEEDED");
+monitor.cart_torque_lim_exceeded.indices = uint32[](uint32(0));
+monitor.cart_torque_lim_exceeded.values = std.vector<double>(0.0);
+
+monitor.setup_monitor("cart_pos_reached");
+monitor.cart_pos_reached.physical_part = ARM;
+monitor.cart_pos_reached.control_space = CARTESIAN;
+monitor.cart_pos_reached.physical_quantity = MONITOR_POSITION;
+monitor.cart_pos_reached.event_type = LEVEL;
+monitor.cart_pos_reached.compare_type = EQUAL;
+monitor.cart_pos_reached.epsilon = 0.1;
+monitor.cart_pos_reached.msg = string("e_POS_REACHED");
+monitor.cart_pos_reached.indices = uint32[](uint32(0));
+monitor.cart_pos_reached.values = std.vector<double>(0.0);
+
+
