@@ -6,7 +6,7 @@ SET(YOUBOT_EXECUTIVE_libs
 	boost_thread
 )
 
-SET(YOUBOT_EXECUTIVE_FILES YouBot_executive.cpp)
+SET(YOUBOT_EXECUTIVE_FILES YouBot_executive.cpp macho/Macho.cpp FlowControl.cpp)
 
 INCLUDE_DIRECTORIES(${YOUBOT_EXECUTIVE_INCLUDE_DIR})
 
