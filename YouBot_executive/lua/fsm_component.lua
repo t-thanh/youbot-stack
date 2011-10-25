@@ -1,13 +1,17 @@
 require "rttlib"
 require "rfsm"
 require "rfsm_rtt"
+require "rttros"
  
 local tc=rtt.getTC();
 local fsm
 local fqn_out, events_in
-function configureHook()
+arm_pose=rtt.Variable("float64[]")
+arm_pose:resize(8)
+gripper_pose=rtt.Variable("float64[]")
+gripper_pose:resize(6)
    -- load state machine
-   fsm = rfsm.init(rfsm.load("fsm.lua"))
+   fsm = rfsm.init(rfsm.load(rttros.find_rospack("YouBot_executive").."/lua/fsm.lua"))
  
    -- the following creates a string input port, adds it as a event
    -- driven port to the Taskcontext. The third line generates a
@@ -24,6 +28,8 @@ function configureHook()
    fqn_out = rtt.OutputPort("string")
    tc:addPort(fqn_out,"state","Current state of the FSM")
    fsm.step_hook=rfsm_rtt.gen_write_fqn(fqn_out)
+function configureHook()
+
    -- NOTE: executive is a global variable !!!!
    executive=tc:getPeer("executive")
    return true

@@ -7,45 +7,74 @@ using namespace std;
 
 namespace YouBot
 {
-
+ const double YouBot_executive:: UNFOLD_JOINT_POSE[]={0,0,0,0,0,0,0,0};
+ const double YouBot_executive::UNFOLD_CART_POSE[]={0,0,1,0,0,0};
+ const double YouBot_executive::BASIC_JOINT_STIFFNESS[]={0,0,0,70,50,50,50,50};
+ const double YouBot_executive::BASIC_CART_STIFFNESS[]={5,70};
 YouBot_executive::YouBot_executive(const string& name) :
-		TaskContext(name, PreOperational), m_position_j(),m_stiffness_j(),m_position_c(),m_stiffness_c(),m_gripperPose(), m_armPose()
+		TaskContext(name, PreOperational), m_position_j(), m_stiffness_j(), m_position_c(), m_stiffness_c()
 {
-	m_position_j.assign(8,0);
-	m_stiffness_j.assign(8,0);
-	m_position_c.assign(6,0);
-	m_stiffness_c.assign(2,0);
-	m_gripperPose.assign(16,1);
-	m_armPose.assign(8,0);
+	m_position_j.assign(SIZE_JOINTS_ARRAY, 0);
+	m_stiffness_j.assign(SIZE_JOINTS_ARRAY, 0);
+	m_position_c.assign(SIZE_CART_SPACE, 0);
+	m_stiffness_c.assign(SIZE_CART_STIFFNESS, 0);
+	msgs_setpoint_j.data.assign(SIZE_JOINTS_ARRAY, 0);
+	msgs_setpoint_c.data.assign(SIZE_CART_SPACE, 0);
+	msgs_stiffness_j.data.assign(SIZE_JOINTS_ARRAY, 0);
+	msgs_stiffness_c_r.data.assign(1, 0);
+	msgs_stiffness_c_t.data.assign(1, 0);
 	//Operation<void(void)> op_unfoldArm("unfoldArm",&YouBot_executive::unfoldArm,this);
-	this->addOperation("unfoldArm",&YouBot_executive::unfoldArm,this).doc("jut text");
+	this->addOperation("unfoldArm", &YouBot_executive::unfoldArm, this).doc(
+			"jut text");
 
 	//Operation<void(void)> op_gravityMode("gravityMode",&YouBot_executive::gravityMode,OwnThread);
-	this->addOperation("gravityMode",&YouBot_executive::gravityMode,this).doc("jut text");
+	this->addOperation("gravityMode", &YouBot_executive::gravityMode, this).doc(
+			"jut text");
 
 	//Operation<void(void)> op_positionArm("positionArm",&YouBot_executive::positionArm,OwnThread);
-	this->addOperation("positionArm",&YouBot_executive::positionArm,this).doc("jut text");
-	this->addOperation("positionGripper",&YouBot_executive::positionGripper,this).doc("jut text");
+	this->addOperation("positionArm", &YouBot_executive::positionArm, this).doc(
+			"jut text");
+	this->addOperation("positionGripper", &YouBot_executive::positionGripper,
+			this).doc("jut text");
 
-	this->addOperation("getArmPose",&YouBot_executive::getArmPose,this).doc("jut text");
-	this->addOperation("getGripperPose",&YouBot_executive::getGripperPose,this).doc("jut text");
+	this->addOperation("getArmPose", &YouBot_executive::getArmPose, this).doc(
+			"jut text");
+	this->addOperation("getGripperPose", &YouBot_executive::getGripperPose,
+			this).doc("jut text");
+	this->addOperation("init",&YouBot_executive::init,this).doc(" set data samples and clean up errors");
+	this->addPort("JointSpaceSetpoint", m_JointSpaceSetpoint).doc("");
+	this->addPort("JointSpaceStiffness", m_JointSpaceStiffness).doc("");
+	this->addPort("CartSpaceSetpoint", m_CartSpaceSetpoint).doc("");
+	this->addPort("CartSpaceStiffness_rot", m_CartSpaceStiffness_r).doc("");
+	this->addPort("CartSpaceStiffness_trans", m_CartSpaceStiffness_t).doc("");
 
-	this->addPort("JointSpaceSetpoint",m_JointSpaceSetpoint).doc("");
-	this->addPort("JointSpaceStiffness",m_JointSpaceStiffness).doc("");
-	this->addPort("CartSpaceSetpoint",m_CartSpaceSetpoint).doc("");
-	this->addPort("CartSpaceStiffness_rot",m_CartSpaceStiffness_r).doc("");
-	this->addPort("CartSpaceStiffness_trans",m_CartSpaceStiffness_t).doc("");
+	this->addPort("GripperPose", m_CartGripperPose).doc("");
+	this->addPort("ArmPose", m_JointGripperPose).doc("");
 
-	this->addPort("GripperPose",m_CartGripperPose).doc("");
-	this->addPort("ArmPose",m_JointGripperPose).doc("");
+	this->addProperty("Joint_position_setpoint", m_position_j);
+	this->addProperty("Joint_stiffness_setpoint", m_stiffness_j);
+	this->addProperty("Gripper_position_setpoint", m_position_c);
+	this->addProperty("Gripper_stiffness_setpoint", m_stiffness_c);
 
-	this->addProperty("Joint_position_setpoint",m_position_j);
-	this->addProperty("Joint_stiffness_setpoint",m_stiffness_j);
-	this->addProperty("Gripper_position_setpoint",m_position_c);
-	this->addProperty("Gripper_stiffness_setpoint",m_stiffness_c);
+	this->init();
+}
+void YouBot_executive::init()
+{
+	msgs_setpoint_j.data.assign(SIZE_JOINTS_ARRAY, 0);
+	msgs_setpoint_c.data.assign(SIZE_CART_SPACE, 0);
+	msgs_stiffness_j.data.assign(SIZE_JOINTS_ARRAY, 0);
+	msgs_stiffness_c_r.data.assign(1, 0);
+	msgs_stiffness_c_t.data.assign(1, 0);
+	setPeriod(0.01);
+	m_JointSpaceSetpoint.setDataSample(msgs_setpoint_j);
+	m_JointSpaceStiffness.setDataSample(msgs_stiffness_j);
+	m_CartSpaceSetpoint.setDataSample(msgs_setpoint_c);
+	m_CartSpaceStiffness_r.setDataSample(msgs_stiffness_c_r);
+	m_CartSpaceStiffness_t.setDataSample(msgs_stiffness_c_t);
+
+
 
 }
-
 YouBot_executive::~YouBot_executive()
 {
 
@@ -64,7 +93,7 @@ bool YouBot_executive::startHook()
 
 void YouBot_executive::updateHook()
 {
-
+	m_FlowControl->run(this);
 }
 
 void YouBot_executive::stopHook()
@@ -73,146 +102,129 @@ void YouBot_executive::stopHook()
 	TaskContext::stopHook();
 }
 
+void YouBot_executive::getSetPoints(vector<double> & position_j,
+		vector<double> & position_c)
+{
+	position_j.assign(m_position_j.begin(), m_position_j.end());
+	position_c.assign(m_position_c.begin(), m_position_c.end());
+}
+void YouBot_executive::getStates(vector<double> & position_j,
+		vector<double> & position_c)
+{
+	getArmPose(position_j);
+	getGripperPose(position_c);
+}
+void YouBot_executive::getStiffness(vector<double> & stiffness_j,
+		vector<double> & stiffness_c)
+{
+	stiffness_j.assign(m_stiffness_j.begin(), m_stiffness_j.end());
+	stiffness_c.assign(m_stiffness_c.begin(), m_stiffness_c.end());
+}
+
+void YouBot_executive::getZeroStiffness(vector<double> & stiffness_j,
+		vector<double> & stiffness_c)
+{
+	double d_stiffness_j[8] =
+	{ 0, 0, 0, 0, 0, 0, 0, 0 };
+	double d_stiffness_c[2] =
+	{ 0, 0 };
+	stiffness_j.assign(d_stiffness_j, d_stiffness_j + 8);
+	stiffness_c.assign(d_stiffness_c, d_stiffness_c + 2);
+}
+
 void YouBot_executive::cleanupHook()
 {
 	TaskContext::cleanupHook();
 }
+
 void YouBot_executive::unfoldArm()
 {
-   RTT::log(Fatal)<<"This was a success unfoldArm"<<endlog();
-	double d_setpoint_j[8]= {0,0,0,0,0,0,0,0};
-	double d_stiffness_j[8]= {0,0,0,5,5,5,5,5};
-	vector<double> v_setpoint_j,v_stiffness_j;
-	v_setpoint_j.assign(d_setpoint_j,d_setpoint_j+8);
-	v_stiffness_j.assign(d_stiffness_j,d_stiffness_j+8);
-
-	double d_setpoint_c[6]= {0,0,1,0,0,0,};
-	double d_stiffness_c[2]= {10,0};
-	vector<double> v_setpoint_c,v_stiffness_c;
-	v_setpoint_c.assign(d_setpoint_c,d_setpoint_c+6);
-	v_stiffness_c.assign(d_stiffness_c,d_stiffness_c+2);
-	writeSetpoints(v_setpoint_j,v_stiffness_j,v_setpoint_c,v_stiffness_c);
+	//RTT::log(Info) << "Call unfoldArm" << endlog();
+	m_position_c.assign(UNFOLD_CART_POSE,UNFOLD_CART_POSE+6);
+	m_position_j.assign(UNFOLD_JOINT_POSE,UNFOLD_JOINT_POSE+8);
+	m_stiffness_c.assign(BASIC_CART_STIFFNESS,BASIC_CART_STIFFNESS+2);
+	m_stiffness_j.assign(BASIC_JOINT_STIFFNESS,BASIC_JOINT_STIFFNESS+8);
+	m_FlowControl->e_fullControl();
 }
+
 void YouBot_executive::gravityMode()
 {
-   RTT::log(Fatal)<<"This was a success gravityMode"<<endlog();
-	double d_setpoint_j[8]= {0,0,0,0,0,0,0,0};
-	double d_stiffness_j[8]= {0,0,0,0,0,0,0,0};
-	vector<double> v_setpoint_j,v_stiffness_j;
-	v_setpoint_j.assign(d_setpoint_j,d_setpoint_j+8);
-	v_stiffness_j.assign(d_stiffness_j,d_stiffness_j+8);
-
-	double d_setpoint_c[6]= {0,0,1,0,0,0,};
-	double d_stiffness_c[2]= {0,0};
-	vector<double> v_setpoint_c,v_stiffness_c;
-	v_setpoint_c.assign(d_setpoint_c,d_setpoint_c+6);
-	v_stiffness_c.assign(d_stiffness_c,d_stiffness_c+2);
-	writeSetpoints(v_setpoint_j,v_stiffness_j,v_setpoint_c,v_stiffness_c);
+	m_FlowControl->e_gravityMode();
 }
-void YouBot_executive::positionArm()
-{
-   RTT::log(Fatal)<<"This was a success positionArm"<<endlog();
 
-	double d_setpoint_c[6]= {0,0,1,0,0,0,};
-	double d_stiffness_c[2]= {0,0};
-	vector<double> v_setpoint_c,v_stiffness_c;
-	v_setpoint_c.assign(d_setpoint_c,d_setpoint_c+6);
-	v_stiffness_c.assign(d_stiffness_c,d_stiffness_c+2);
-	writeSetpoints(vector<double>(),vector<double>(),v_setpoint_c,v_stiffness_c);
+void YouBot_executive::positionArm(vector<double> position_j)
+{
+	//RTT::log(Info) << "Call positionArm" << endlog();
+	m_position_j.assign(position_j.begin(),position_j.end());
+	m_FlowControl->e_jointControl();
+
 }
-void YouBot_executive::positionGripper()
+
+void YouBot_executive::positionGripper(vector<double> position_c)
 {
-   RTT::log(Fatal)<<"This was a success positionGripper"<<endlog();
-	double d_setpoint_j[8]= {0,0,0,0,0,0,0,0};
-	double d_stiffness_j[8]= {0,0,0,0,0,0,0,0};
-	vector<double> v_setpoint_j,v_stiffness_j;
-	v_setpoint_j.assign(d_setpoint_j,d_setpoint_j+8);
-	v_stiffness_j.assign(d_stiffness_j,d_stiffness_j+8);
-	writeSetpoints(v_setpoint_j,v_stiffness_j,vector<double>(),vector<double>());
+	//RTT::log(Info) << "Call positionGripper" << endlog();
+	m_position_c.assign(position_c.begin(),position_c.end());
+	m_FlowControl->e_catesianControl();
 }
-void YouBot_executive::writeSetpoints(const vector<double>& position_j,const vector<double>& stiffness_j,
-		const vector<double>& position_c, const vector<double>& stiffness_c)
+
+void YouBot_executive::writeSetpoints(const vector<double> & position_j,
+		const vector<double> & stiffness_j, const vector<double> & position_c,
+		const vector<double> & stiffness_c)
 {
-	std_msgs::Float64MultiArray msgs_setpoint_j;
-	 if(position_j.size()==0)
-		msgs_setpoint_j.data.assign(m_position_j.begin(),m_position_j.end());
-	else
-		msgs_setpoint_j.data.assign(position_j.begin(),position_j.end());
-
-	std_msgs::Float64MultiArray msgs_stiffness_j;
-	 if(stiffness_j.size()==0)
-		msgs_stiffness_j.data.assign(m_stiffness_j.begin(),m_stiffness_j.end());
-	else
-		msgs_stiffness_j.data.assign(stiffness_j.begin(),stiffness_j.end());
-
-	std_msgs::Float64MultiArray msgs_setpoint_c;
- if(position_c.size()==0)
-		msgs_setpoint_c.data.assign(m_position_c.begin(),m_position_c.end());
-	else
-		msgs_setpoint_c.data.assign(position_c.begin(),position_c.end());
-
-	std_msgs::Float64MultiArray msgs_stiffness_c_r;
-	std_msgs::Float64MultiArray msgs_stiffness_c_t;
-	msgs_stiffness_c_r.data.clear();
-	msgs_stiffness_c_t.data.clear();
- if(stiffness_c.size()<2)
+	if ( position_j.size()==0 || stiffness_j.size()==0 ||
+			position_c.size()==0|| stiffness_c.size()<2)
 	{
-		msgs_stiffness_c_r.data.push_back(m_stiffness_c.at(0));
-		msgs_stiffness_c_t.data.push_back(m_stiffness_c.at(1));
+		RTT::log(Error) << "Attempt to write strange value to the port" << endlog();
+		this->error();
+		return;
 	}
-	else
-	{
-		msgs_stiffness_c_r.data.push_back(stiffness_c.at(0));
-		msgs_stiffness_c_t.data.push_back(stiffness_c.at(1));
-	}
-
-
-
-
+	msgs_setpoint_j.data.assign(position_j.begin(), position_j.end());
+	msgs_stiffness_j.data.assign(stiffness_j.begin(), stiffness_j.end());
+	msgs_setpoint_c.data.assign(position_c.begin(), position_c.end());
+	msgs_stiffness_c_r.data.at(0)=stiffness_c.at(0);
+	msgs_stiffness_c_t.data.at(0)=stiffness_c.at(1);
 	m_JointSpaceSetpoint.write(msgs_setpoint_j);
 	m_JointSpaceStiffness.write(msgs_stiffness_j);
 	m_CartSpaceSetpoint.write(msgs_setpoint_c);
 	m_CartSpaceStiffness_r.write(msgs_stiffness_c_r);
 	m_CartSpaceStiffness_t.write(msgs_stiffness_c_t);
 }
-void YouBot_executive::getArmPose()
-{
-   RTT::log(Fatal)<<"This was a success getArmPose"<<endlog();
-	std_msgs::Float64MultiArray sample;
-	if(m_JointGripperPose.read(sample)==RTT::NewData)
-	{
-		m_armPose.assign(sample.data.begin(),sample.data.end());
-		m_position_j.assign(sample.data.begin(),sample.data.end());
-	}
 
-}
-void YouBot_executive::getGripperPose()
+void YouBot_executive::getArmPose(vector<double> & position_j)
 {
-   RTT::log(Fatal)<<"This was a success getGripperPose"<<endlog();
+	//RTT::log(Info) << "Call getArmPose" << endlog();
 	std_msgs::Float64MultiArray sample;
-	if(m_CartGripperPose.read(sample)==RTT::NewData)
+	if (m_JointGripperPose.read(sample) == RTT::NewData)
 	{
-		m_gripperPose.assign(sample.data.begin(),sample.data.end());
-		getXYZYPR(sample.data, m_position_c);
+		position_j.assign(sample.data.begin(), sample.data.end());
 	}
 }
-void YouBot_executive::getXYZYPR(const vector<double>& H, vector<double>& XYZYPR)
- {
+
+void YouBot_executive::getGripperPose(vector<double> & position_c)
+{
+	//RTT::log(Info) << "Call getGripperPose" << endlog();
+	std_msgs::Float64MultiArray sample;
+	if (m_CartGripperPose.read(sample) == RTT::NewData)
+	{
+		getXYZYPR(sample.data, position_c);
+	}
+}
+
+void YouBot_executive::getXYZYPR(const vector<double> & H,
+		vector<double> & XYZYPR)
+{
 	XYZYPR.clear();
 	XYZYPR.resize(6);
-	XYZYPR.at(0)=H.at(3);
-	XYZYPR.at(1)=H.at(7);
-	XYZYPR.at(2)=H.at(11);
-     btMatrix3x3 rotMatrix(H[0], H[1], H[2],
-                        H[4], H[5], H[6],
-                        H[8], H[9], H[10]);
-     btScalar y,p,r;
-     rotMatrix.getEulerYPR(y,p,r);
- 	XYZYPR.at(3)=(double)y;
- 	XYZYPR.at(4)=(double)p;
- 	XYZYPR.at(5)=(double)r;
-
-
+	XYZYPR.at(0) = H.at(3);
+	XYZYPR.at(1) = H.at(7);
+	XYZYPR.at(2) = H.at(11);
+	btMatrix3x3 rotMatrix(H[0], H[1], H[2], H[4], H[5], H[6], H[8], H[9],
+			H[10]);
+	btScalar y, p, r;
+	rotMatrix.getEulerYPR(y, p, r);
+	XYZYPR.at(3) = (double) (y);
+	XYZYPR.at(4) = (double) (p);
+	XYZYPR.at(5) = (double) (r);
 }
 }
 
