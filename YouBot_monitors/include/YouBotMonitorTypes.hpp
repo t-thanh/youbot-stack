@@ -9,7 +9,7 @@ namespace YouBot
 
 	enum control_space 		{JOINT = 1, CARTESIAN = 2};
 	enum physical_part 		{ARM = 1, BASE = 2}; //, BOTH = 3 - don't use BOTH yet
-	enum physical_quantity 	{POSITION = 1, VELOCITY = 2, TORQUE = 3, FORCE = 4};
+	enum physical_quantity 	{MONITOR_POSITION = 1, MONITOR_VELOCITY = 2, MONITOR_FORCE = 3, MONITOR_TORQUE=4};
 	enum event_type 		{EDGE = 1, LEVEL = 2};
 	enum compare_type		{LESS = 1, LESS_EQUAL = 2, EQUAL = 3, GREATER = 4, GREATER_EQUAL = 5};
 
@@ -38,13 +38,23 @@ namespace YouBot
 
 		monitor_fp check;
 
-		_monitor() : active(false), part(ARM), space(JOINT), quantity(POSITION), e_type(EDGE), c_type(LESS),
+		_monitor() : active(false), part(ARM), space(JOINT), quantity(MONITOR_POSITION), e_type(EDGE), c_type(LESS),
 				id(""), msg(""),
 				state(false),
 				is_single_value(true),
 				epsilon(5),
 				indices(6),
 				values(6)
+		{}
+
+		_monitor(const _monitor& copy) :
+			active(false), part(copy.part), space(copy.space), quantity(copy.quantity), e_type(copy.e_type), c_type(copy.c_type),
+				id(copy.id), msg(copy.msg),
+				state(false),
+				is_single_value(copy.is_single_value),
+				epsilon(copy.epsilon),
+				indices(copy.indices),
+				values(copy.values)
 		{}
 	} monitor;
 

@@ -181,21 +181,21 @@ namespace YouBot
 					return false;
 
 				std::string str = cs->get();
-				if(boost::equals(str, "POSITION"))
+				if(boost::equals(str, "MONITOR_POSITION"))
 				{
-					out = POSITION;
+					out = MONITOR_POSITION;
 				}
-				else if(boost::equals(str, "VELOCITY"))
+				else if(boost::equals(str, "MONITOR_VELOCITY"))
 				{
-					out = VELOCITY;
+					out = MONITOR_VELOCITY;
 				}
-				else if(boost::equals(str, "FORCE"))
+				else if(boost::equals(str, "MONITOR_FORCE"))
 				{
-					out = FORCE;
+					out = MONITOR_FORCE;
 				}
-				else if(boost::equals(str, "TORQUE"))
+				else if(boost::equals(str, "MONITOR_TORQUE"))
 				{
-					out = TORQUE;
+					out = MONITOR_TORQUE;
 				}
 				else
 				{
