@@ -34,6 +34,7 @@ namespace YouBot
 			virtual void cleanupHook();
 
 			void unfoldManipulator();
+			void foldManipulator();
 			void setJointAngles(vector<double>& angles, double epsilon);
 			bool getJointAngles(vector<double>& angles);
 

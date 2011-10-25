@@ -30,6 +30,8 @@ namespace YouBot
 
 			virtual void updateHook();
 
+			virtual void listActiveMonitors();
+
 			virtual bool setup_monitor(std::string descriptive_name);
 
 			virtual bool activate_monitor(std::string name);

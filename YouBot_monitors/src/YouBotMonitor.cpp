@@ -47,6 +47,7 @@ namespace YouBot
         this->addOperation("activate_monitor",&YouBotMonitorService::activate_monitor,this, OwnThread);
         this->addOperation("deactivate_monitor",&YouBotMonitorService::deactivate_monitor,this, OwnThread);
         this->addOperation("remove_monitor",&YouBotMonitorService::remove_monitor,this, OwnThread);
+        this->addOperation("listActiveMonitors",&YouBotMonitorService::listActiveMonitors,this, OwnThread);
 	}
 
 	void YouBotMonitorService::emitEvent(std::string id, std::string message)
@@ -68,6 +69,20 @@ namespace YouBot
 			return false;
 		}
 		return true;
+	}
+
+	void YouBotMonitorService::listActiveMonitors()
+	{
+		unsigned int size = m_active_monitors.size();
+		for(unsigned int i = 0; i < size; ++i)
+		{
+			log(Info) << "[" << i << "] " << m_active_monitors[i]->descriptive_name << endlog();
+		}
+
+		if(size == 0)
+		{
+			log(Info) << "No active monitors." << endlog();
+		}
 	}
 
 	void YouBotMonitorService::updateHook()

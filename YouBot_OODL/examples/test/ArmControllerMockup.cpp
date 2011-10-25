@@ -17,8 +17,11 @@ namespace YouBot
 	using namespace boost::units;
 	using namespace boost::units::si;
 
-	const double jointsInitialPosition[] = { 169 * M_PI / 180.0, 65 * M_PI / 180.0,
+	const double unfoldedPosition[] = { 169 * M_PI / 180.0, 65 * M_PI / 180.0,
 			-146 * M_PI / 180.0, 102.5 * M_PI / 180.0, 167.5 * M_PI / 180.0 }; //radian!
+
+	const double foldedPosition[] = { 0.115385 * M_PI / 180.0, 0.0980769 * M_PI / 180.0,
+			-0.0936 * M_PI / 180.0, 0.14831 * M_PI / 180.0, 4.7193 * M_PI / 180.0 }; //radian
 
 	ArmControllerMockup::ArmControllerMockup(const string& name) :
 			TaskContext(name, PreOperational),
@@ -45,6 +48,7 @@ namespace YouBot
 		this->addOperation("setJointAngles",&ArmControllerMockup::setJointAngles,this, OwnThread).doc("In degrees");
 		this->addOperation("getJointAngles",&ArmControllerMockup::getJointAngles,this, OwnThread).doc("In degrees");
 		this->addOperation("unfoldManipulator",&ArmControllerMockup::unfoldManipulator,this, OwnThread);
+		this->addOperation("foldManipulator",&ArmControllerMockup::foldManipulator,this, OwnThread);
 
 		RTT::types::Types()->addType( new RTT::types::SequenceTypeInfo<std::vector<double> >("std.vector<double>") );
 	}
@@ -108,7 +112,19 @@ namespace YouBot
 
 		for(unsigned int i = 0; i < NR_OF_ARM_SLAVES; ++i)
 		{
-			m_joint_cmd_angles.positions[i] = jointsInitialPosition[i];
+			m_joint_cmd_angles.positions[i] = unfoldedPosition[i];
+		}
+	}
+
+	void ArmControllerMockup::foldManipulator()
+	{
+		m_modes = vector<ctrl_modes>(NR_OF_ARM_SLAVES, PLANE_ANGLE);
+
+		op_setControlModes(m_modes);
+
+		for(unsigned int i = 0; i < NR_OF_ARM_SLAVES; ++i)
+		{
+			m_joint_cmd_angles.positions[i] = foldedPosition[i];
 		}
 	}
 

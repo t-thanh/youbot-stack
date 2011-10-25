@@ -28,15 +28,15 @@ namespace YouBot
 		for(unsigned int i = 0; i < size; ++i)
 		{
 			index = (*indices)[i];
-			double diff = (*setp)[index] - cur[index];
+			double diff = cur[index] - (*setp)[index];
 
-//			log(Info) << compare_type_tostring(ct) << " diff: " << diff << " epsilon: " << nepsilon << endlog();
+//			log(Info) << compare_type_tostring(ct) << " diff (" << cur[index] << " - " << (*setp)[index] << ") : " << diff << " epsilon: " << epsilon << endlog();
 
-			if( ct == LESS && diff <= 0 )
+			if( ct == LESS && diff >= 0 )
 			{
 				return false;
 			}
-			else if(ct == LESS_EQUAL && diff < 0 )
+			else if(ct == LESS_EQUAL && diff > 0 )
 			{
 				return false;
 			}
@@ -44,19 +44,20 @@ namespace YouBot
 			{
 				double relativeError = 0.0;
 				if((*setp)[index] == cur[index])
-					return true;
+					continue; // true
 				else if(abs((*setp)[index]) > abs(cur[index]))
 					relativeError = abs( (cur[index] - (*setp)[index]) / (*setp)[index]);
 				else
 					relativeError = abs( (cur[index] - (*setp)[index]) / cur[index]);
 
-				return (relativeError <= epsilon);
+				if(relativeError > epsilon)
+					return false;
 			}
-			else if(ct == GREATER_EQUAL && diff > 0 )
+			else if(ct == GREATER_EQUAL && diff < 0 )
 			{
 				return false;
 			}
-			else if(ct == GREATER && diff >= 0 )
+			else if(ct == GREATER && diff <= 0 )
 			{
 				return false;
 			}

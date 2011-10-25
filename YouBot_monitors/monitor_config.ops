@@ -21,29 +21,7 @@ monitor.jnt_pos_reached.msg = string("e_POS_REACHED");
 monitor.jnt_pos_reached.indices = uint32[](uint32(0));
 monitor.jnt_pos_reached.values = std.vector<double>(0.0);
 
-# Note: Two monitors are needed for non zero comparison.
-monitor.setup_monitor("jnt_velocity_non_zero_1");
-monitor.jnt_velocity_non_zero_1.physical_part = ARM;
-monitor.jnt_velocity_non_zero_1.control_space = JOINT;
-monitor.jnt_velocity_non_zero_1.physical_quantity = MONITOR_VELOCITY;
-monitor.jnt_velocity_non_zero_1.event_type = EDGE;
-monitor.jnt_velocity_non_zero_1.compare_type = GREATER;
-monitor.jnt_velocity_non_zero_1.epsilon = 0.1;
-monitor.jnt_velocity_non_zero_1.msg = string("e_VEL_NON_ZERO");
-monitor.jnt_velocity_non_zero_1.indices = uint32[](uint32(0), uint32(1), uint32(2), uint32(3), uint32(4));
-monitor.jnt_velocity_non_zero_1.values = std.vector<double>(0.1, 0.1, 0.1, 0.1, 0.1);
-
-monitor.setup_monitor("jnt_velocity_non_zero_2");
-monitor.jnt_velocity_non_zero_2.physical_part = ARM;
-monitor.jnt_velocity_non_zero_2.control_space = JOINT;
-monitor.jnt_velocity_non_zero_2.physical_quantity = MONITOR_VELOCITY;
-monitor.jnt_velocity_non_zero_2.event_type = EDGE;
-monitor.jnt_velocity_non_zero_2.compare_type = LESS;
-monitor.jnt_velocity_non_zero_2.epsilon = 0.1;
-monitor.jnt_velocity_non_zero_2.msg = string("e_VEL_NON_ZERO");
-monitor.jnt_velocity_non_zero_2.indices = uint32[](uint32(0), uint32(1), uint32(2), uint32(3), uint32(4));
-monitor.jnt_velocity_non_zero_2.values = std.vector<double>(-0.1, -0.1, -0.1, -0.1, -0.1);
-
+# For non-zero see false edge.
 monitor.setup_monitor("jnt_velocity_zero");
 monitor.jnt_velocity_zero.physical_part = ARM;
 monitor.jnt_velocity_zero.control_space = JOINT;
@@ -111,4 +89,9 @@ monitor.cart_pos_reached.msg = string("e_POS_REACHED");
 monitor.cart_pos_reached.indices = uint32[](uint32(0));
 monitor.cart_pos_reached.values = std.vector<double>(0.0);
 
+monitor.setPeriod(1);
+monitor.activate_monitor("jnt_velocity_zero");
+monitor.activate_monitor("jnt_velocity_non_zero_1");
+monitor.activate_monitor("jnt_velocity_non_zero_2");
+monitor.start();
 
