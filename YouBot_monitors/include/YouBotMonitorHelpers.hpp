@@ -29,7 +29,6 @@ namespace YouBot
 		{
 			index = (*indices)[i];
 			double diff = (*setp)[index] - cur[index];
-			double nepsilon = abs(epsilon * (*setp)[index]);
 
 //			log(Info) << compare_type_tostring(ct) << " diff: " << diff << " epsilon: " << nepsilon << endlog();
 
@@ -41,9 +40,17 @@ namespace YouBot
 			{
 				return false;
 			}
-			else if(ct == EQUAL &&  abs(diff) > nepsilon )
+			else if(ct == EQUAL)
 			{
-				return false;
+				double relativeError = 0.0;
+				if((*setp)[index] == cur[index])
+					return true;
+				else if(abs((*setp)[index]) > abs(cur[index]))
+					relativeError = abs( (cur[index] - (*setp)[index]) / (*setp)[index]);
+				else
+					relativeError = abs( (cur[index] - (*setp)[index]) / cur[index]);
+
+				return (relativeError <= epsilon);
 			}
 			else if(ct == GREATER_EQUAL && diff > 0 )
 			{
