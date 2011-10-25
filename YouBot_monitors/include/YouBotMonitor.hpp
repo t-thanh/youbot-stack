@@ -65,8 +65,8 @@ namespace YouBot
 			sensor_msgs::JointState m_arm_joint_state;
 //			m_arm_cart_state
 
-			OutputPort<std_msgs::String> events;
-			std_msgs::String m_events;
+			OutputPort<std::string> events;
+			std::string m_events;
 
 			vector<PropertyBag*> m_properties;
 			vector<monitor*> m_monitors;

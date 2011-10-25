@@ -29,7 +29,7 @@ namespace YouBot
 			virtual void updateHook();
 
 		private:
-			InputPort<std_msgs::String> events;
-			std_msgs::String m_events;
+			InputPort<std::string> events;
+			std::string m_events;
 	};
 }

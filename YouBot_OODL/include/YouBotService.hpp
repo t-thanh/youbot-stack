@@ -33,8 +33,8 @@ namespace YouBot
 			virtual void cleanup() = 0;
 			virtual void stop() = 0;
 
-			OutputPort<std_msgs::String> events;
-			std_msgs::String m_events;
+			OutputPort<std::string> events;
+			std::string m_events;
     };
 
 	void check_event_edge(YouBotService* const serv, const motor_status ref_cond, const std::string outp_message, bool* const cond_state,
