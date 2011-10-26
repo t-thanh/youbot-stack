@@ -1,11 +1,3 @@
-var ConnPolicy cp_2;
-cp_2.type = BUFFER;
-cp_2.lock_policy = LOCK_FREE;
-cp_2.size = 20;
-
-connectPeers("monitor", "EventLogger");
-connect("monitor.events", "EventLogger.events", cp_2);
-
 #
 # joint space
 #
@@ -14,12 +6,23 @@ monitor.setup_monitor("jnt_pos_reached");
 monitor.jnt_pos_reached.physical_part = ARM;
 monitor.jnt_pos_reached.control_space = JOINT;
 monitor.jnt_pos_reached.physical_quantity = MONITOR_POSITION;
-monitor.jnt_pos_reached.event_type = LEVEL;
+monitor.jnt_pos_reached.event_type = EDGE;
 monitor.jnt_pos_reached.compare_type = EQUAL;
 monitor.jnt_pos_reached.epsilon = 0.1;
 monitor.jnt_pos_reached.msg = string("e_POS_REACHED");
 monitor.jnt_pos_reached.indices = uint32[](uint32(0));
-monitor.jnt_pos_reached.values = std.vector<double>(0.0);
+monitor.jnt_pos_reached.values = float64[](0.0);
+
+monitor.setup_monitor("jnt_pos_reached_up");
+monitor.jnt_pos_reached_up.physical_part = ARM;
+monitor.jnt_pos_reached_up.control_space = JOINT;
+monitor.jnt_pos_reached_up.physical_quantity = MONITOR_POSITION;
+monitor.jnt_pos_reached_up.event_type = EDGE;
+monitor.jnt_pos_reached_up.compare_type = EQUAL;
+monitor.jnt_pos_reached_up.epsilon = 0.1;
+monitor.jnt_pos_reached_up.msg = string("e_POS_REACHED");
+monitor.jnt_pos_reached_up.indices = uint32[](uint32(0), uint32(1), uint32(2), uint32(3), uint(4));
+monitor.jnt_pos_reached_up.values = float64[](2.9496, 1.1345, -2.5482, 1.7890, 2.9234); # in radian
 
 # For non-zero see false edge.
 monitor.setup_monitor("jnt_velocity_zero");
@@ -31,7 +34,7 @@ monitor.jnt_velocity_zero.compare_type = EQUAL;
 monitor.jnt_velocity_zero.epsilon = 0.1;
 monitor.jnt_velocity_zero.msg = string("e_VEL_ZERO");
 monitor.jnt_velocity_zero.indices = uint32[](uint32(0), uint32(1), uint32(2), uint32(3), uint32(4));
-monitor.jnt_velocity_zero.values = std.vector<double>(0.0, 0.0, 0.0, 0.0, 0.0);
+monitor.jnt_velocity_zero.values = float64[](0.0, 0.0, 0.0, 0.0, 0.0);
 
 monitor.setup_monitor("jnt_torque_lim_exceeded");
 monitor.jnt_torque_lim_exceeded.physical_part = ARM;
@@ -41,7 +44,7 @@ monitor.jnt_torque_lim_exceeded.event_type = EDGE;
 monitor.jnt_torque_lim_exceeded.compare_type = GREATER;
 monitor.jnt_torque_lim_exceeded.msg = string("e_LIM_EXCEEDED");
 monitor.jnt_torque_lim_exceeded.indices = uint32[](uint32(0));
-monitor.jnt_torque_lim_exceeded.values = std.vector<double>(0.0);
+monitor.jnt_torque_lim_exceeded.values = float64[](0.0);
 
 monitor.setup_monitor("jnt_pos_lim_exceeded");
 monitor.jnt_pos_lim_exceeded.physical_part = ARM;
@@ -51,7 +54,7 @@ monitor.jnt_pos_lim_exceeded.event_type = EDGE;
 monitor.jnt_pos_lim_exceeded.compare_type = GREATER;
 monitor.jnt_pos_lim_exceeded.msg = string("e_LIM_EXCEEDED");
 monitor.jnt_pos_lim_exceeded.indices = uint32[](uint32(0));
-monitor.jnt_pos_lim_exceeded.values = std.vector<double>(0.0);
+monitor.jnt_pos_lim_exceeded.values = float64[](0.0);
 
 
 #
@@ -66,7 +69,7 @@ monitor.cart_force_lim_exceeded.event_type = EDGE;
 monitor.cart_force_lim_exceeded.compare_type = GREATER;
 monitor.cart_force_lim_exceeded.msg = string("e_LIM_EXCEEDED");  
 monitor.cart_force_lim_exceeded.indices = uint32[](uint32(0));
-monitor.cart_force_lim_exceeded.values = std.vector<double>(0.0);
+monitor.cart_force_lim_exceeded.values = float64[](0.0);
 
 monitor.setup_monitor("cart_torque_lim_exceeded");           
 monitor.cart_torque_lim_exceeded.physical_part = ARM;
@@ -76,7 +79,7 @@ monitor.cart_torque_lim_exceeded.event_type = EDGE;
 monitor.cart_torque_lim_exceeded.compare_type = GREATER;
 monitor.cart_torque_lim_exceeded.msg = string("e_LIM_EXCEEDED");
 monitor.cart_torque_lim_exceeded.indices = uint32[](uint32(0));
-monitor.cart_torque_lim_exceeded.values = std.vector<double>(0.0);
+monitor.cart_torque_lim_exceeded.values = float64[](0.0);
 
 monitor.setup_monitor("cart_pos_reached");
 monitor.cart_pos_reached.physical_part = ARM;
@@ -87,11 +90,5 @@ monitor.cart_pos_reached.compare_type = EQUAL;
 monitor.cart_pos_reached.epsilon = 0.1;
 monitor.cart_pos_reached.msg = string("e_POS_REACHED");
 monitor.cart_pos_reached.indices = uint32[](uint32(0));
-monitor.cart_pos_reached.values = std.vector<double>(0.0);
-
-monitor.setPeriod(1);
-monitor.activate_monitor("jnt_velocity_zero");
-monitor.activate_monitor("jnt_velocity_non_zero_1");
-monitor.activate_monitor("jnt_velocity_non_zero_2");
-monitor.start();
+monitor.cart_pos_reached.values = float64[](0.0);
 
