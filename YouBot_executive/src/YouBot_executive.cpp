@@ -174,7 +174,7 @@ void YouBot_executive::writeSetpoints(const vector<double> & position_j,
 	if ( position_j.size()==0 || stiffness_j.size()==0 ||
 			position_c.size()==0|| stiffness_c.size()<2)
 	{
-		RTT::log(Error) << "Attempt to write strange value to the port" << endlog();
+		RTT::log(Error) << "Attempt to write strange value to the port, executive state is "<<m_FlowControl->toString()<< endlog();
 		this->error();
 		return;
 	}
@@ -194,7 +194,7 @@ void YouBot_executive::getArmPose(vector<double> & position_j)
 {
 	//RTT::log(Info) << "Call getArmPose" << endlog();
 	std_msgs::Float64MultiArray sample;
-	if (m_JointGripperPose.read(sample) == RTT::NewData)
+	if (m_JointGripperPose.read(sample) != RTT::NoData)
 	{
 		position_j.assign(sample.data.begin(), sample.data.end());
 	}
@@ -204,7 +204,7 @@ void YouBot_executive::getGripperPose(vector<double> & position_c)
 {
 	//RTT::log(Info) << "Call getGripperPose" << endlog();
 	std_msgs::Float64MultiArray sample;
-	if (m_CartGripperPose.read(sample) == RTT::NewData)
+	if (m_CartGripperPose.read(sample) != RTT::NoData)
 	{
 		getXYZYPR(sample.data, position_c);
 	}

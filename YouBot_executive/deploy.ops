@@ -11,7 +11,7 @@ FSM.exec_file(rospack.find("YouBot_executive")+"/lua/fsm_component.lua");
    var ConnPolicy cp_JointSpaceSetpoint;
    cp_JointSpaceSetpoint.type = DATA;  // Use ''BUFFER'' or ''DATA''
    cp_JointSpaceSetpoint.lock_policy = LOCK_FREE; // Use  ''LOCKED'', ''LOCK_FREE'' or ''UNSYNC''
-   connect("executive.JointSpaceSetpoint","control.JointSpaceStiffness_setpoints",cp_JointSpaceSetpoint)
+   connect("executive.JointSpaceSetpoint","control.JointPositionSetpoint",cp_JointSpaceSetpoint)
 
    var ConnPolicy cp_JointSpaceStiffness;
    cp_JointSpaceStiffness.type = DATA;  // Use ''BUFFER'' or ''DATA''
@@ -50,11 +50,11 @@ FSM.exec_file(rospack.find("YouBot_executive")+"/lua/fsm_component.lua");
    var ConnPolicy cp_state;
    connect("FSM.state","fakeMonitor.state_in",cp_state);
    connectPeers("executive","FSM")
-//fakeMonitor.configure;
-//FSM.configure;
+fakeMonitor.configure;
+FSM.configure;
 executive.configure
 
-//FSM.start;
+FSM.start;
 //fakeMonitor.start;
 executive.start
    // in snake position

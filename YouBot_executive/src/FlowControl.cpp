@@ -84,5 +84,24 @@ void catesianControl::run(YouBot::YouBot_executive* executive)
 	executive->getZeroStiffness(zeroStiffness_j,zeroStiffness_c);
 	executive->writeSetpoints(states_j,zeroStiffness_j,setPoint_c,stiffness_c);
 }
-
+std::string Top::toString()
+{
+	return "Top";
+}
+std::string fullControl::toString()
+{
+	return "fullControl";
+}
+std::string catesianControl::toString()
+{
+	return "catesianControl";
+}
+std::string gravityMode::toString()
+{
+	return "gravityMode";
+}
+std::string jointControl::toString()
+{
+	return "jointControl";
+}
 } //flowControl

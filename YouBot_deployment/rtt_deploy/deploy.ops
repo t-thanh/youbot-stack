@@ -13,5 +13,6 @@ runScript(rospack.find("YouBot_executive")+"/deploy.ops")
 runScript(rospack.find("YouBot_deployment")+"/rtt_deploy/adapter_connections.ops")
 //control.setPeriod(0)
 //runScript(rospack.find("YouBot_executive")+"/lua/deploy.ops")
-
+runScript(rospack.find("YouBot_deployment")+"/rtt_deploy/monitors.ops")
+runScript(rospack.find("YouBot_monitors")+"/monitor_config.ops")
 

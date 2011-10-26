@@ -2,7 +2,8 @@ require "rttlib"
  
 local tc=rtt.getTC();
 local events_out,state_in
-local events_test_table={"e_start","jnt01234pos.e_reached","jnt01234vel.e_lim_exceded","jnt01234vel.e_reached","jnt01234vel.e_lim_exided","jnt01234vel.e_reached","timer.e_lim_exceded","jnt01234pos.e_reached"}
+local events_test_table={"e_start","jnt01234pos.e_reached",
+                         "timer.e_lim_exceded","jnt01234pos.e_reached","jnt01234pos.e_reached","jnt01234pos.e_reached"}
 
 
 local cnt=1
