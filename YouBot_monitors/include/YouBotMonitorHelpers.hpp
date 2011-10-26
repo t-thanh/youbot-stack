@@ -51,7 +51,10 @@ namespace YouBot
 					relativeError = abs( (cur[index] - (*setp)[index]) / cur[index]);
 
 				if(relativeError > epsilon)
+				{
+//					log(Info) << "__false__" << endlog();
 					return false;
+				}
 			}
 			else if(ct == GREATER_EQUAL && diff < 0 )
 			{

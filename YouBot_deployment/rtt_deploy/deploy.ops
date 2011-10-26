@@ -7,10 +7,10 @@ runScript(rospack.find("YouBot_OODL")+"/deploy_with_monitor.ops")
 //setup connections from rtt to ros
 // requires H10..50 Hvp0 Htip0, effort and flow
 runScript(rospack.find("YouBot_deployment")+"/rtt_deploy/ros_connection.ops")
-//add executive
-runScript(rospack.find("YouBot_executive")+"/deploy.ops")
 //make final conncetions between the adaptes and youBot
 runScript(rospack.find("YouBot_deployment")+"/rtt_deploy/adapter_connections.ops")
+//add executive
+runScript(rospack.find("YouBot_executive")+"/deploy.ops")
 //control.setPeriod(0)
 //runScript(rospack.find("YouBot_executive")+"/lua/deploy.ops")
 runScript(rospack.find("YouBot_deployment")+"/rtt_deploy/monitors.ops")

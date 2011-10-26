@@ -12,4 +12,21 @@ connect("OODL.Arm1.joint_states","monitor.arm_joint_state",cp_m)
 connect("OODL.Base.joint_states","monitor.base_joint_state",cp_m)
 connect("OODL.Base.odometry_state","monitor.base_cart_state",cp_m)
 
+var ConnPolicy cp_2;
+cp_2.type = BUFFER;
+cp_2.lock_policy = LOCK_FREE;
+cp_2.size = 20;
+
+connectPeers("monitor", "EventLogger");
+connect("monitor.events", "EventLogger.events", cp_2);
+
+monitor.configure();
+monitor.setPeriod(1);
+monitor.start();
+
+runScript("monitor_config.ops");
+
+monitor.activate_monitor("jnt_velocity_zero");
+monitor.activate_monitor("jnt_pos_reached_up");
+
 

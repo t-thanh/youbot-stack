@@ -1,10 +1,18 @@
 return rfsm.csta {
    homing = rfsm.sista {
-     doo=
+     entry=
          function() 
          local op=executive:getOperation("unfoldArm")
          local handle=op:send()
-         print("homeing state")
+         local m_op=monitor:getOperation("activate_monitor")
+         local m_handle=m_op:send("jnt_velocity_zero")
+         print("homing state")
+         end,
+    exit  =
+         function() 
+         local m_op=monitor:getOperation("deactivate_monitor")
+         local m_handle=m_op:send("jnt_velocity_zero")
+         print("homing state")
          end,
    },
     wait_for_user = rfsm.sista {
@@ -63,9 +71,9 @@ return rfsm.csta {
     },
 
     rfsm.trans {src="initial", tgt="homing" },
-    rfsm.trans {src="homing", tgt="wait_for_user",               events={"jnt01234pos.e_reached"    }},
+    rfsm.trans {src="homing", tgt="wait_for_user",               events={"jnt01234pos.e_POS_REACHED_true" }},
     rfsm.trans {src="wait_for_user", tgt="learning_position",    events={"jnt01234vel.e_VEL_ZERO_false"}},
-    rfsm.trans {src="learning_position", tgt="proving_position", events={"jnt01234vel.e_VEL_ZERO_true"    }},--loop
+    rfsm.trans {src="learning_position", tgt="proving_position", events={"jnt01234vel.e_VEL_ZERO_true" }},--loop
     rfsm.trans {src="proving_position", tgt="learning_position", events={"jnt01234vel.e_VEL_ZERO_false" }},--loop
     rfsm.trans {src="proving_position", tgt="positioning_1",       events={"timer.e_lim_exceded" }},
     rfsm.trans {src="positioning_1", tgt="positioning_2",       events={ "jnt01234pos.e_reached"}},
