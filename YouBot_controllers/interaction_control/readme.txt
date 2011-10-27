@@ -4,8 +4,8 @@
  *  file:  readme.txt
  *  model: Z:\home\youbot\DEV\20SimModels\Tests\ModelControl.emx
  *  expmt: ModelControl
- *  date:  October 21, 2011
- *  time:  3:19:46 pm
+ *  date:  October 26, 2011
+ *  time:  1:27:39 pm
  *  user:  Campuslicentie
  *  from:  Universiteit Twente
  *  build: 4.1.2.2

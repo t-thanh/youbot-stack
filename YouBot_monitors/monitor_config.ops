@@ -2,17 +2,6 @@
 # joint space
 #
 
-monitor.setup_monitor("jnt_pos_reached");
-monitor.jnt_pos_reached.physical_part = ARM;
-monitor.jnt_pos_reached.control_space = JOINT;
-monitor.jnt_pos_reached.physical_quantity = MONITOR_POSITION;
-monitor.jnt_pos_reached.event_type = EDGE;
-monitor.jnt_pos_reached.compare_type = EQUAL;
-monitor.jnt_pos_reached.epsilon = 0.1;
-monitor.jnt_pos_reached.msg = string("e_POS_REACHED");
-monitor.jnt_pos_reached.indices = uint32[](uint32(0));
-monitor.jnt_pos_reached.values = float64[](0.0);
-
 monitor.setup_monitor("jnt_pos_reached_up");
 monitor.jnt_pos_reached_up.physical_part = ARM;
 monitor.jnt_pos_reached_up.control_space = JOINT;
@@ -91,4 +80,10 @@ monitor.cart_pos_reached.epsilon = 0.1;
 monitor.cart_pos_reached.msg = string("e_POS_REACHED");
 monitor.cart_pos_reached.indices = uint32[](uint32(0));
 monitor.cart_pos_reached.values = float64[](0.0);
+
+monitor.setPeriod(1);
+monitor.activate_monitor("jnt_velocity_zero");
+monitor.activate_monitor("jnt_velocity_non_zero_1");
+monitor.activate_monitor("jnt_velocity_non_zero_2");
+monitor.start();
 

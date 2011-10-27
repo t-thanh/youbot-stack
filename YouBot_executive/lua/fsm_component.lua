@@ -32,6 +32,7 @@ function configureHook()
 
    -- NOTE: executive is a global variable !!!!
    executive=tc:getPeer("executive")
+   monitor=tc:getPeer("monitor")
    return true
 end
  

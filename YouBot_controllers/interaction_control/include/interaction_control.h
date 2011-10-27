@@ -7,8 +7,8 @@
  *  subm:  interaction_control
  *  model: ModelControl
  *  expmt: ModelControl
- *  date:  October 21, 2011
- *  time:  3:19:46 pm
+ *  date:  October 26, 2011
+ *  time:  1:27:39 pm
  *  user:  Campuslicentie
  *  from:  Universiteit Twente
  *  build: 4.1.2.2
@@ -105,7 +105,7 @@ namespace ModelControl
 	private:
 		/* internal submodel computation methods */
 
-		XXDouble u [22 + 1]; // Optimization for CopyInputsToVariables
+		XXDouble u [30 + 1]; // Optimization for CopyInputsToVariables
 		XXDouble y [8 + 1]; //Optimization for CopyVariablesToOutputs
 
 		/**
