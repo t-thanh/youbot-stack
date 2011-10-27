@@ -197,6 +197,10 @@ namespace YouBot
 				{
 					out = MONITOR_TORQUE;
 				}
+				else if(boost::equals(str, "MONITOR_TIME"))
+				{
+					out = MONITOR_TIME;
+				}
 				else
 				{
 					log(Error) << "Enum value (physical_quantity) not recognized." << endlog();

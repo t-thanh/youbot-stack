@@ -36,6 +36,16 @@ namespace YouBot
 
 			virtual bool activate_monitor(std::string name);
 
+			/**
+			 * @brief Lua cannot access PropertyBags, this is the work around.
+			 */
+			virtual bool assign_indices(std::string, std::vector<uint32_t> indices);
+
+			/**
+			 * @brief Lua cannot access PropertyBags, this is the work around.
+			 */
+			virtual bool assign_values(std::string, std::vector<double> values);
+
 			virtual bool copy_monitor(std::string source, std::string target);
 
 			virtual bool deactivate_monitor(std::string name);
@@ -48,8 +58,7 @@ namespace YouBot
 
 		protected:
 			template<class message_type>
-			bool check_monitor(message_type* const inp, const physical_quantity quantity, const std::string msg,
-					vector<unsigned int>* const indices, vector<double>* const vector_value, const compare_type c_type, const double epsilon);
+			bool check_monitor(message_type* const inp, monitor* const mon);
 
 			bool bind_function(monitor* m);
 			vector<monitor*>::iterator getMonitor(vector<monitor*>& list, std::string& name);
@@ -75,29 +84,28 @@ namespace YouBot
     };
 
 	template<>
-	bool YouBotMonitorService::check_monitor<sensor_msgs::JointState>(sensor_msgs::JointState* const imp, const physical_quantity quantity, const std::string msg,
-			vector<unsigned int>* const indices, vector<double>* const cmp_value, const compare_type c_type, const double epsilon)
+	bool YouBotMonitorService::check_monitor<sensor_msgs::JointState>(sensor_msgs::JointState* const imp, monitor* const mon)
 	{
-		switch(quantity)
+		switch(mon->quantity)
 		{
 			case(MONITOR_POSITION):
 			{
-				return compare(indices, cmp_value, imp->position, c_type, epsilon);
+				return compare(mon->indices, mon->values, imp->position, mon->c_type, mon->epsilon);
 				break;
 			}
 			case(MONITOR_VELOCITY):
 			{
-				return compare(indices, cmp_value, imp->velocity, c_type, epsilon);
+				return compare(mon->indices, mon->values, imp->velocity, mon->c_type, mon->epsilon);
 				break;
 			}
 			case(MONITOR_FORCE):
 			{
-				return compare(indices, cmp_value, imp->effort, c_type, epsilon);
+				return compare(mon->indices, mon->values, imp->effort, mon->c_type, mon->epsilon);
 				break;
 			}
 			case(MONITOR_TORQUE):
 			{
-				return compare(indices, cmp_value, imp->effort, c_type, epsilon);
+				return compare(mon->indices, mon->values, imp->effort, mon->c_type, mon->epsilon);
 				break;
 			}
 			default:
@@ -111,10 +119,9 @@ namespace YouBot
 	}
 
 	template<>
-	bool YouBotMonitorService::check_monitor<nav_msgs::Odometry>(nav_msgs::Odometry* const imp, const physical_quantity quantity, const std::string msg,
-			vector<unsigned int>* const indices, vector<double>* const vector_value, const compare_type c_type, const double epsilon)
+	bool YouBotMonitorService::check_monitor<nav_msgs::Odometry>(nav_msgs::Odometry* const imp, monitor* const mon)
 	{
-		switch(quantity)
+		switch(mon->quantity)
 		{
 			case(MONITOR_POSITION):
 			{
@@ -123,7 +130,7 @@ namespace YouBot
 				tmp2[1] = imp->pose.pose.position.y;
 //					tmp2[2] = tmp.pose.pose.position.z;
 				tmp2[2] = tf::getYaw (imp->pose.pose.orientation); //yaw
-				return compare(indices, vector_value, tmp2, c_type, epsilon);
+				return compare(mon->indices, mon->values, tmp2, mon->c_type, mon->epsilon);
 				break;
 			}
 			case(MONITOR_VELOCITY):
@@ -135,7 +142,7 @@ namespace YouBot
 				tmp2[3] = imp->twist.twist.angular.x;
 				tmp2[4] = imp->twist.twist.angular.y;
 				tmp2[5] = imp->twist.twist.angular.z;
-				return compare(indices, vector_value, tmp2, c_type, epsilon);
+				return compare(mon->indices, mon->values, tmp2, mon->c_type, mon->epsilon);
 				break;
 			}
 			case(MONITOR_FORCE):
@@ -158,6 +165,23 @@ namespace YouBot
 			}
 		}
 
+		return false;
+	}
+
+	template<>
+	bool YouBotMonitorService::check_monitor<ros::Time>(ros::Time* const imp, monitor* const mon)
+	{
+		unsigned int size = mon->indices.size();
+		ros::Time now = ros::Time::now();
+
+		for(unsigned int i = 0; i < size; ++i)
+		{
+			if(!mon->timer_state[i] && now > mon->timer_expires[i])
+			{
+				mon->timer_state[i] = true;
+				return true;
+			}
+		}
 		return false;
 	}
 

@@ -1,6 +1,5 @@
 #include "YouBotMonitor.hpp"
 
-#include <rtt/plugin/ServicePlugin.hpp>
 #include <ocl/Component.hpp>
 
 #include <stdio.h>
@@ -44,6 +43,8 @@ namespace YouBot
 
         this->addOperation("setup_monitor",&YouBotMonitorService::setup_monitor,this, OwnThread);
         this->addOperation("copy_monitor",&YouBotMonitorService::copy_monitor,this, OwnThread);
+        this->addOperation("assign_indices",&YouBotMonitorService::assign_indices,this, OwnThread);
+        this->addOperation("assign_values",&YouBotMonitorService::assign_values,this, OwnThread);
         this->addOperation("activate_monitor",&YouBotMonitorService::activate_monitor,this, OwnThread);
         this->addOperation("deactivate_monitor",&YouBotMonitorService::deactivate_monitor,this, OwnThread);
         this->addOperation("remove_monitor",&YouBotMonitorService::remove_monitor,this, OwnThread);
@@ -215,6 +216,48 @@ namespace YouBot
 		return true;
 	}
 
+	bool YouBotMonitorService::assign_indices(std::string name, std::vector<uint32_t> indices)
+	{
+		vector<monitor*>::iterator i;
+		monitor* m = (i = getMonitor(m_monitors, name)) != m_monitors.end() ? *i : NULL;
+
+		if(m == NULL)
+		{
+			log(Error) << "Monitor not found" << endlog();
+			return false;
+		}
+
+		if(m->active)
+		{
+			log(Warning) << "Cannot assign indices to an active monitor." << endlog();
+			return false;
+		}
+
+		m->indices = indices;
+		return true;
+	}
+
+	bool YouBotMonitorService::assign_values(std::string name, std::vector<double> values)
+	{
+		vector<monitor*>::iterator i;
+		monitor* m = (i = getMonitor(m_monitors, name)) != m_monitors.end() ? *i : NULL;
+
+		if(m == NULL)
+		{
+			log(Error) << "Monitor not found" << endlog();
+			return false;
+		}
+
+		if(m->active)
+		{
+			log(Warning) << "Cannot assign values to an active monitor." << endlog();
+			return false;
+		}
+
+		m->values  = values;
+		return true;
+	}
+
 	bool YouBotMonitorService::activate_monitor(std::string name)
 	{
 		vector<monitor*>::iterator i;
@@ -241,13 +284,34 @@ namespace YouBot
 			m->is_single_value = false;
 		}
 
-		if(m->space == CARTESIAN && (m->quantity == MONITOR_FORCE || m->quantity == MONITOR_TORQUE) )
+		if(m->quantity == MONITOR_TIME)
+		{
+			log(Info) << "Ignoring physical_part, control_space, event_type, compare_type, epsilon and indices." << endlog();
+			m->id = m->descriptive_name;
+			m->e_type = LEVEL;
+			unsigned int size = m->values.size();
+			m->timer_state.reserve(size);
+			m->timer_expires.reserve(size);
+			ros::Time now = ros::Time::now();
+			for(unsigned int i = 0; i < size; ++i)
+			{
+				m->timer_state[i] = false;
+
+				int64_t sec_sum  = (int64_t)now.sec  + floor(m->values[i]);
+				int64_t nsec_sum = (int64_t)now.nsec + (m->values[i] - floor(m->values[i])) * 1000000000ull;
+
+				  // Throws an exception if we go out of 32-bit range
+				ros::normalizeSecNSecUnsigned(sec_sum, nsec_sum);
+
+				m->timer_expires[i] = ros::Time((uint32_t)sec_sum, (uint32_t)nsec_sum);
+			}
+		}
+		else if(m->space == CARTESIAN && (m->quantity == MONITOR_FORCE || m->quantity == MONITOR_TORQUE) )
 		{
 			log(Error) << "Cannot monitor cartesian FORCE or TORQUE at the moment." << endlog();
 			return false;
 		}
-
-		if(m->space == CARTESIAN)
+		else if(m->space == CARTESIAN)
 		{
 			m->id = control_space_toeventstring(m->space) + physical_quantity_toeventstring(m->quantity);
 		}
@@ -328,9 +392,13 @@ namespace YouBot
 	{
 		// Note: You MUST use the final (heap stored) monitor struct!
 
-		if(m->space == CARTESIAN && m->part == BASE)
+		if(m->quantity == MONITOR_TIME)
 		{
-			m->check = boost::bind(boost::mem_fn(&YouBotMonitorService::check_monitor<nav_msgs::Odometry>), this, &m_base_cart_state, m->quantity, m->msg, &m->indices, &m->values, m->c_type, m->epsilon);
+			m->check = boost::bind(boost::mem_fn(&YouBotMonitorService::check_monitor<ros::Time>), this, &(m->timer_expires[0]), m);
+		}
+		else if(m->space == CARTESIAN && m->part == BASE)
+		{
+			m->check = boost::bind(boost::mem_fn(&YouBotMonitorService::check_monitor<nav_msgs::Odometry>), this, &m_base_cart_state, m);
 		}
 		else if(m->space == CARTESIAN && m->part == ARM)
 		{
@@ -340,11 +408,11 @@ namespace YouBot
 		}
 		else if(m->space == JOINT && m->part == BASE)
 		{
-			m->check = boost::bind(boost::mem_fn(&YouBotMonitorService::check_monitor<sensor_msgs::JointState>), this, &m_base_joint_state, m->quantity, m->msg, &m->indices, &m->values, m->c_type, m->epsilon);
+			m->check = boost::bind(boost::mem_fn(&YouBotMonitorService::check_monitor<sensor_msgs::JointState>), this, &m_base_joint_state, m);
 		}
 		else if(m->space == JOINT && m->part == ARM)
 		{
-			m->check = boost::bind(boost::mem_fn(&YouBotMonitorService::check_monitor<sensor_msgs::JointState>), this, &m_arm_joint_state, m->quantity, m->msg, &m->indices, &m->values, m->c_type, m->epsilon);
+			m->check = boost::bind(boost::mem_fn(&YouBotMonitorService::check_monitor<sensor_msgs::JointState>), this, &m_arm_joint_state, m);
 		}
 
 		return true;

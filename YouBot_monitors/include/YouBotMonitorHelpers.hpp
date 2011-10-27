@@ -21,14 +21,14 @@ namespace YouBot
 
 	std::string compare_type_tostring(const compare_type& c_type);
 
-	bool compare(vector<unsigned int>* const indices, vector<double>* const setp, const vector<double>& cur, const compare_type ct, const double epsilon)
+	bool compare(const vector<unsigned int>& indices, const vector<double>& setp, const vector<double>& cur, const compare_type ct, const double epsilon)
 	{
 		unsigned int index = 0;
-		unsigned int size = indices->size();
+		unsigned int size = indices.size();
 		for(unsigned int i = 0; i < size; ++i)
 		{
-			index = (*indices)[i];
-			double diff = cur[index] - (*setp)[index];
+			index = indices[i];
+			double diff = cur[index] - setp[index];
 
 //			log(Info) << compare_type_tostring(ct) << " diff (" << cur[index] << " - " << (*setp)[index] << ") : " << diff << " epsilon: " << epsilon << endlog();
 
@@ -43,12 +43,12 @@ namespace YouBot
 			else if(ct == EQUAL)
 			{
 				double relativeError = 0.0;
-				if((*setp)[index] == cur[index])
+				if(setp[index] == cur[index])
 					continue; // true
-				else if(abs((*setp)[index]) > abs(cur[index]))
-					relativeError = abs( (cur[index] - (*setp)[index]) / (*setp)[index]);
+				else if(abs(setp[index]) > abs(cur[index]))
+					relativeError = abs( (cur[index] - setp[index]) / setp[index]);
 				else
-					relativeError = abs( (cur[index] - (*setp)[index]) / cur[index]);
+					relativeError = abs( (cur[index] - setp[index]) / cur[index]);
 
 				if(relativeError > epsilon)
 				{
@@ -99,6 +99,8 @@ namespace YouBot
 			return "MONITOR_FORCE";
 		else if(quantity == MONITOR_TORQUE)
 			return "MONITOR_TORQUE";
+		else if(quantity == MONITOR_TIME)
+			return "MONITOR_TIME";
 		else
 			return "error";
 	}
@@ -113,6 +115,8 @@ namespace YouBot
 			return "for";
 		else if(quantity == MONITOR_TORQUE)
 			return "tor";
+		else if(quantity == MONITOR_TIME)
+			return "time";
 		else
 			return "error";
 	}
