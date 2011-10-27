@@ -45,7 +45,7 @@ monitor.jnt_velocity_zero.control_space = JOINT;
 monitor.jnt_velocity_zero.physical_quantity = MONITOR_VELOCITY;
 monitor.jnt_velocity_zero.event_type = EDGE;
 monitor.jnt_velocity_zero.compare_type = EQUAL;
-monitor.jnt_velocity_zero.epsilon = 0.1;
+monitor.jnt_velocity_zero.epsilon = 0.5;
 monitor.jnt_velocity_zero.msg = string("e_VEL_ZERO");
 monitor.jnt_velocity_zero.indices = uint32[](uint32(0), uint32(1), uint32(2), uint32(3), uint32(4));
 monitor.jnt_velocity_zero.values = float64[](0.0, 0.0, 0.0, 0.0, 0.0);
@@ -57,8 +57,8 @@ monitor.jnt_torque_lim_exceeded.physical_quantity = MONITOR_TORQUE;
 monitor.jnt_torque_lim_exceeded.event_type = EDGE;
 monitor.jnt_torque_lim_exceeded.compare_type = GREATER;
 monitor.jnt_torque_lim_exceeded.msg = string("e_LIM_EXCEEDED");
-monitor.jnt_torque_lim_exceeded.indices = uint32[](uint32(0));
-monitor.jnt_torque_lim_exceeded.values = float64[](0.0);
+monitor.jnt_torque_lim_exceeded.indices = uint32[]( uint32(333));
+monitor.jnt_torque_lim_exceeded.values = float64[]( 1.0);
 
 monitor.setup_monitor("jnt_pos_lim_exceeded");
 monitor.jnt_pos_lim_exceeded.physical_part = ARM;
@@ -107,8 +107,5 @@ monitor.cart_pos_reached.indices = uint32[](uint32(0));
 monitor.cart_pos_reached.values = float64[](0.0);
 
 monitor.setPeriod(1);
-monitor.activate_monitor("jnt_velocity_zero");
-monitor.activate_monitor("jnt_velocity_non_zero_1");
-monitor.activate_monitor("jnt_velocity_non_zero_2");
 monitor.start();
 

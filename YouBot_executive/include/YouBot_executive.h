@@ -42,6 +42,8 @@ public:
 	void getStates(vector<double>& position_j,vector<double>& position_c);
 	void getStiffness(vector<double>& stiffness_j,vector<double>& stiffness_c);
 	void getZeroStiffness(vector<double>& stiffness_j,vector<double>& stiffness_c);
+	void setCartesianStiffness(vector<double> stiffness_c);
+	void setJointStiffness(vector<double> stiffness_j);
 	void init();
 	vector<double> m_position_j;
 	vector<double> m_stiffness_j;

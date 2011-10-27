@@ -1019,7 +1019,7 @@ code
 			<name>ControllableJ\force_lim</name>
 			<kind>parameter</kind>
 			<type>real</type>
-			<value>10.0</value>
+			<value>7.0</value>
 			<storage>
 				<name>P</name>
 				<index>45</index>
@@ -11418,7 +11418,7 @@ code
 			<name>JointSpaceStiffness\force_lim</name>
 			<kind>parameter</kind>
 			<type>real</type>
-			<value>10.0</value>
+			<value>7.0</value>
 			<storage>
 				<name>P</name>
 				<index>247</index>

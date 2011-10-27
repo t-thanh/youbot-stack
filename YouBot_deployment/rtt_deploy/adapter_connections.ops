@@ -29,4 +29,4 @@ connect("control.bond_to_arm_omega","arm2control.output_velocities",cp_8)
 
 arm2control.start
 control.start
-//control2arm.start
+control2arm.start

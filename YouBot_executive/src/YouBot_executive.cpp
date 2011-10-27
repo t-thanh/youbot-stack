@@ -10,7 +10,7 @@ namespace YouBot
  const double YouBot_executive:: UNFOLD_JOINT_POSE[]={0,0,0,0,0,0,0,0};
  const double YouBot_executive::UNFOLD_CART_POSE[]={0,0,1,0,0,0};
  const double YouBot_executive::BASIC_JOINT_STIFFNESS[]={0,0,0,70,50,50,50,50};
- const double YouBot_executive::BASIC_CART_STIFFNESS[]={5,70};
+ const double YouBot_executive::BASIC_CART_STIFFNESS[]={0,70};
 YouBot_executive::YouBot_executive(const string& name) :
 		TaskContext(name, PreOperational), m_position_j(), m_stiffness_j(), m_position_c(), m_stiffness_c()
 {
@@ -42,6 +42,11 @@ YouBot_executive::YouBot_executive(const string& name) :
 	this->addOperation("getGripperPose", &YouBot_executive::getGripperPose,
 			this).doc("jut text");
 	this->addOperation("init",&YouBot_executive::init,this).doc(" set data samples and clean up errors");
+	this->addOperation("setCartesianStiffness", &YouBot_executive::setCartesianStiffness,this).doc(" ");
+	this->addOperation("setJointStiffness", &YouBot_executive::setJointStiffness,this).doc(" ");
+
+
+
 	this->addPort("JointSpaceSetpoint", m_JointSpaceSetpoint).doc("");
 	this->addPort("JointSpaceStiffness", m_JointSpaceStiffness).doc("");
 	this->addPort("CartSpaceSetpoint", m_CartSpaceSetpoint).doc("");
@@ -57,6 +62,16 @@ YouBot_executive::YouBot_executive(const string& name) :
 	this->addProperty("Gripper_stiffness_setpoint", m_stiffness_c);
 
 	this->init();
+}
+void YouBot_executive::setCartesianStiffness(vector<double> stiffness_c)
+{
+	//not thread safe
+	m_stiffness_c.assign(stiffness_c.begin(),stiffness_c.end());
+}
+void YouBot_executive::setJointStiffness(vector<double> stiffness_j)
+{
+	//not thread safe
+	m_stiffness_j.assign(stiffness_j.begin(),stiffness_j.end()); //Swap is valid since
 }
 void YouBot_executive::init()
 {
