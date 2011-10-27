@@ -1,0 +1,33 @@
+import("rtt_rospack")
+loadService("Deployer", "rospack");
+
+runScript( rospack.find("YouBot_OODL") + "/deploy.ops")
+
+displayComponentTypes;
+
+loadComponent("ArmController","YouBot::ArmControllerMockup");
+
+ArmController.configure;
+ArmController.setPeriod(0.01);
+
+var ConnPolicy cp_rt;
+cp_rt.type = DATA;  // Use ''BUFFER'' or ''DATA''
+cp_rt.lock_policy = LOCK_FREE; // Use  ''LOCKED'', ''LOCK_FREE'' or ''UNSYNC''
+
+connectPeers("OODL", "ArmController")
+connect("OODL.Arm1.joint_states","ArmController.joint_states", cp_rt)
+connect("OODL.Arm1.motor_statuses","ArmController.joint_statuses", cp_rt)
+connect("ArmController.joint_cmd_angles","OODL.Arm1.joint_cmd_angles", cp_rt)
+
+# 
+# Start running
+# 
+
+ArmController.start;
+
+var std.vector<ctrl_modes> ctrl = std.vector<ctrl_modes>(5, PLANE_ANGLE);
+OODL.Arm1.setControlModes(ctrl);
+
+OODL.Arm1.clearControllerTimeouts;
+OODL.Base.clearControllerTimeouts;
+
