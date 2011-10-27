@@ -286,7 +286,7 @@ namespace YouBot
 
 		if(m->quantity == MONITOR_TIME)
 		{
-			log(Info) << "Ignoring physical_part, control_space, event_type, compare_type, epsilon and indices." << endlog();
+			log(Debug) << "Ignoring physical_part, control_space, event_type, compare_type, epsilon and indices." << endlog();
 			m->id = m->descriptive_name;
 			m->e_type = LEVEL;
 			unsigned int size = m->values.size();

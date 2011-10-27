@@ -176,7 +176,7 @@ namespace YouBot
 
 		for(unsigned int i = 0; i < size; ++i)
 		{
-			if(!mon->timer_state[i] && now > mon->timer_expires[i])
+			if(!mon->timer_state[i] && now >= mon->timer_expires[i])
 			{
 				mon->timer_state[i] = true;
 				return true;
