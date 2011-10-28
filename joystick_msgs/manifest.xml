@@ -1,0 +1,21 @@
+<package>
+  <description brief="joystick_msgs">
+    
+   joystick_msgs
+ 
+  </description>
+  <author>create_rtt_msgs Generator</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/rtt_ros_integration</url>
+  <depend package="rtt_ros_integration"/>
+  <depend package="joy"/>
+
+  <export>
+    <cpp cflags="-I${prefix}/include"/>
+  </export>
+
+
+</package>
+
+

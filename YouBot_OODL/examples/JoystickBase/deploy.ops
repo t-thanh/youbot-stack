@@ -1,0 +1,35 @@
+import("rtt_rospack")
+import("joystick_msgs")
+loadService("Deployer", "rospack");
+
+runScript( rospack.find("YouBot_OODL") + "/deploy.ops")
+
+displayComponentTypes;
+
+loadComponent("JoystickBase","YouBot::JoystickBase");
+
+JoystickBase.configure;
+JoystickBase.setPeriod(0.01);
+
+var ConnPolicy cp_rt;
+cp_rt.type = DATA;  // Use ''BUFFER'' or ''DATA''
+cp_rt.lock_policy = LOCK_FREE; // Use  ''LOCKED'', ''LOCK_FREE'' or ''UNSYNC''
+
+connectPeers("OODL", "JoystickBase")
+connect("OODL.Base.odometry_state","JoystickBase.odometry_state", cp_rt)
+connect("JoystickBase.cmd_twist","OODL.Base.cmd_twist", cp_rt)
+
+var ConnPolicy cp_ros;
+cp_ros.transport = 3;
+cp_ros.name_id = "/joy";
+stream("JoystickBase.joystick", cp_ros);
+
+# 
+# Start running
+# 
+
+JoystickBase.start;
+
+OODL.Arm1.clearControllerTimeouts;
+OODL.Base.clearControllerTimeouts;
+

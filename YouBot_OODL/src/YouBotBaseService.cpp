@@ -44,8 +44,10 @@ namespace YouBot
 
         // odometry pose estimates frame
         m_odometry_state.header.frame_id = "odometry";
+        m_odometry_state.header.seq = 0;
         // odometry twist estimates frame
         m_odometry_state.child_frame_id = "base_link";
+
         // odometry estimates - set to zero
         m_odometry_state.pose.pose.position.x = 0;
         m_odometry_state.pose.pose.position.y = 0;
@@ -154,6 +156,13 @@ namespace YouBot
 
 	void YouBotBaseService::setControlModes(vector<ctrl_modes>& all)
 	{
+		if(all.size() != NR_OF_BASE_SLAVES)
+		{
+			log(Error) << "The number of ctrl_modes should match the number of motors." << endlog();
+			this->getOwner()->error();
+			return;
+		}
+
 		// If one ctrl_mode is TWIST, check to see if all ctrl_modes are set to TWIST.
 		bool twist(false);
 		for(unsigned int i = 0; i < NR_OF_BASE_SLAVES; ++i)
@@ -161,14 +170,11 @@ namespace YouBot
 			if(all[i] == TWIST && !twist)
 			{
 				twist = true;
-				for(unsigned int j = i; j >= 0; ++j)
+				if(i != 0)
 				{
-					if(all[j] != TWIST)
-					{
-						this->getOwner()->error();
-						log(Error) << "If the ctrl_mode TWIST is used, all " << NR_OF_BASE_SLAVES << " motors should be set to this!" << endlog();
-						return;
-					}
+					this->getOwner()->error();
+					log(Error) << "If the ctrl_mode TWIST is used, all " << NR_OF_BASE_SLAVES << " motors should be set to this!" << endlog();
+					return;
 				}
 			}
 			else if(twist && all[i] != TWIST)
