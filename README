@@ -7,11 +7,22 @@ INSTALLATION (not verified yet)
 Prerequisites:
 * ROS (diamondback) installed and setup (www.ros.org)
 * orocos_toolchain_ros installed and setup (www.orocos.org)
-* KUL motion_control stack installed (git clone http://git.mech.kuleuven.be/robotics/motion_control.git; git checkout devel), however you only need the motion_control_msgs and rtt_motion_control_msgs directories.
 
-Steps:
-git clone git@github.com:b-it-bots/youbot-stack.git
-cd youbot-stack
-git submodule init
-git submodule update
+KUL motion_control stack install:
+* Note you only need the motion_control_msgs and rtt_motion_control_msgs directories. 
+Proposed steps:
+git clone http://git.mech.kuleuven.be/robotics/motion_control.git
+cd motion_control
+git checkout devel
+git checkout c8455131594218267eb735db3e4ddc66b55da1fb
+rm -rf ./cartesian_motion_control ./naxes_motion_control
 rosmake
+
+UTwente YouBot-stack install:
+1) git clone git@github.com:b-it-bots/youbot-stack.git
+2) cd youbot-stack
+3) git submodule init
+4) git submodule update
+5) rosmake
+
+Note: For all installation actions you have to manually adjust the ROS_PACKAGE_PATH probably.
