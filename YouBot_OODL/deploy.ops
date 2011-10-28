@@ -7,11 +7,11 @@ import("rtt_motion_control_msgs");
 
 displayComponentTypes;
 
-loadComponent("OODL","YouBot::YouBotOODL");
+loadComponent("youbot","YouBot::YouBotOODL");
 loadComponent("EventLogger", "YouBot::EventLogger");
 
-setActivity("OODL", 0.001, HighestPriority, ORO_SCHED_RT);
-OODL.configure;
+setActivity("youbot", 0.001, HighestPriority, ORO_SCHED_RT);
+youbot.configure;
 
 var ConnPolicy cp_rt;
 cp_rt.type = DATA;  // Use ''BUFFER'' or ''DATA''
@@ -22,9 +22,9 @@ cp_events.type = BUFFER;
 cp_events.lock_policy = LOCK_FREE;
 cp_events.size = 20;
 
-connectPeers("OODL", "EventLogger");
-connect("OODL.Arm1.events", "EventLogger.events", cp_events);
-connect("OODL.Base.events", "EventLogger.events", cp_events);
+connectPeers("youbot", "EventLogger");
+connect("youbot.Arm1.events", "EventLogger.events", cp_events);
+connect("youbot.Base.events", "EventLogger.events", cp_events);
 
 #
 # ROS output
@@ -33,10 +33,10 @@ connect("OODL.Base.events", "EventLogger.events", cp_events);
 var ConnPolicy cp_ros;
 cp_ros.transport = 3;
 cp_ros.name_id = "/debug/joint_states";
-stream("OODL.Arm1.joint_states", cp_ros);
+stream("youbot.Arm1.joint_states", cp_ros);
 
 cp_ros.name_id = "/debug/motor_statuses";
-stream("OODL.Arm1.motor_statuses", cp_ros);
+stream("youbot.Arm1.motor_statuses", cp_ros);
 
 # 
 # Start running
@@ -44,8 +44,8 @@ stream("OODL.Arm1.motor_statuses", cp_ros);
 
 EventLogger.configure;
 EventLogger.start;
-OODL.start;
+youbot.start;
 
-OODL.Arm1.clearControllerTimeouts;
-OODL.Base.clearControllerTimeouts;
+youbot.Arm1.clearControllerTimeouts;
+youbot.Base.clearControllerTimeouts;
 
