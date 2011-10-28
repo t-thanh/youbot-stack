@@ -21,14 +21,14 @@ namespace YouBot
 
 	std::string compare_type_tostring(const compare_type& c_type);
 
-	bool compare(const vector<unsigned int>& indices, const vector<double>& setp, const vector<double>& cur, const compare_type ct, const double epsilon)
+	bool compare(const vector<unsigned int>& indices, const vector<double>& setp, const vector<double>& state, const compare_type ct, const double epsilon)
 	{
 		unsigned int index = 0;
 		unsigned int size = indices.size();
 		for(unsigned int i = 0; i < size; ++i)
 		{
 			index = indices[i];
-			double diff = cur[index] - setp[index];
+			double diff = state[index] - setp[i];
 
 //			log(Info) << compare_type_tostring(ct) << " diff (" << cur[index] << " - " << (*setp)[index] << ") : " << diff << " epsilon: " << epsilon << endlog();
 
@@ -43,12 +43,12 @@ namespace YouBot
 			else if(ct == EQUAL)
 			{
 				double relativeError = 0.0;
-				if(setp[index] == cur[index])
+				if(setp[i] == state[index])
 					continue; // true
-				else if(abs(setp[index]) > abs(cur[index]))
-					relativeError = abs( (cur[index] - setp[index]) / setp[index]);
+				else if(abs(setp[i]) > abs(state[index]))
+					relativeError = abs( (state[index] - setp[i]) / setp[i]);
 				else
-					relativeError = abs( (cur[index] - setp[index]) / cur[index]);
+					relativeError = abs( (state[index] - setp[i]) / state[index]);
 
 				if(relativeError > epsilon)
 				{

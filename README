@@ -1,17 +1,29 @@
-YouBot-stack development repository.
+=YouBot-stack development repository=
 
 The University of Twente(www.utwente.nl) is not liable for any damage arising directly or indirectly from using the code in this repository.
 
-INSTALLATION (not verified yet)
+==INSTALLATION (not verified yet)==
 
-Prerequisites:
-* ROS (diamondback) installed and setup (www.ros.org)
-* orocos_toolchain_ros installed and setup (www.orocos.org)
-* KUL motion_control stack installed (git clone http://git.mech.kuleuven.be/robotics/motion_control.git; git checkout devel), however you only need the motion_control_msgs and rtt_motion_control_msgs directories.
+===Prerequisites===
+* ROS (must be: diamondback) installed and setup (www.ros.org)
+* orocos_toolchain_ros (corresponding to diamondback) installed and setup (www.orocos.org)
+* KUL motion_control stack (see below).
 
-Steps:
-git clone git@github.com:b-it-bots/youbot-stack.git
-cd youbot-stack
-git submodule init
-git submodule update
-rosmake
+===KUL motion_control stack install===
+* Note you only need the motion_control_msgs and rtt_motion_control_msgs directories. 
+Proposed steps:
+1) git clone http://git.mech.kuleuven.be/robotics/motion_control.git
+2) cd motion_control
+3) git checkout devel
+4) git checkout c8455131594218267eb735db3e4ddc66b55da1fb
+5) rm -rf ./cartesian_motion_control ./naxes_motion_control
+6) rosmake
+
+===UTwente YouBot-stack install===
+1) git clone git@github.com:b-it-bots/youbot-stack.git
+2) cd youbot-stack
+3) git submodule init
+4) git submodule update
+5) rosmake
+
+Note: For all installation actions you have to manually adjust the ROS_PACKAGE_PATH probably.

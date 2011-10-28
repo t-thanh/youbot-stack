@@ -43,10 +43,10 @@ namespace YouBot
 			return false;
 		}
 
-		TaskContext* task_ptr = getPeer("OODL");
+		TaskContext* task_ptr = getPeer("youbot");
 		if(task_ptr == NULL)
 		{
-			log(Error) << "Could not find peer OODL" << endlog();
+			log(Error) << "Could not find peer YouBot_OODL" << endlog();
 			return false;
 		}
 		op_setControlModes = task_ptr->provides("Base")->getOperation("setControlModes");
