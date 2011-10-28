@@ -125,6 +125,8 @@ namespace YouBot
 			m_gripper_limits.min_position = spacing;
 			m_gripper_limits.max_position = max_distance + spacing;
 
+			log(Info) << "Gripper calibration min_position: " << m_gripper_limits.min_position << " max_position: " << m_gripper_limits.max_position << endlog();
+
 			delete m_manipulator;
 
 		}

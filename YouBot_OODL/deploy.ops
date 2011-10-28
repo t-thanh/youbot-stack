@@ -32,11 +32,17 @@ connect("youbot.Base.events", "EventLogger.events", cp_events);
 
 var ConnPolicy cp_ros;
 cp_ros.transport = 3;
-cp_ros.name_id = "/debug/joint_states";
+cp_ros.name_id = "/debug/arm/joint_states";
 stream("youbot.Arm1.joint_states", cp_ros);
 
-cp_ros.name_id = "/debug/motor_statuses";
+cp_ros.name_id = "/debug/arm/motor_statuses";
 stream("youbot.Arm1.motor_statuses", cp_ros);
+
+cp_ros.name_id = "/debug/base/joint_states";
+stream("youbot.Base.joint_states", cp_ros);
+
+cp_ros.name_id = "/debug/base/motor_statuses";
+stream("youbot.Base.motor_statuses", cp_ros);
 
 # 
 # Start running
