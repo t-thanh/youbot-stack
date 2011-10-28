@@ -73,16 +73,16 @@ namespace YouBot
 		if(gripper_cmd_position.read(m_gripper_cmd_position) == NewData) //setData has SLEEP_MILLISECOND :-(
 		{
 			m_tmp_gripper_cmd_position.barSpacing = m_gripper_cmd_position.positions[0] * si::meter;
-			// check limits to prevent exceptions
-			if( m_tmp_gripper_cmd_position.barSpacing < m_gripper_limits.min_position )
-			{
-				m_tmp_gripper_cmd_position.barSpacing = m_gripper_limits.min_position;
-			}
-			//above limits:
-			else if(m_tmp_gripper_cmd_position.barSpacing > m_gripper_limits.max_position)
-			{
-				m_tmp_gripper_cmd_position.barSpacing = m_gripper_limits.max_position;
-			}
+//			// check limits to prevent exceptions
+//			if( m_tmp_gripper_cmd_position.barSpacing < m_gripper_limits.min_position )
+//			{
+//				m_tmp_gripper_cmd_position.barSpacing = m_gripper_limits.min_position;
+//			}
+//			//above limits:
+//			else if(m_tmp_gripper_cmd_position.barSpacing > m_gripper_limits.max_position)
+//			{
+//				m_tmp_gripper_cmd_position.barSpacing = m_gripper_limits.max_position;
+//			}
 
 			m_gripper->setData(m_tmp_gripper_cmd_position);
 		}
