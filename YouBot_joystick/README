@@ -1,0 +1,14 @@
+Requirements:
+* ROS joy package
+To install: svn co https://code.ros.org/svn/ros-pkg/stacks/joystick_drivers/tags/diamondback
+* A joystick
+
+Note: 
+* This package has only been tested with a Logitech Extreme 3D Pro.
+* To build remove the ROS_NOBUILDs first.
+
+To run:
+* roscore
+* rosrun joy joy_node
+* sudo ./run.sh ./deploy.ops
+* Move the joystick!

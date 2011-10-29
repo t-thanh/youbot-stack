@@ -1,7 +1,7 @@
 <package>
-  <description brief="YouBot_OODL">
+  <description brief="YouBot_joystick">
 
-     YouBot_OODL
+     YouBot_joystick - test package
 
   </description>
   <author>Robert Wilterdink</author>
@@ -15,7 +15,7 @@
   <depend package="rtt_motion_control_msgs"/>
   <depend package="rtt_ros_integration_nav_msgs"/>
   <depend package="rtt_ros_integration_geometry_msgs"/>
-  <depend package="tf"/>
+  <depend package="joystick_msgs"/>
 </package>
 
 
