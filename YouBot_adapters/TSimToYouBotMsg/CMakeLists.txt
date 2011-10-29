@@ -12,7 +12,6 @@ LINK_DIRECTORIES(${LIBRARY_OUTPUT_PATH})
 # and installs in the directory lib/orocos/flatToYouBotMsgAddapter/
 #
 orocos_component(TSimToYouBotMsgAdapter TSimToYouBotMsg.hpp TSimToYouBotMsg.cpp ${COMMON_INCLUDE_DIR}) 
-#target_link_libraries(${PROJECT_NAME} rtt-ros-Orocos_OODL-typekit)
 #
 # You may add multiple orocos_component statements.
 

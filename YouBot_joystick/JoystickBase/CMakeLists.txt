@@ -20,6 +20,8 @@ if (ROS_ROOT)
 #  rosbuild_include(rtt_ros_integration GenerateRTTtypekit)
 #  ros_generate_rtt_typekit(YouBot_OODL)
 
+rosbuild_find_ros_package( Orocos_OODL )
+
 # Set the CMAKE_PREFIX_PATH in case you're not using Orocos through ROS
 # for helping these find commands find RTT.
 find_package(OROCOS-RTT REQUIRED ${RTT_HINTS})
@@ -50,11 +52,12 @@ SET (CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_HOME_DIRECTORY}/bin)
 #include all CMakeList.txt files within this package
 #each generates one library or application	
 
+INCLUDE_DIRECTORIES(${COMMON_INCLUDE_DIR})
 LINK_DIRECTORIES(${LIBRARY_OUTPUT_PATH})
 
-orocos_component(YouBot_JoystickBase JoystickBase.hpp JoystickBase.cpp)
+orocos_component(YouBot_JoystickBase JoystickBase.hpp JoystickBase.cpp ${COMMON_INCLUDE_DIR})
 
-TARGET_LINK_LIBRARIES(YouBot_JoystickBase YouBot_OODL)
+#TARGET_LINK_LIBRARIES(YouBot_JoystickBase YouBot_OODL)
 
 orocos_generate_package()
 
