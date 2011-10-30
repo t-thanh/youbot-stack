@@ -44,6 +44,10 @@ FSM.exec_file(rospack.find("YouBot_executive")+"/lua/fsm_component.lua");
    cp_JointPose.lock_policy = LOCK_FREE; // Use  ''LOCKED'', ''LOCK_FREE'' or ''UNSYNC''
    connect("executive.ArmPose","control.JointSoftLimits_state",cp_JointPose)
 
+  var ConnPolicy cp_rtt;
+   cp_JointPose.type = DATA;  // Use ''BUFFER'' or ''DATA''
+   cp_JointPose.lock_policy = LOCK_FREE; // Use  ''LOCKED'', ''LOCK_FREE'' or ''UNSYNC''
+   connect("executive.gripper_cmd","youbot.Gripper1.gripper_cmd_position",cp_rtt)
    var ConnPolicy cp_events;
    connect("FSM.events","fakeMonitor.events_out",cp_events);
    
@@ -53,15 +57,15 @@ FSM.exec_file(rospack.find("YouBot_executive")+"/lua/fsm_component.lua");
 fakeMonitor.configure;
 FSM.configure;
 executive.configure
-
+executive.unfoldArm
 FSM.start;
 //fakeMonitor.start;
 executive.start
    // in snake position
    executive.Joint_position_setpoint=array(0.0,0.0,0.0,0.0,-0.3,0.5,0.5,0.0)
-   executive.Joint_stiffness_setpoint=array(0.0,0.0,0.0,15.0,15.0,10.0,15.0,15.0)
+   executive.Joint_stiffness_setpoint=array(0.0,0.0,0.0,25.0,25.0,20.0,25.0,25.0)
 
    // random safe pose
    executive.Gripper_position_setpoint=array(0.45,0.0,0.39,0.0,1.64,0.0)
-   executive.Gripper_stiffness_setpoint=array(10.0,100.0)
+   executive.Gripper_stiffness_setpoint=array(0.0,10.0)
 

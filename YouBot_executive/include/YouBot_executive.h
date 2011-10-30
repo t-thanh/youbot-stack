@@ -5,6 +5,7 @@
 #include <ocl/Component.hpp>
 #include <string>
 #include <std_msgs/Float64MultiArray.h>
+#include <motion_control_msgs/JointPositions.h>
 #include "Macho.hpp"
 #include "FlowControl.hpp"
 
@@ -19,11 +20,13 @@ private:
 	static const int SIZE_JOINTS_ARRAY = 8;//5 arm + 3  virtual base
 	static const int SIZE_CART_SPACE=6;//
 	static const int SIZE_CART_STIFFNESS=2;
+	static const double GRIPPER_OPENING=0.05;
 	std_msgs::Float64MultiArray msgs_setpoint_j;
 	std_msgs::Float64MultiArray msgs_setpoint_c;
 	std_msgs::Float64MultiArray msgs_stiffness_j;
 	std_msgs::Float64MultiArray msgs_stiffness_c_r;
 	std_msgs::Float64MultiArray msgs_stiffness_c_t;
+	motion_control_msgs::JointPositions m_gripper_cmd;
 public:
 	static const double UNFOLD_JOINT_POSE[SIZE_JOINTS_ARRAY];
 	static const double UNFOLD_CART_POSE[SIZE_CART_SPACE];
@@ -42,6 +45,10 @@ public:
 	void getStates(vector<double>& position_j,vector<double>& position_c);
 	void getStiffness(vector<double>& stiffness_j,vector<double>& stiffness_c);
 	void getZeroStiffness(vector<double>& stiffness_j,vector<double>& stiffness_c);
+	void setCartesianStiffness(vector<double> stiffness_c);
+	void setJointStiffness(vector<double> stiffness_j);
+	void openGripper();
+	void closeGripper();
 	void init();
 	vector<double> m_position_j;
 	vector<double> m_stiffness_j;
@@ -55,6 +62,7 @@ public:
 	RTT::OutputPort<flat_matrix_t> m_CartSpaceStiffness_t;
 	RTT::InputPort<flat_matrix_t> m_CartGripperPose;
 	RTT::InputPort<flat_matrix_t> m_JointGripperPose;
+	RTT::OutputPort<motion_control_msgs::JointPositions> gripper_cmd;
 
 	void writeSetpoints(const vector<double>& position_j,const vector<double>& stiffness_j,
 			const vector<double>& position_c, const vector<double>& stiffness_c);
