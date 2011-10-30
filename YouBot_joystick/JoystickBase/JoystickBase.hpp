@@ -12,7 +12,7 @@
 #include <rtt/PropertyBag.hpp>
 #include <rtt/Time.hpp>
 
-#include "YouBotTypes.hpp"
+#include <YouBotTypes.hpp>
 #include <joy/typekit/Types.h>
 #include <nav_msgs/typekit/Types.h>
 #include <geometry_msgs/typekit/Types.h>

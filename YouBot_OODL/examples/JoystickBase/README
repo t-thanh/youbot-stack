@@ -1,9 +1,0 @@
-Requirements:
-* ROS joy package
-* Logitech Extreme 3D Pro
-
-To run:
-* roscore
-* rosrun joy joy_node
-* sudo ./run.sh ./examples/JoystickBase/deploy.ops
-* Move the joystick!

@@ -1,5 +1,5 @@
 #include "JoystickBase.hpp"
-#include "YouBotOODL.hpp"
+//#include "YouBotOODL.hpp"
 
 #include <ocl/Component.hpp>
 
@@ -9,8 +9,8 @@ namespace YouBot
 {
 	using namespace RTT;
 	using namespace std;
-	using namespace boost::units;
-	using namespace boost::units::si;
+//	using namespace boost::units;
+//	using namespace boost::units::si;
 
 	JoystickBase::JoystickBase(const string& name) :
 			TaskContext(name, PreOperational)
@@ -95,7 +95,7 @@ namespace YouBot
 
 	void JoystickBase::stopHook()
 	{
-		m_modes = vector<ctrl_modes>(NR_OF_ARM_SLAVES, MOTOR_STOP);
+		m_modes = vector<ctrl_modes>(NR_OF_BASE_SLAVES, MOTOR_STOP);
 		op_setControlModes(m_modes);
 
         TaskContext::stopHook();
