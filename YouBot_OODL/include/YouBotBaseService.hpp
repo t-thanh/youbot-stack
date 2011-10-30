@@ -33,11 +33,16 @@ namespace YouBot
 			void displayMotorStatuses();
 
 			void clearControllerTimeouts();
+
+			void calibrateTorqueOffset();
 		private:
 			OutputPort<sensor_msgs::JointState> joint_states;
 			OutputPort<nav_msgs::Odometry> odometry_state;
 
 			OutputPort<YouBot_OODL::motor_statuses > motor_statuses;
+
+			OutputPort<std::vector<double> > check;
+			std::vector<double> m_check;
 
 			InputPort<motion_control_msgs::JointVelocities> joint_cmd_velocities;
 			InputPort<motion_control_msgs::JointPositions> joint_cmd_angles;
@@ -92,6 +97,9 @@ namespace YouBot
 			bool m_connectionlost[NR_OF_BASE_SLAVES];
 			bool m_i2texceeded[NR_OF_BASE_SLAVES];
 			bool m_timeout[NR_OF_BASE_SLAVES];
+
+			// Workaround for missing current sign and the non-linearity (when only the sign is flipped on negative velocities).
+			double m_torque_offset;
 
 			bool m_calibrated;
 

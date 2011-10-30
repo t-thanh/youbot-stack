@@ -24,6 +24,7 @@ namespace YouBot
 
 		m_joint_ctrl_modes(NR_OF_BASE_SLAVES, MOTOR_STOP),
 		// Set the commands to zero depending on the number of joints
+		m_torque_offset(0.0),
 		m_calibrated(false),
 		m_min_slave_nr(min_slave_nr)
 	{
@@ -71,6 +72,8 @@ namespace YouBot
 		memset(m_i2texceeded, 0, NR_OF_BASE_SLAVES);
 		memset(m_timeout, 0, NR_OF_BASE_SLAVES);
 
+		m_check.reserve(NR_OF_BASE_SLAVES);
+
         setupComponentInterface();
         setupEventChecks();
 	}
@@ -94,6 +97,7 @@ namespace YouBot
 		this->addPort("joint_cmd_torques",joint_cmd_torques).doc("Command joint torques");
 
 		this->addPort("cmd_twist",cmd_twist).doc("Command base twist");
+		this->addPort("check", check).doc("To check the plain torque.");
 
 		this->addOperation("start",&YouBotBaseService::start,this);
 		this->addOperation("update",&YouBotBaseService::update,this);
@@ -106,6 +110,7 @@ namespace YouBot
 
 		this->addOperation("displayMotorStatuses",&YouBotBaseService::displayMotorStatuses,this, OwnThread);
 		this->addOperation("clearControllerTimeouts",&YouBotBaseService::clearControllerTimeouts,this, OwnThread);
+		this->addOperation("calibrateTorqueOffset",&YouBotBaseService::calibrateTorqueOffset,this, OwnThread);
 	}
 
 	void YouBotBaseService::setupEventChecks()
@@ -263,6 +268,11 @@ namespace YouBot
 		}
 	}
 
+	double sign(double x)
+	{
+		return (x >= 0) - (x < 0);
+	}
+
 	void YouBotBaseService::readJointStates()
 	{
 		// YouBot -> OutputPort
@@ -279,8 +289,12 @@ namespace YouBot
 
 			m_joint_states.velocity[i] = m_tmp_joint_velocities[i].angularVelocity.value();
 
-			m_joint_states.effort[i] = m_tmp_joint_torques[i].torque.value();
+			m_check[i] = m_tmp_joint_torques[i].torque.value();
+
+			m_joint_states.effort[i] = sign(m_joint_states.velocity[i]) * (m_tmp_joint_torques[i].torque.value() - m_torque_offset);
 		}
+
+		check.write(m_check);
 	}
 
 	void YouBotBaseService::calculateOdometry()
@@ -405,6 +419,27 @@ namespace YouBot
 
 		log(Info) << "Calibrated." << endlog();
 		return (m_calibrated = true);
+	}
+
+	void YouBotBaseService::calibrateTorqueOffset()
+	{
+		// Workaround for missing current sign + non-linearity.
+		JointTorqueSetpoint setp;
+		setp.torque = 0.0 * si::newton_meter;
+		m_joints[0]->setData(setp);
+
+		JointSensedTorque jst;
+		m_joints[0]->getData(jst);
+		if(m_torque_offset == 0.0)
+		{
+			m_torque_offset = jst.torque.value();
+		}
+		else
+		{
+			m_torque_offset = (m_torque_offset + jst.torque.value()) / 2;
+		}
+		log(Info) << "Torque offset is: " << m_torque_offset << endlog();
+		// end workaround;
 	}
 
 	void YouBotBaseService::stop()
