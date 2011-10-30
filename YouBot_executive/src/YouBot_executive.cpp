@@ -45,7 +45,8 @@ YouBot_executive::YouBot_executive(const string& name) :
 	this->addOperation("setCartesianStiffness", &YouBot_executive::setCartesianStiffness,this).doc(" ");
 	this->addOperation("setJointStiffness", &YouBot_executive::setJointStiffness,this).doc(" ");
 
-
+	this->addOperation("openGripper", &YouBot_executive::openGripper, this).doc(" ");
+	this->addOperation("closeGripper", &YouBot_executive::closeGripper, this).doc(" ");
 
 	this->addPort("JointSpaceSetpoint", m_JointSpaceSetpoint).doc("");
 	this->addPort("JointSpaceStiffness", m_JointSpaceStiffness).doc("");
@@ -55,6 +56,7 @@ YouBot_executive::YouBot_executive(const string& name) :
 
 	this->addPort("GripperPose", m_CartGripperPose).doc("");
 	this->addPort("ArmPose", m_JointGripperPose).doc("");
+	this->addPort("gripper_cmd", gripper_cmd).doc("");
 
 	this->addProperty("Joint_position_setpoint", m_position_j);
 	this->addProperty("Joint_stiffness_setpoint", m_stiffness_j);
@@ -80,14 +82,28 @@ void YouBot_executive::init()
 	msgs_stiffness_j.data.assign(SIZE_JOINTS_ARRAY, 0);
 	msgs_stiffness_c_r.data.assign(1, 0);
 	msgs_stiffness_c_t.data.assign(1, 0);
+	m_gripper_cmd.positions.assign(1,0);
 	setPeriod(0.01);
 	m_JointSpaceSetpoint.setDataSample(msgs_setpoint_j);
 	m_JointSpaceStiffness.setDataSample(msgs_stiffness_j);
 	m_CartSpaceSetpoint.setDataSample(msgs_setpoint_c);
 	m_CartSpaceStiffness_r.setDataSample(msgs_stiffness_c_r);
 	m_CartSpaceStiffness_t.setDataSample(msgs_stiffness_c_t);
+	gripper_cmd.setDataSample(m_gripper_cmd);
 
 
+
+}
+void YouBot_executive::openGripper()
+{
+
+	m_gripper_cmd.positions.at(0)=GRIPPER_OPENING;
+	gripper_cmd.write(m_gripper_cmd);
+
+}
+void YouBot_executive::closeGripper(){
+	m_gripper_cmd.positions.at(0)=0.0001;
+	gripper_cmd.write(m_gripper_cmd);
 
 }
 YouBot_executive::~YouBot_executive()

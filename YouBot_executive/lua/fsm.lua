@@ -133,7 +133,7 @@ return rfsm.csta {
     rfsm.trans {src="proving_position", tgt="learning_position", events={"jnt01234vel.e_VEL_ZERO_false" }},--loop
     rfsm.trans {src="proving_position", tgt="positioning_snake",       events={"timer.e_TIMEOUT" }},
     rfsm.trans {src="positioning_snake", tgt="wait_for_bric",       events={"jnt01234pos.e_POS_REACHED_true" }},
-    rfsm.trans {src="wait_for_bric", tgt="positioning_2",       events={ "jnt4tor.e_LIM_EXCEEDED"}},
+    rfsm.trans {src="wait_for_bric", tgt="positioning_2",       events={ "jnt4tor.e_LIM_EXCEEDED_true"}},
     rfsm.trans {src="positioning_2", tgt="move_down",       events={ "jnt01234pos.e_POS_REACHED_true"}},
 }
 -- getArmPose getGripperPose gravityMode positionArm positionGripper unfoldArm 

@@ -55,10 +55,10 @@ monitor.jnt_torque_lim_exceeded.physical_part = ARM;
 monitor.jnt_torque_lim_exceeded.control_space = JOINT;
 monitor.jnt_torque_lim_exceeded.physical_quantity = MONITOR_TORQUE;
 monitor.jnt_torque_lim_exceeded.event_type = EDGE;
-monitor.jnt_torque_lim_exceeded.compare_type = GREATER;
+monitor.jnt_torque_lim_exceeded.compare_type = LESS;
 monitor.jnt_torque_lim_exceeded.msg = string("e_LIM_EXCEEDED");
-monitor.jnt_torque_lim_exceeded.indices = uint32[]( uint32(333));
-monitor.jnt_torque_lim_exceeded.values = float64[]( 1.0);
+monitor.jnt_torque_lim_exceeded.indices = uint32[]( uint32(4));
+monitor.jnt_torque_lim_exceeded.values = float64[]( 00.0, 0.0, 0.0, 0.0, -1.0);
 
 monitor.setup_monitor("jnt_pos_lim_exceeded");
 monitor.jnt_pos_lim_exceeded.physical_part = ARM;
