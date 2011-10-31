@@ -94,7 +94,7 @@ void guardedMove::init()
 }
 void guardedMove::run(YouBot::YouBot_executive* executive)
 {
-	RTT::log(Info)<<"guardedMove"<<RTT::endlog();
+	//RTT::log(Info)<<"guardedMove"<<RTT::endlog();
 	vector<double> setPoint_j;
 	vector<double> setPoint_c;
 	vector<double> states_j;
@@ -119,23 +119,24 @@ void guardedMove::run(YouBot::YouBot_executive* executive)
 //	RTT::log(Info)<<"guardForce "<<guardForce.size();
 //	RTT::log(Info)<<"setPoint_c "<<setPoint_c.size();
 
-	for(std::size_t i=0; i<guardForce.size();i++)
+	for(std::size_t i=0; i<3;i++)
 	{
-		error.at(i)=error.at(i)+ alpha*(guardForce.at(i)-stateForce.at(i));
-		RTT::log(Info)<<error.at(i);
 		if (guardForce.at(i)!=0)
 		{
-			done=done and (abs(guardForce.at(i)-stateForce.at(i))<alpha);
+			error.at(i)=guardForce.at(i);///stiffness_c.at(1);
+			done=done and (abs(guardForce.at(i)+stateForce.at(i))<alpha);
 			setPoint_c.at(i)=states_j.at(i)+error.at(i);
 		}
+	//	RTT::log(Info)<<"\t "<<i<<"="<<error.at(i);
 	}
-	RTT::log(Info)<<"error computed"<<RTT::endlog();
+//	RTT::log(Info)<<RTT::endlog();
+//	RTT::log(Info)<<"error computed"<<RTT::endlog();
 	if (done)
 	{
 		executive->doneEvent();
 		executive->positionArm(states_j);
 	}
-	RTT::log(Info)<<"Position set "<<RTT::endlog();
+//	RTT::log(Info)<<"Position set "<<RTT::endlog();
 	executive->writeSetpoints(states_j,zeroStiffness_j,setPoint_c,stiffness_c);
 }
 std::string Top::toString()

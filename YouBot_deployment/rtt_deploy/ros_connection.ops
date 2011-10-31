@@ -55,3 +55,7 @@ cp.name_id="/angl";
 cp.type=0;
 cp.transport=3;
 stream("control.JointSoftLimits_state",cp);
+cp.name_id="/cartForce";
+cp.type=0;
+cp.transport=3;
+stream("control.ControllableJ_tip_e",cp)

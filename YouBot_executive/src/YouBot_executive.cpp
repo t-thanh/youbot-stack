@@ -281,9 +281,18 @@ void YouBot_executive::getGuardForce(vector<double>& force_c)
 void YouBot_executive::getStateForce(vector<double>& force_c)
 {
 	std_msgs::Float64MultiArray sample;
+	force_c.resize(SIZE_CART_SPACE);
 	if (m_CartForceState.read(sample) != RTT::NoData)
 	{
-		force_c.assign(sample.data.begin(),sample.data.end());
+		if(sample.data.size()==SIZE_CART_SPACE)
+		{
+			force_c.at(0)=sample.data.at(3); //x
+			force_c.at(1)=sample.data.at(4); //y
+			force_c.at(2)=sample.data.at(5); //z
+			force_c.at(3)=sample.data.at(0); //omega_x
+			force_c.at(4)=sample.data.at(1); //omega_y
+			force_c.at(5)=sample.data.at(2); //omega_z
+		}
 	}
 }
 
