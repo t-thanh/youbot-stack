@@ -25,11 +25,11 @@ namespace YouBot
 //			m_joint_cmd_velocities(NR_OF_BASE_SLAVES, quantity<si::angular_velocity>(0*radian_per_second)),
 //			m_joint_cmd_torques(NR_OF_BASE_SLAVES, quantity<si::torque>(0*newton_meter)),
 	{
-		m_joint_states.position.assign(NR_OF_ARM_SLAVES,0);
-		m_joint_states.velocity.assign(NR_OF_ARM_SLAVES,0);
-		m_joint_states.effort.assign(NR_OF_ARM_SLAVES,0);
+		m_joint_states.position.assign(NR_OF_BASE_SLAVES,0);
+		m_joint_states.velocity.assign(NR_OF_BASE_SLAVES,0);
+		m_joint_states.effort.assign(NR_OF_BASE_SLAVES,0);
 
-		m_joint_cmd_angles.positions.assign(NR_OF_ARM_SLAVES,0);
+		m_joint_cmd_angles.positions.assign(NR_OF_BASE_SLAVES,0);
 
 		this->addPort("joint_states" , joint_states).doc("Input joint states from the driver");
 		this->addPort("joint_cmd_angles", joint_cmd_angles).doc("Output joint angle commands to the driver");
@@ -49,7 +49,7 @@ namespace YouBot
 
 	void BaseControllerMockup::setJointAngles(vector< double >& angles, double epsilon)
 	{
-		m_modes = vector<ctrl_modes>(NR_OF_ARM_SLAVES, PLANE_ANGLE);
+		m_modes = vector<ctrl_modes>(NR_OF_BASE_SLAVES, PLANE_ANGLE);
 		op_setControlModes(m_modes);
 
 		for(unsigned int  i = 0; i < angles.size(); ++i)
@@ -90,7 +90,7 @@ namespace YouBot
 //
 //	void BaseControllerMockup::setBasePosition(double& longitudinalPosition, double& transversalPosition, double& orientation)
 //	{
-//		m_modes = vector<ctrl_modes>(NR_OF_ARM_SLAVES, PLANE_ANGLE);
+//		m_modes = vector<ctrl_modes>(NR_OF_BASE_SLAVES, PLANE_ANGLE);
 //
 //		quantity<length> _longitudinalPosition = longitudinalPosition * si::meter;
 //		quantity<length> _transversalPosition = transversalPosition * si::meter;
@@ -105,7 +105,7 @@ namespace YouBot
 //
 //	void BaseControllerMockup::setBaseVelocity(double& longitudinalVelocity, double& transversalVelocity, double& angularVelocity)
 //	{
-//		m_modes = vector<ctrl_modes>(NR_OF_ARM_SLAVES, ANGULAR_VELOCITY);
+//		m_modes = vector<ctrl_modes>(NR_OF_BASE_SLAVES, ANGULAR_VELOCITY);
 //		op_setControlModes(m_modes);
 //
 //		quantity<velocity> _longitudinalVelocity = longitudinalVelocity * si::meter_per_second;
@@ -133,6 +133,7 @@ namespace YouBot
 			log(Error) << "Could not find peer YouBot_OODL" << endlog();
 			return false;
 		}
+		op_setControlModes = task_ptr->provides("Base")->getOperation("setControlModes");
 
 		if(!op_setControlModes.ready())
 		{
@@ -140,7 +141,7 @@ namespace YouBot
 			return false;
 		}
 
-		m_modes = vector<ctrl_modes>(NR_OF_ARM_SLAVES, MOTOR_STOP);
+		m_modes = vector<ctrl_modes>(NR_OF_BASE_SLAVES, MOTOR_STOP);
 		op_setControlModes(m_modes);
 
 		return TaskContext::startHook();
@@ -159,7 +160,7 @@ namespace YouBot
 
 	void BaseControllerMockup::stopHook()
 	{
-		m_modes = vector<ctrl_modes>(NR_OF_ARM_SLAVES, MOTOR_STOP);
+		m_modes = vector<ctrl_modes>(NR_OF_BASE_SLAVES, MOTOR_STOP);
 		op_setControlModes(m_modes);
 
         TaskContext::stopHook();

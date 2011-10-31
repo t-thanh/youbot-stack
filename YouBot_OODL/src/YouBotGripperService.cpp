@@ -44,7 +44,9 @@ namespace YouBot
 	}
 
 	YouBotGripperService::~YouBotGripperService()
-	{ }
+	{
+		delete m_manipulator;
+	}
 
 
 	void YouBotGripperService::displayGripperStatus()
@@ -102,7 +104,7 @@ namespace YouBot
 
 		try
 		{
-			YouBotManipulator* m_manipulator = new YouBotManipulator("/youbot-manipulator", OODL_YOUBOT_CONFIG_DIR);
+			m_manipulator = new YouBotManipulator("/youbot-manipulator", OODL_YOUBOT_CONFIG_DIR);
 			if(m_manipulator == NULL)
 			{
 				log(Error) << "Could not create the YouBotManipulator." << endlog();
@@ -122,13 +124,18 @@ namespace YouBot
 			m_gripper->getConfigurationParameter(_spacing, BAR_ONE);
 			_max_distance.getParameter(max_distance);
 			_spacing.getParameter(spacing);
+			log(Info) << "Spacing: " << spacing << " max_distance: " << max_distance << endlog();
+
+			m_gripper->getConfigurationParameter(_max_distance, BAR_TWO);
+			m_gripper->getConfigurationParameter(_spacing, BAR_TWO);
+			_max_distance.getParameter(max_distance);
+			_spacing.getParameter(spacing);
+			log(Info) << "Spacing: " << spacing << " max_distance: " << max_distance << endlog();
+
 			m_gripper_limits.min_position = spacing;
 			m_gripper_limits.max_position = max_distance + spacing;
 
 			log(Info) << "Gripper calibration min_position: " << m_gripper_limits.min_position << " max_position: " << m_gripper_limits.max_position << endlog();
-
-			delete m_manipulator;
-
 		}
 		catch (std::exception& e)
 		{
@@ -136,6 +143,7 @@ namespace YouBot
 			return false;
 		}
 
+		log(Info) << "Calibrated." << endlog();
 		return (m_calibrated = true);
 	}
 

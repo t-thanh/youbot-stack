@@ -376,6 +376,7 @@ namespace YouBot
 			return false;
 		}
 
+		log(Info) << "Calibrated." << endlog();
 		return (m_calibrated = true);
 	}
 
