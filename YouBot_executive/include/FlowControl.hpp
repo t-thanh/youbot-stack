@@ -60,10 +60,10 @@ namespace FlowControl
 		STATE(retractGripper)
 	private:
 				static const double STIFFNESS_C[2];
-				static double GRIPPER_SIZE[3];
-				vector<double> setPoint;
-				vector<double> vecStiffness;
-				vector<double> vecGripperSize;
+				static const double GRIPPER_SIZE[3];
+				std::vector<double> setPoint;
+				std::vector<double> vecStiffness;
+				std::vector<double> vecGripperSize;
 				bool firstRun;
 	public:
 
@@ -73,4 +73,5 @@ namespace FlowControl
 	};
 
 }//flowControl
-void Multiply(const vector<double>& H,const vector<double>& r, vector<double>& output);
+void Multiply(const std::vector<double>& H,const std::vector<double>& r, std::vector<double>& output);
+void Sum(const std::vector<double>& lhs,const std::vector<double>& rhs, std::vector<double>& output);

@@ -260,7 +260,7 @@ void YouBot_executive::getGripperH(vector<double>& H)
 		H.assign(sample.data.begin(),sample.data.end());
 	}
 }
-	}
+	
 
 void YouBot_executive::getXYZYPR(const vector<double> & H,
 		vector<double> & XYZYPR)
