@@ -38,6 +38,7 @@ namespace YouBot
 		this->addPort("events", events).doc("Joint events");
 
 		this->addPort("arm_joint_state", arm_joint_state).doc("Arm joint states");
+		this->addPort("arm_cart_state", arm_cart_state).doc("Arm cartesian states");
 		this->addPort("base_joint_state", base_joint_state).doc("Base joint states");
 		this->addPort("base_cart_state", base_cart_state).doc("Base cartesian states");
 
@@ -91,6 +92,7 @@ namespace YouBot
 		base_joint_state.read(m_base_joint_state);
 		base_cart_state.read(m_base_cart_state);
 		arm_joint_state.read(m_arm_joint_state);
+		arm_cart_state.read(m_arm_cart_state);
 
 		unsigned int size = m_active_monitors.size();
 		for(unsigned int i = 0; i < size; ++i)
@@ -402,9 +404,7 @@ namespace YouBot
 		}
 		else if(m->space == CARTESIAN && m->part == ARM)
 		{
-//			m.check = boost::bind(&YouBotMonitorService::check_monitor, this, &arm_cart_state, m.quantity, m.msg, &m.indices, &m.values, m.c_type);
-			log(Error) << "Not implemented!" << endlog();
-			return false;
+			m->check = boost::bind(boost::mem_fn(&YouBotMonitorService::check_monitor<cart_state>), this, &m_arm_cart_state, m);
 		}
 		else if(m->space == JOINT && m->part == BASE)
 		{
