@@ -6,6 +6,7 @@
 #include <youbot/YouBotBase.hpp>
 #include <youbot/YouBotJoint.hpp>
 
+#include <std_msgs/typekit/Types.h>
 #include <sensor_msgs/typekit/Types.h>
 #include <motion_control_msgs/typekit/Types.h>
 #include <nav_msgs/typekit/Types.h>
@@ -40,9 +41,6 @@ namespace YouBot
 			OutputPort<nav_msgs::Odometry> odometry_state;
 
 			OutputPort<YouBot_OODL::motor_statuses > motor_statuses;
-
-			OutputPort<std::vector<double> > check;
-			std::vector<double> m_check;
 
 			InputPort<motion_control_msgs::JointVelocities> joint_cmd_velocities;
 			InputPort<motion_control_msgs::JointPositions> joint_cmd_angles;
@@ -99,7 +97,7 @@ namespace YouBot
 			bool m_timeout[NR_OF_BASE_SLAVES];
 
 			// Workaround for missing current sign and the non-linearity (when only the sign is flipped on negative velocities).
-			double m_torque_offset;
+			std::vector<double> m_torque_offset;
 
 			bool m_calibrated;
 

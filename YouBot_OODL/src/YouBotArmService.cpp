@@ -57,6 +57,8 @@ namespace YouBot
 		memset(m_i2texceeded, 0, NR_OF_ARM_SLAVES);
 		memset(m_timeout, 0, NR_OF_ARM_SLAVES);
 
+		m_torque_offset.resize(NR_OF_ARM_SLAVES, 0.0);
+
 		setupComponentInterface();
 
 		setupEventChecks();
@@ -78,6 +80,8 @@ namespace YouBot
 		this->addPort("joint_cmd_velocities",joint_cmd_velocities).doc("Command joint velocities");
 		this->addPort("joint_cmd_torques",joint_cmd_torques).doc("Command joint torques");
 
+		this->addProperty("torque_offset", m_torque_offset).doc("Currently used torque offset");
+
         this->addOperation("start",&YouBotArmService::start,this);
         this->addOperation("update",&YouBotArmService::update,this);
         this->addOperation("calibrate",&YouBotArmService::calibrate,this);
@@ -88,6 +92,7 @@ namespace YouBot
         this->addOperation("getControlModes",&YouBotArmService::getControlModes,this, OwnThread);
         this->addOperation("displayMotorStatuses",&YouBotArmService::displayMotorStatuses,this, OwnThread);
         this->addOperation("clearControllerTimeouts",&YouBotArmService::clearControllerTimeouts,this, OwnThread);
+        this->addOperation("calibrateTorqueOffset",&YouBotArmService::calibrateTorqueOffset,this, OwnThread);
 	}
 
 	void YouBotArmService::setupEventChecks()
@@ -188,14 +193,13 @@ namespace YouBot
 
 		m_joint_states.header.stamp = time;
 
-		int size = m_tmp_joint_angles.size();
-		for(int i = 0; i < size; ++i)
+		for(int i = 0; i < NR_OF_ARM_SLAVES; ++i)
 		{
 			m_joint_states.position[i] = m_tmp_joint_angles[i].angle.value();
 
 			m_joint_states.velocity[i] = m_tmp_joint_velocities[i].angularVelocity.value();
 
-			m_joint_states.effort[i] = m_tmp_joint_torques[i].torque.value();
+			m_joint_states.effort[i] = sign(m_joint_states.velocity[i]) * (m_tmp_joint_torques[i].torque.value() - m_torque_offset[i]);
 		}
 
 		joint_states.write(m_joint_states);
@@ -373,6 +377,31 @@ namespace YouBot
 		}
 
 		return (m_calibrated = true);
+	}
+
+	void YouBotArmService::calibrateTorqueOffset()
+	{
+		// Workaround for missing current sign + non-linearity.
+		JointTorqueSetpoint setp;
+		setp.torque = 0.0 * si::newton_meter;
+		JointSensedTorque jst;
+
+		for(unsigned int i = 0; i < NR_OF_ARM_SLAVES; ++i)
+		{
+			m_joints[i]->setData(setp);
+
+			m_joints[i]->getData(jst);
+			if(m_torque_offset[i] == 0.0)
+			{
+				m_torque_offset[i] = jst.torque.value();
+			}
+			else
+			{
+				m_torque_offset[i] = (m_torque_offset[i] + jst.torque.value()) / 2;
+			}
+			log(Info) << "Torque offset is: " << m_torque_offset[i] << endlog();
+		}
+		// end workaround;
 	}
 
 	void YouBotArmService::stop()

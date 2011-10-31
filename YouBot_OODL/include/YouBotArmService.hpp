@@ -37,6 +37,8 @@ namespace YouBot
 
 			void clearControllerTimeouts();
 
+			void calibrateTorqueOffset();
+
 		protected:
 			OutputPort<sensor_msgs::JointState> joint_states;
 
@@ -91,6 +93,9 @@ namespace YouBot
 
 			YouBotManipulator* m_manipulator;
 			YouBotJoint* m_joints[NR_OF_ARM_SLAVES];
+
+			// Workaround for missing current sign and the non-linearity (when only the sign is flipped on negative velocities).
+			std::vector<double> m_torque_offset;
 
 			bool m_calibrated;
 

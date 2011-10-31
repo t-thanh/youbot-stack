@@ -72,7 +72,7 @@ namespace YouBot
 		memset(m_i2texceeded, 0, NR_OF_BASE_SLAVES);
 		memset(m_timeout, 0, NR_OF_BASE_SLAVES);
 
-		m_check.reserve(NR_OF_BASE_SLAVES);
+		m_torque_offset.resize(NR_OF_BASE_SLAVES, 0.0);
 
         setupComponentInterface();
         setupEventChecks();
@@ -97,7 +97,8 @@ namespace YouBot
 		this->addPort("joint_cmd_torques",joint_cmd_torques).doc("Command joint torques");
 
 		this->addPort("cmd_twist",cmd_twist).doc("Command base twist");
-		this->addPort("check", check).doc("To check the plain torque.");
+
+		this->addProperty("torque_offset", m_torque_offset).doc("Currently used torque offset");
 
 		this->addOperation("start",&YouBotBaseService::start,this);
 		this->addOperation("update",&YouBotBaseService::update,this);
@@ -268,11 +269,6 @@ namespace YouBot
 		}
 	}
 
-	double sign(double x)
-	{
-		return (x >= 0) - (x < 0);
-	}
-
 	void YouBotBaseService::readJointStates()
 	{
 		// YouBot -> OutputPort
@@ -289,12 +285,8 @@ namespace YouBot
 
 			m_joint_states.velocity[i] = m_tmp_joint_velocities[i].angularVelocity.value();
 
-			m_check[i] = m_tmp_joint_torques[i].torque.value();
-
-			m_joint_states.effort[i] = sign(m_joint_states.velocity[i]) * (m_tmp_joint_torques[i].torque.value() - m_torque_offset);
+			m_joint_states.effort[i] = sign(m_joint_states.velocity[i]) * (m_tmp_joint_torques[i].torque.value() - m_torque_offset[i]);
 		}
-
-		check.write(m_check);
 	}
 
 	void YouBotBaseService::calculateOdometry()
@@ -426,19 +418,23 @@ namespace YouBot
 		// Workaround for missing current sign + non-linearity.
 		JointTorqueSetpoint setp;
 		setp.torque = 0.0 * si::newton_meter;
-		m_joints[0]->setData(setp);
-
 		JointSensedTorque jst;
-		m_joints[0]->getData(jst);
-		if(m_torque_offset == 0.0)
+
+		for(unsigned int i = 0; i < NR_OF_BASE_SLAVES; ++i)
 		{
-			m_torque_offset = jst.torque.value();
+			m_joints[i]->setData(setp);
+
+			m_joints[i]->getData(jst);
+			if(m_torque_offset[i] == 0.0)
+			{
+				m_torque_offset[i] = jst.torque.value();
+			}
+			else
+			{
+				m_torque_offset[i] = (m_torque_offset[i] + jst.torque.value()) / 2;
+			}
+			log(Info) << "Torque offset is: " << m_torque_offset[i] << endlog();
 		}
-		else
-		{
-			m_torque_offset = (m_torque_offset + jst.torque.value()) / 2;
-		}
-		log(Info) << "Torque offset is: " << m_torque_offset << endlog();
 		// end workaround;
 	}
 

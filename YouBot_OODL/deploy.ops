@@ -44,6 +44,7 @@ stream("youbot.Base.joint_states", cp_ros);
 cp_ros.name_id = "/debug/base/motor_statuses";
 stream("youbot.Base.motor_statuses", cp_ros);
 
+
 # 
 # Start running
 # 
