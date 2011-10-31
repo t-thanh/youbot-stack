@@ -14,7 +14,7 @@
  &lt;KeepParameterValues&gt;False&lt;/KeepParameterValues&gt;
  &lt;AllowLibraryUpdate&gt;True&lt;/AllowLibraryUpdate&gt;
 &lt;/Description&gt;</description>
-		<date>2011-10-28T16:42:42.0Z</date>
+		<date>2011-10-28T17:08:08.0Z</date>
 		<modelDir></modelDir>
 		<originalModel>Z:\home\youbot\DEV\20SimModels\Tests\ModelControl.emx</originalModel>
 		<additional>Campuslicentie, Universiteit Twente</additional>
@@ -1109,7 +1109,7 @@ code
 		</modelVariable>
 		<modelVariable id="71">
 			<name>DemuxHW1\control.e</name>
-			<aliasOf>OneJunction2\p4.e</aliasOf>
+			<aliasOf>OneJunction2\p3.e</aliasOf>
 			<kind>variable</kind>
 			<type>real</type>
 			<value>0.0; 0.0; 0.0; 0.0; 0.0; 0.0; 0.0; 0.0</value>
@@ -1186,7 +1186,7 @@ code
 		</modelVariable>
 		<modelVariable id="75">
 			<name>EffortSensor1\p1.e</name>
-			<aliasOf>OneJunction2\p4.e</aliasOf>
+			<aliasOf>OneJunction2\p3.e</aliasOf>
 			<kind>variable</kind>
 			<type>real</type>
 			<value>0.0; 0.0; 0.0; 0.0; 0.0; 0.0; 0.0; 0.0</value>
@@ -1226,7 +1226,7 @@ code
 		</modelVariable>
 		<modelVariable id="77">
 			<name>EffortSensor1\p2.T</name>
-			<aliasOf>OneJunction2\p4.e</aliasOf>
+			<aliasOf>OneJunction2\p3.e</aliasOf>
 			<kind>variable</kind>
 			<type>real</type>
 			<value>0.0; 0.0; 0.0; 0.0; 0.0; 0.0; 0.0; 0.0</value>
@@ -1272,7 +1272,7 @@ code
 		</modelVariable>
 		<modelVariable id="79">
 			<name>EffortSensor1\effort</name>
-			<aliasOf>OneJunction2\p4.e</aliasOf>
+			<aliasOf>OneJunction2\p3.e</aliasOf>
 			<kind>variable</kind>
 			<type>real</type>
 			<value>0.0; 0.0; 0.0; 0.0; 0.0; 0.0; 0.0; 0.0</value>
@@ -11748,23 +11748,6 @@ code
 		</modelVariable>
 		<modelVariable id="729">
 			<name>OneJunction2\p1.e</name>
-			<aliasOf>GravityCompensation1\Mux\port.e</aliasOf>
-			<kind>variable</kind>
-			<type>real</type>
-			<value>0.0; 0.0; 0.0; 0.0; 0.0; 0.0; 0.0; 0.0</value>
-			<description></description>
-			<size>
-				<rows>8</rows>
-				<columns>1</columns>
-			</size>
-			<storage>
-				<name>V</name>
-				<index>1867</index>
-			</storage>
-			<iconindex>181</iconindex>
-		</modelVariable>
-		<modelVariable id="730">
-			<name>OneJunction2\p2.e</name>
 			<aliasOf>ControllableJ\joints.e</aliasOf>
 			<kind>variable</kind>
 			<type>real</type>
@@ -11780,8 +11763,8 @@ code
 			</storage>
 			<iconindex>181</iconindex>
 		</modelVariable>
-		<modelVariable id="731">
-			<name>OneJunction2\p3.e</name>
+		<modelVariable id="730">
+			<name>OneJunction2\p2.e</name>
 			<aliasOf>JointSpaceStiffness\joints.e</aliasOf>
 			<kind>variable</kind>
 			<type>real</type>
@@ -11797,8 +11780,8 @@ code
 			</storage>
 			<iconindex>181</iconindex>
 		</modelVariable>
-		<modelVariable id="732">
-			<name>OneJunction2\p4.e</name>
+		<modelVariable id="731">
+			<name>OneJunction2\p3.e</name>
 			<kind>variable</kind>
 			<type>real</type>
 			<value>0.0; 0.0; 0.0; 0.0; 0.0; 0.0; 0.0; 0.0</value>
@@ -11819,8 +11802,8 @@ code
 			</storage>
 			<iconindex>181</iconindex>
 		</modelVariable>
-		<modelVariable id="733">
-			<name>OneJunction2\p5.e</name>
+		<modelVariable id="732">
+			<name>OneJunction2\p4.e</name>
 			<aliasOf>JointSoftLimits\p.e</aliasOf>
 			<kind>variable</kind>
 			<type>real</type>
@@ -11836,8 +11819,8 @@ code
 			</storage>
 			<iconindex>181</iconindex>
 		</modelVariable>
-		<modelVariable id="734">
-			<name>OneJunction2\p6.e</name>
+		<modelVariable id="733">
+			<name>OneJunction2\p5.e</name>
 			<aliasOf>JointSpaceDamping\p.e</aliasOf>
 			<kind>variable</kind>
 			<type>real</type>
@@ -11850,6 +11833,23 @@ code
 			<storage>
 				<name>V</name>
 				<index>1938</index>
+			</storage>
+			<iconindex>181</iconindex>
+		</modelVariable>
+		<modelVariable id="734">
+			<name>OneJunction2\p6.e</name>
+			<aliasOf>GravityCompensation1\Mux\port.e</aliasOf>
+			<kind>variable</kind>
+			<type>real</type>
+			<value>0.0; 0.0; 0.0; 0.0; 0.0; 0.0; 0.0; 0.0</value>
+			<description></description>
+			<size>
+				<rows>8</rows>
+				<columns>1</columns>
+			</size>
+			<storage>
+				<name>V</name>
+				<index>1867</index>
 			</storage>
 			<iconindex>181</iconindex>
 		</modelVariable>
@@ -12288,50 +12288,6 @@ code
 			<iconindex>183</iconindex>
 		</modelVariable>
 		<modelVariable id="760">
-			<name>bond_to_arm.T</name>
-			<kind>output</kind>
-			<type>real</type>
-			<value>0.0; 0.0; 0.0; 0.0; 0.0</value>
-			<description></description>
-			<size>
-				<rows>5</rows>
-				<columns>1</columns>
-			</size>
-			<physical>
-				<unit>
-					<name>N.m</name>
-				</unit>
-				<quantity>torque</quantity>
-			</physical>
-			<storage>
-				<name>V</name>
-				<index>2115</index>
-			</storage>
-			<iconindex>1</iconindex>
-		</modelVariable>
-		<modelVariable id="761">
-			<name>bond_to_arm.omega</name>
-			<kind>input</kind>
-			<type>real</type>
-			<value>0.0; 0.0; 0.0; 0.0; 0.0</value>
-			<description></description>
-			<size>
-				<rows>5</rows>
-				<columns>1</columns>
-			</size>
-			<physical>
-				<unit>
-					<name>rad/s</name>
-				</unit>
-				<quantity>angular velocity</quantity>
-			</physical>
-			<storage>
-				<name>V</name>
-				<index>2120</index>
-			</storage>
-			<iconindex>1</iconindex>
-		</modelVariable>
-		<modelVariable id="762">
 			<name>bond_to_base.T</name>
 			<kind>output</kind>
 			<type>real</type>
@@ -12349,11 +12305,11 @@ code
 			</physical>
 			<storage>
 				<name>V</name>
-				<index>2125</index>
+				<index>2115</index>
 			</storage>
 			<iconindex>1</iconindex>
 		</modelVariable>
-		<modelVariable id="763">
+		<modelVariable id="761">
 			<name>bond_to_base.omega</name>
 			<kind>input</kind>
 			<type>real</type>
@@ -12371,27 +12327,55 @@ code
 			</physical>
 			<storage>
 				<name>V</name>
-				<index>2129</index>
+				<index>2119</index>
+			</storage>
+			<iconindex>1</iconindex>
+		</modelVariable>
+		<modelVariable id="762">
+			<name>bond_to_arm.T</name>
+			<kind>output</kind>
+			<type>real</type>
+			<value>0.0; 0.0; 0.0; 0.0; 0.0</value>
+			<description></description>
+			<size>
+				<rows>5</rows>
+				<columns>1</columns>
+			</size>
+			<physical>
+				<unit>
+					<name>N.m</name>
+				</unit>
+				<quantity>torque</quantity>
+			</physical>
+			<storage>
+				<name>V</name>
+				<index>2123</index>
+			</storage>
+			<iconindex>1</iconindex>
+		</modelVariable>
+		<modelVariable id="763">
+			<name>bond_to_arm.omega</name>
+			<kind>input</kind>
+			<type>real</type>
+			<value>0.0; 0.0; 0.0; 0.0; 0.0</value>
+			<description></description>
+			<size>
+				<rows>5</rows>
+				<columns>1</columns>
+			</size>
+			<physical>
+				<unit>
+					<name>rad/s</name>
+				</unit>
+				<quantity>angular velocity</quantity>
+			</physical>
+			<storage>
+				<name>V</name>
+				<index>2128</index>
 			</storage>
 			<iconindex>1</iconindex>
 		</modelVariable>
 		<modelVariable id="764">
-			<name>xyzypr</name>
-			<kind>input</kind>
-			<type>real</type>
-			<value>0.0; 0.0; 0.0; 0.0; 0.0; 0.0</value>
-			<description></description>
-			<size>
-				<rows>6</rows>
-				<columns>1</columns>
-			</size>
-			<storage>
-				<name>V</name>
-				<index>2133</index>
-			</storage>
-			<iconindex>1</iconindex>
-		</modelVariable>
-		<modelVariable id="765">
 			<name>odometry_base</name>
 			<kind>input</kind>
 			<type>real</type>
@@ -12403,11 +12387,11 @@ code
 			</size>
 			<storage>
 				<name>V</name>
-				<index>2139</index>
+				<index>2133</index>
 			</storage>
 			<iconindex>1</iconindex>
 		</modelVariable>
-		<modelVariable id="766">
+		<modelVariable id="765">
 			<name>JointPositionSetpoint</name>
 			<kind>input</kind>
 			<type>real</type>
@@ -12419,11 +12403,11 @@ code
 			</size>
 			<storage>
 				<name>V</name>
-				<index>2142</index>
+				<index>2136</index>
 			</storage>
 			<iconindex>1</iconindex>
 		</modelVariable>
-		<modelVariable id="767">
+		<modelVariable id="766">
 			<name>measured_angles_arm</name>
 			<kind>input</kind>
 			<type>real</type>
@@ -12435,7 +12419,23 @@ code
 			</size>
 			<storage>
 				<name>V</name>
-				<index>2150</index>
+				<index>2144</index>
+			</storage>
+			<iconindex>1</iconindex>
+		</modelVariable>
+		<modelVariable id="767">
+			<name>xyzypr</name>
+			<kind>input</kind>
+			<type>real</type>
+			<value>0.0; 0.0; 0.0; 0.0; 0.0; 0.0</value>
+			<description></description>
+			<size>
+				<rows>6</rows>
+				<columns>1</columns>
+			</size>
+			<storage>
+				<name>V</name>
+				<index>2149</index>
 			</storage>
 			<iconindex>1</iconindex>
 		</modelVariable>

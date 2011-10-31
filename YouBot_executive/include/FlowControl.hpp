@@ -1,6 +1,7 @@
 #pragma once
 #include "Macho.hpp"
 #include "string"
+#include "vector"
 namespace YouBot{
 class YouBot_executive;
 }
@@ -14,11 +15,12 @@ namespace FlowControl
 		 void e_gravityMode();
 		 void e_jointControl();
 		 void e_catesianControl();
+		 void e_guardedMove();
 		  //overloaded function that does tracking
 		virtual void run(YouBot::YouBot_executive* executive) {}
 		virtual std::string toString();
 	private:
-		void init();
+		virtual void init();
 	};
 
 	SUBSTATE(fullControl,Top) {
@@ -42,6 +44,15 @@ namespace FlowControl
 	SUBSTATE(catesianControl,Top) {
 		STATE(catesianControl)
 	public:
+			void run(YouBot::YouBot_executive* executive);
+			 std::string toString();
+	};
+	SUBSTATE(guardedMove,Top) {
+		STATE(guardedMove)
+
+	public:
+			std::vector<double> error;
+			void init();
 			void run(YouBot::YouBot_executive* executive);
 			 std::string toString();
 	};

@@ -4,8 +4,8 @@
  *  file:  src\common\MotionProfiles.cpp
  *  model: ModelControl
  *  expmt: ModelControl
- *  date:  October 28, 2011
- *  time:  5:08:34 pm
+ *  date:  October 31, 2011
+ *  time:  10:57:42 am
  *  user:  Campuslicentie
  *  from:  Universiteit Twente
  *  build: 4.1.2.2

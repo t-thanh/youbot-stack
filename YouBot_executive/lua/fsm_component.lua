@@ -10,26 +10,26 @@ arm_pose=rtt.Variable("float64[]")
 arm_pose:resize(8)
 gripper_pose=rtt.Variable("float64[]")
 gripper_pose:resize(6)
-snake_pose=rtt.Variable("float64[]")
-snake_pose:resize(8)
-snake_pose[0]=0
-snake_pose[1]=0
-snake_pose[2]=0
-snake_pose[3]=0
-snake_pose[4]=-0.4
-snake_pose[5]=0.6
-snake_pose[6]=0.6
-snake_pose[7]=0.0
+   snake_pose=rtt.Variable("float64[]")
+   snake_pose:resize(8)
+   snake_pose[0]=0
+   snake_pose[1]=0
+   snake_pose[2]=0
+   snake_pose[3]=0
+   snake_pose[4]=-0.6
+   snake_pose[5]=0.7
+   snake_pose[6]=0.7
+   snake_pose[7]=0.0
 function getOODLangles(fullAngles)
-local temp=rtt.Variable("float64[]")
-temp:resize(5)
-temp[0]=fullAngles[3]+2.9496
-temp[1]=fullAngles[4]+1.1345
-temp[2]=fullAngles[5]-2.5482
-temp[3]=fullAngles[6]+1.7890
-temp[4]=fullAngles[7]+2.9234
+   local temp=rtt.Variable("float64[]")
+   temp:resize(5)
+   temp[0]=fullAngles[3]+2.9496
+   temp[1]=fullAngles[4]+1.1345
+   temp[2]=fullAngles[5]-2.5482
+   temp[3]=fullAngles[6]+1.7890
+   temp[4]=fullAngles[7]+2.9234
 
-return temp
+   return temp
 end
    -- load state machine
    fsm = rfsm.init(rfsm.load(rttros.find_rospack("YouBot_executive").."/lua/fsm.lua"))
@@ -54,6 +54,7 @@ function configureHook()
    -- NOTE: executive is a global variable !!!!
    executive=tc:getPeer("executive")
    monitor=tc:getPeer("monitor")
+
    return true
 end
  

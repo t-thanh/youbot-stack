@@ -5,8 +5,8 @@
  *  subm:  interaction_control
  *  model: ModelControl
  *  expmt: ModelControl
- *  date:  October 28, 2011
- *  time:  5:08:34 pm
+ *  date:  October 31, 2011
+ *  time:  10:57:42 am
  *  user:  Campuslicentie
  *  from:  Universiteit Twente
  *  build: 4.1.2.2
@@ -726,19 +726,19 @@ namespace ModelControl
 	/* VirtualLinkMap1\r = VirtualLinkMap1\MecanumWheelRadius; */
 	V[2075] = P[265];
 
-	/* VirtualLinkMap1\A = (1 / (2 * VirtualLinkMap1\r)) * [(VirtualLinkMap1\x + VirtualLinkMap1\y), (VirtualLinkMap1\x + VirtualLinkMap1\y), (VirtualLinkMap1\x + VirtualLinkMap1\y), (VirtualLinkMap1\x + VirtualLinkMap1\y); 1, -1, 1, -1; -1, -1, 1, 1]; */
-	M[300].mat[0] = (V[2076] + V[2077]);
-	M[300].mat[1] = (V[2076] + V[2077]);
-	M[300].mat[2] = (V[2076] + V[2077]);
-	M[300].mat[3] = (V[2076] + V[2077]);
-	M[300].mat[4] = -1.0;
+	/* VirtualLinkMap1\A = (1 / (2 * VirtualLinkMap1\r)) * [(VirtualLinkMap1\y - VirtualLinkMap1\x), (VirtualLinkMap1\y - VirtualLinkMap1\x), (VirtualLinkMap1\y - VirtualLinkMap1\x), (VirtualLinkMap1\y - VirtualLinkMap1\x); 1, 1, -1, -1; -1, 1, -1, 1]; */
+	M[300].mat[0] = (V[2077] - V[2076]);
+	M[300].mat[1] = (V[2077] - V[2076]);
+	M[300].mat[2] = (V[2077] - V[2076]);
+	M[300].mat[3] = (V[2077] - V[2076]);
+	M[300].mat[4] = 1.0;
 	M[300].mat[5] = 1.0;
 	M[300].mat[6] = -1.0;
-	M[300].mat[7] = 1.0;
-	M[300].mat[8] = 1.0;
+	M[300].mat[7] = -1.0;
+	M[300].mat[8] = -1.0;
 	M[300].mat[9] = 1.0;
 	M[300].mat[10] = -1.0;
-	M[300].mat[11] = -1.0;
+	M[300].mat[11] = 1.0;
 	XXScalarMatrixMul (&M[257], (1.0 / (2.0 * V[2075])), &M[300]);
 
 	/* VirtualLinkMap1\actuatedA = VirtualLinkMap1\A * diag (Constant\output); */
@@ -802,17 +802,17 @@ namespace ModelControl
 	/* DemuxHW1\arm.f = bond_to_arm.omega; */
 	XXMatrixMov (&M[63], &M[263]);
 
+	/* CartesianSafetyFilter\u = xyzypr; */
+	XXMatrixMov (&M[49], &M[264]);
+
 	/* MuxToControl1\base = odometry_base; */
-	XXMatrixMov (&M[249], &M[264]);
+	XXMatrixMov (&M[249], &M[265]);
 
 	/* JointSafetyFilter\u = JointPositionSetpoint; */
-	XXMatrixMov (&M[230], &M[265]);
+	XXMatrixMov (&M[230], &M[266]);
 
 	/* MuxToControl1\arm = measured_angles_arm; */
-	XXMatrixMov (&M[248], &M[266]);
-
-	/* CartesianSafetyFilter\u = xyzypr; */
-	XXMatrixMov (&M[49], &M[267]);
+	XXMatrixMov (&M[248], &M[267]);
 
 	/* CartesianSafetyFilter\s2y = CartesianSafetyFilter\BWrad ^ 2 * (CartesianSafetyFilter\u - CartesianSafetyFilter\y) - (1.4142 * CartesianSafetyFilter\BWrad) * CartesianSafetyFilter\s1y; */
 	XXMatrixSub (&M[307], &M[49], &M[271]);
@@ -3104,17 +3104,17 @@ namespace ModelControl
 	M[263].mat = &V[2128];		/* bond_to_arm.omega */
 	M[263].rows = 5;
 	M[263].columns = 1;
-	M[264].mat = &V[2133];		/* odometry_base */
-	M[264].rows = 3;
+	M[264].mat = &V[2133];		/* xyzypr */
+	M[264].rows = 6;
 	M[264].columns = 1;
-	M[265].mat = &V[2136];		/* JointPositionSetpoint */
-	M[265].rows = 8;
+	M[265].mat = &V[2139];		/* odometry_base */
+	M[265].rows = 3;
 	M[265].columns = 1;
-	M[266].mat = &V[2144];		/* measured_angles_arm */
-	M[266].rows = 5;
+	M[266].mat = &V[2142];		/* JointPositionSetpoint */
+	M[266].rows = 8;
 	M[266].columns = 1;
-	M[267].mat = &V[2149];		/* xyzypr */
-	M[267].rows = 6;
+	M[267].mat = &V[2150];		/* measured_angles_arm */
+	M[267].rows = 5;
 	M[267].columns = 1;
 	M[268].mat = &R[0];		/* CartesianSafetyFilter\s2y */
 	M[268].rows = 6;

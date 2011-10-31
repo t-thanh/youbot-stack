@@ -23,6 +23,10 @@ void Top::e_catesianControl()
 {
 	setState<catesianControl>();
 }
+void Top::e_guardedMove()
+{
+	setState<guardedMove>();
+}
 void fullControl::run(YouBot::YouBot_executive* executive)
 {
 	vector<double> setPoint_j;
@@ -84,6 +88,56 @@ void catesianControl::run(YouBot::YouBot_executive* executive)
 	executive->getZeroStiffness(zeroStiffness_j,zeroStiffness_c);
 	executive->writeSetpoints(states_j,zeroStiffness_j,setPoint_c,stiffness_c);
 }
+void guardedMove::init()
+{
+	error.resize(6,0);
+}
+void guardedMove::run(YouBot::YouBot_executive* executive)
+{
+	RTT::log(Info)<<"guardedMove"<<RTT::endlog();
+	vector<double> setPoint_j;
+	vector<double> setPoint_c;
+	vector<double> states_j;
+	vector<double> states_c;
+	vector<double> stiffness_j;
+	vector<double> stiffness_c;
+	vector<double> zeroStiffness_j;
+	vector<double> zeroStiffness_c;
+	vector<double> guardForce;
+	vector<double> stateForce;
+	double  alpha=0.1;
+	bool done;
+	executive->getSetPoints(setPoint_j,setPoint_c);
+	executive->getStates(states_j,states_c);
+	executive->getStiffness(stiffness_j, stiffness_c);
+	executive->getZeroStiffness(zeroStiffness_j,zeroStiffness_c);
+	executive->getGuardForce(guardForce);
+	executive->getStateForce(stateForce);
+//	RTT::log(Info)<<"all data read"<<RTT::endlog();
+	done=true;
+//	RTT::log(Info)<<"stateForce "<<stateForce.size();
+//	RTT::log(Info)<<"guardForce "<<guardForce.size();
+//	RTT::log(Info)<<"setPoint_c "<<setPoint_c.size();
+
+	for(std::size_t i=0; i<guardForce.size();i++)
+	{
+		error.at(i)=error.at(i)+ alpha*(guardForce.at(i)-stateForce.at(i));
+		RTT::log(Info)<<error.at(i);
+		if (guardForce.at(i)!=0)
+		{
+			done=done and (abs(guardForce.at(i)-stateForce.at(i))<alpha);
+			setPoint_c.at(i)=states_j.at(i)+error.at(i);
+		}
+	}
+	RTT::log(Info)<<"error computed"<<RTT::endlog();
+	if (done)
+	{
+		executive->doneEvent();
+		executive->positionArm(states_j);
+	}
+	RTT::log(Info)<<"Position set "<<RTT::endlog();
+	executive->writeSetpoints(states_j,zeroStiffness_j,setPoint_c,stiffness_c);
+}
 std::string Top::toString()
 {
 	return "Top";
@@ -104,4 +158,10 @@ std::string jointControl::toString()
 {
 	return "jointControl";
 }
+std::string guardedMove::toString()
+{
+	return "guardedMove";
+}
+
+
 } //flowControl

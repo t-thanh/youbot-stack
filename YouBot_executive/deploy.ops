@@ -48,8 +48,10 @@ FSM.exec_file(rospack.find("YouBot_executive")+"/lua/fsm_component.lua");
    cp_JointPose.type = DATA;  // Use ''BUFFER'' or ''DATA''
    cp_JointPose.lock_policy = LOCK_FREE; // Use  ''LOCKED'', ''LOCK_FREE'' or ''UNSYNC''
    connect("executive.gripper_cmd","youbot.Gripper1.gripper_cmd_position",cp_rtt)
+   connect("executive.CartForceState","control.ControllableJ_tip_e",cp_rtt)
    var ConnPolicy cp_events;
    connect("FSM.events","fakeMonitor.events_out",cp_events);
+   connect("FSM.events","executive.events_out",cp_events);
    
    var ConnPolicy cp_state;
    connect("FSM.state","fakeMonitor.state_in",cp_state);

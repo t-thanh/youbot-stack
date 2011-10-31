@@ -10,13 +10,19 @@ namespace YouBot
  const double YouBot_executive:: UNFOLD_JOINT_POSE[]={0,0,0,0,0,0,0,0};
  const double YouBot_executive::UNFOLD_CART_POSE[]={0,0,1,0,0,0};
  const double YouBot_executive::BASIC_JOINT_STIFFNESS[]={0,0,0,70,50,50,50,50};
- const double YouBot_executive::BASIC_CART_STIFFNESS[]={0,70};
+ const double YouBot_executive::BASIC_CART_STIFFNESS[]={3,70};
 YouBot_executive::YouBot_executive(const string& name) :
-		TaskContext(name, PreOperational), m_position_j(), m_stiffness_j(), m_position_c(), m_stiffness_c()
+		TaskContext(name, PreOperational),
+		m_position_j(),
+		m_stiffness_j(),
+		m_position_c(),
+		m_stiffness_c(),
+		m_force_c()
 {
 	m_position_j.assign(SIZE_JOINTS_ARRAY, 0);
 	m_stiffness_j.assign(SIZE_JOINTS_ARRAY, 0);
 	m_position_c.assign(SIZE_CART_SPACE, 0);
+	m_force_c.assign(SIZE_CART_SPACE,0);
 	m_stiffness_c.assign(SIZE_CART_STIFFNESS, 0);
 	msgs_setpoint_j.data.assign(SIZE_JOINTS_ARRAY, 0);
 	msgs_setpoint_c.data.assign(SIZE_CART_SPACE, 0);
@@ -46,7 +52,10 @@ YouBot_executive::YouBot_executive(const string& name) :
 	this->addOperation("setJointStiffness", &YouBot_executive::setJointStiffness,this).doc(" ");
 
 	this->addOperation("openGripper", &YouBot_executive::openGripper, this).doc(" ");
-	this->addOperation("closeGripper", &YouBot_executive::closeGripper, this).doc(" ");
+	this->addOperation("closeGripper", &YouBot_executive::closeGripper, this).doc(
+			" ");
+	this->addOperation("guardMove", &YouBot_executive::guardMove, this).doc(
+			"Performs guarded move based on the set force, issue event e_done. NOTE: the edge of working envelope considered as obstacle. If the force 	limit is higher then max force allowed in controller e_done event will be never sent.");
 
 	this->addPort("JointSpaceSetpoint", m_JointSpaceSetpoint).doc("");
 	this->addPort("JointSpaceStiffness", m_JointSpaceStiffness).doc("");
@@ -56,12 +65,15 @@ YouBot_executive::YouBot_executive(const string& name) :
 
 	this->addPort("GripperPose", m_CartGripperPose).doc("");
 	this->addPort("ArmPose", m_JointGripperPose).doc("");
-	this->addPort("gripper_cmd", gripper_cmd).doc("");
+	this->addPort("gripper_cmd", m_gripper_cmd).doc("");
+	this->addPort("events_out", m_events).doc("");
+	this->addPort("CartForceState", m_CartForceState).doc("Input from the control");
 
 	this->addProperty("Joint_position_setpoint", m_position_j);
 	this->addProperty("Joint_stiffness_setpoint", m_stiffness_j);
 	this->addProperty("Gripper_position_setpoint", m_position_c);
 	this->addProperty("Gripper_stiffness_setpoint", m_stiffness_c);
+	this->addProperty("Force_guard",m_force_c);
 
 	this->init();
 }
@@ -82,14 +94,14 @@ void YouBot_executive::init()
 	msgs_stiffness_j.data.assign(SIZE_JOINTS_ARRAY, 0);
 	msgs_stiffness_c_r.data.assign(1, 0);
 	msgs_stiffness_c_t.data.assign(1, 0);
-	m_gripper_cmd.positions.assign(1,0);
+	msgs_gripper_cmd.positions.assign(1,0);
 	setPeriod(0.01);
 	m_JointSpaceSetpoint.setDataSample(msgs_setpoint_j);
 	m_JointSpaceStiffness.setDataSample(msgs_stiffness_j);
 	m_CartSpaceSetpoint.setDataSample(msgs_setpoint_c);
 	m_CartSpaceStiffness_r.setDataSample(msgs_stiffness_c_r);
 	m_CartSpaceStiffness_t.setDataSample(msgs_stiffness_c_t);
-	gripper_cmd.setDataSample(m_gripper_cmd);
+	m_gripper_cmd.setDataSample(msgs_gripper_cmd);
 
 
 
@@ -97,13 +109,13 @@ void YouBot_executive::init()
 void YouBot_executive::openGripper()
 {
 
-	m_gripper_cmd.positions.at(0)=GRIPPER_OPENING;
-	gripper_cmd.write(m_gripper_cmd);
+	msgs_gripper_cmd.positions.at(0)=GRIPPER_OPENING;
+	m_gripper_cmd.write(msgs_gripper_cmd);
 
 }
 void YouBot_executive::closeGripper(){
-	m_gripper_cmd.positions.at(0)=0.0001;
-	gripper_cmd.write(m_gripper_cmd);
+	msgs_gripper_cmd.positions.at(0)=0.0001;
+	m_gripper_cmd.write(msgs_gripper_cmd);
 
 }
 YouBot_executive::~YouBot_executive()
@@ -256,6 +268,28 @@ void YouBot_executive::getXYZYPR(const vector<double> & H,
 	XYZYPR.at(3) = (double) (y);
 	XYZYPR.at(4) = (double) (p);
 	XYZYPR.at(5) = (double) (r);
+}
+void YouBot_executive::guardMove(vector<double> force_c)
+{
+	m_force_c.assign(force_c.begin(),force_c.end());
+	m_FlowControl->e_guardedMove();
+}
+void YouBot_executive::getGuardForce(vector<double>& force_c)
+{
+	force_c.assign(m_force_c.begin(),m_force_c.end());
+}
+void YouBot_executive::getStateForce(vector<double>& force_c)
+{
+	std_msgs::Float64MultiArray sample;
+	if (m_CartForceState.read(sample) != RTT::NoData)
+	{
+		force_c.assign(sample.data.begin(),sample.data.end());
+	}
+}
+
+void YouBot_executive::doneEvent(){
+	std::string msgs("executive.e_done");
+	m_events.write(msgs);
 }
 }
 

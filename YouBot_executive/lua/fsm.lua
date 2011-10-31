@@ -82,11 +82,15 @@ return rfsm.csta {
             print("Entry wait_for_bric")
             local activate_monitor=monitor:getOperation("activate_monitor")
             local activate_jnt_torque_lim_exceeded_result=activate_monitor:send("jnt_torque_lim_exceeded")
+            local openGripper=executive:getOperation("openGripper")
+            local openGripper_result=openGripper:send()
          end,
       exit=
          function()
             local deactivate_monitor=monitor:getOperation("activate_monitor")
             local deactivate_jnt_torque_lim_exceeded_result=deactivate_monitor:send("jnt_torque_lim_exceeded")
+            local closeGripper= executive:getOperation("closeGripper")
+            local closeGripper_result=closeGripper:send()
             print("Exit wait_for_bric")
          end,
     },
@@ -125,6 +129,14 @@ return rfsm.csta {
             local handle=op:send(gripper_pose)
          end,   
     },
+    lose_bric = rfsm.sista{
+         entry=
+         function()
+            print("Entry lose_bric")
+            local openGripper=executive:getOperation("openGripper")
+            local openGripper_result=openGripper:send()
+         end,   
+         },
 
     rfsm.trans {src="initial", tgt="homing" },
     rfsm.trans {src="homing", tgt="wait_for_user",               events={"jnt01234pos.e_POS_REACHED_true" }},
@@ -133,7 +145,9 @@ return rfsm.csta {
     rfsm.trans {src="proving_position", tgt="learning_position", events={"jnt01234vel.e_VEL_ZERO_false" }},--loop
     rfsm.trans {src="proving_position", tgt="positioning_snake",       events={"timer.e_TIMEOUT" }},
     rfsm.trans {src="positioning_snake", tgt="wait_for_bric",       events={"jnt01234pos.e_POS_REACHED_true" }},
-    rfsm.trans {src="wait_for_bric", tgt="positioning_2",       events={ "jnt4tor.e_LIM_EXCEEDED_true"}},
+    rfsm.trans {src="wait_for_bric", tgt="positioning_2",       events={ "jnt1tor.e_LIM_EXCEEDED_true"}},
     rfsm.trans {src="positioning_2", tgt="move_down",       events={ "jnt01234pos.e_POS_REACHED_true"}},
+    rfsm.trans {src="move_down", tgt="lose_bric",       events={ "e_done_wtf"}},
+
 }
 -- getArmPose getGripperPose gravityMode positionArm positionGripper unfoldArm 
