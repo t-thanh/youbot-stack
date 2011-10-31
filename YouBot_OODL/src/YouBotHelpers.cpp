@@ -51,6 +51,11 @@ namespace YouBot
 
 	using namespace RTT;
 
+//	int sign(double x)
+//	{
+//		return (x >= 0) - (x < 0);
+//	}
+
 	std::string ctrl_modes_tostring(const ctrl_modes& cd)
 	{
 		switch(cd)
