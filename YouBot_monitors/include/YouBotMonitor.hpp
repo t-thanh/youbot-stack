@@ -20,6 +20,9 @@ namespace YouBot
 	using namespace RTT;
 	using namespace std;
 
+	typedef std_msgs::Float64MultiArray cart_forces; // 6x1 vector (omega, trans)
+	typedef std_msgs::Float64MultiArray homogeneous_matrix; // 4x4 matrix
+
     class YouBotMonitorService : public TaskContext {
 
 		public:
@@ -67,12 +70,12 @@ namespace YouBot
 			InputPort<nav_msgs::Odometry> 		base_cart_state;
 
 			InputPort<sensor_msgs::JointState> 	arm_joint_state;
-//			InputPort<> 						arm_cart_state;
+			InputPort<cart_state> 				arm_cart_state;
 
 			sensor_msgs::JointState m_base_joint_state;
 			nav_msgs::Odometry m_base_cart_state;
 			sensor_msgs::JointState m_arm_joint_state;
-//			m_arm_cart_state
+			cart_state m_arm_cart_state;
 
 			OutputPort<std::string> events;
 			std::string m_events;
@@ -118,6 +121,7 @@ namespace YouBot
 		return false;
 	}
 
+	// For the base
 	template<>
 	bool YouBotMonitorService::check_monitor<nav_msgs::Odometry>(nav_msgs::Odometry* const imp, monitor* const mon)
 	{
@@ -135,14 +139,53 @@ namespace YouBot
 			}
 			case(MONITOR_VELOCITY):
 			{
-				vector<double> tmp2(6,0);
+				vector<double> tmp2(3,0);
 				tmp2[0] = imp->twist.twist.linear.x;
 				tmp2[1] = imp->twist.twist.linear.y;
-				tmp2[2] = imp->twist.twist.linear.z;
-				tmp2[3] = imp->twist.twist.angular.x;
-				tmp2[4] = imp->twist.twist.angular.y;
+//				tmp2[2] = imp->twist.twist.linear.z;
+//				tmp2[3] = imp->twist.twist.angular.x;
+//				tmp2[4] = imp->twist.twist.angular.y;
 				tmp2[5] = imp->twist.twist.angular.z;
 				return compare(mon->indices, mon->values, tmp2, mon->c_type, mon->epsilon);
+				break;
+			}
+			case(MONITOR_FORCE):
+			{
+				log(Error) << "FORCE not included in message." << endlog();
+				this->error();
+				break;
+			}
+			case(MONITOR_TORQUE):
+			{
+				log(Error) << "TORQUE not included in message." << endlog();
+				this->error();
+				break;
+			}
+			default:
+			{
+				log(Error) << "Case not recognized." << endlog();
+				this->error();
+				break;
+			}
+		}
+
+		return false;
+	}
+
+	// For the arm
+	template<>
+	bool YouBotMonitorService::check_monitor<cart_state>(cart_state* const imp, monitor* const mon)
+	{
+		switch(mon->quantity)
+		{
+			case(MONITOR_POSITION):
+			{
+				return compare(mon->indices, mon->values, *imp, mon->c_type, mon->epsilon);
+				break;
+			}
+			case(MONITOR_VELOCITY):
+			{
+				return compare(mon->indices, mon->values, *imp, mon->c_type, mon->epsilon);
 				break;
 			}
 			case(MONITOR_FORCE):

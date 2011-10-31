@@ -69,6 +69,23 @@ namespace YouBot
 		return (size > 0) ? true : false;
 	}
 
+	void homogeneous_to_xyzypr(std::vector<double> H, std::vector<double> xyzypr)
+	{
+		assert(H.size() == 16 && xyzypr.size() == 6);
+
+		xyzypr[0] = H[3];
+		xyzypr[1] = H[7];
+		xyzypr[2] = H[11];
+
+		btMatrix3x3 rotMatrix(H[0], H[1], H[2], H[4], H[5], H[6], H[8], H[9], H[10]);
+
+		btScalar y, p, r;
+		rotMatrix.getEulerYPR(y, p, r);
+		xyzypr[3] = y;
+		xyzypr[4] = p;
+		xyzypr[5] = r;
+	}
+
 	std::string control_space_tostring(const control_space& space)
 	{
 		if(space == CARTESIAN)
