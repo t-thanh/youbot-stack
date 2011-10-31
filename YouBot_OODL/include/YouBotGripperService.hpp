@@ -3,7 +3,7 @@
 #include <rtt/Service.hpp>
 #include <rtt/Port.hpp>
 
-#include <youbot/YouBotGripper.hpp>
+#include <youbot/YouBotManipulator.hpp>
 
 #include "YouBotTypes.hpp"
 #include "YouBotOODL.hpp"
@@ -62,6 +62,7 @@ namespace YouBot
 //	        GripperBarSpacingSetPoint m_tmp_gripper_state;
 	        GripperLimits m_gripper_limits;
 
+	        YouBotManipulator* m_manipulator;
 			YouBotGripper* m_gripper;
 
 			bool m_calibrated;

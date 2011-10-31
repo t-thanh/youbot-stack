@@ -16,3 +16,7 @@ TARGET_LINK_LIBRARIES(ArmControllerMockup ${libYouBotOODL_libs})
 orocos_component(BaseControllerMockup BaseControllerMockup.h BaseControllerMockup.cpp ${COMMON_INCLUDE_DIR})
 
 TARGET_LINK_LIBRARIES(BaseControllerMockup ${libYouBotOODL_libs})
+
+orocos_component(GripperControllerMockup GripperControllerMockup.h GripperControllerMockup.cpp ${COMMON_INCLUDE_DIR})
+
+TARGET_LINK_LIBRARIES(GripperControllerMockup ${libYouBotOODL_libs})
