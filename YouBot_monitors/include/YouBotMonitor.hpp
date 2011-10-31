@@ -7,7 +7,6 @@
 #include <sensor_msgs/typekit/Types.h>
 #include <nav_msgs/typekit/Types.h>
 #include <geometry_msgs/typekit/Types.h>
-#include <std_msgs/typekit/Types.h>
 #include <tf/tf.h>
 
 #include <boost/function.hpp>
@@ -19,9 +18,6 @@ namespace YouBot
 {
 	using namespace RTT;
 	using namespace std;
-
-	typedef std_msgs::Float64MultiArray cart_forces; // 6x1 vector (omega, trans)
-	typedef std_msgs::Float64MultiArray homogeneous_matrix; // 4x4 matrix
 
     class YouBotMonitorService : public TaskContext {
 
@@ -60,6 +56,8 @@ namespace YouBot
 			void emitEvent(std::string id, std::string message, bool condition);
 
 		protected:
+			bool monitor_input_connected(monitor* m);
+
 			template<class message_type>
 			bool check_monitor(message_type* const inp, monitor* const mon);
 
@@ -70,12 +68,15 @@ namespace YouBot
 			InputPort<nav_msgs::Odometry> 		base_cart_state;
 
 			InputPort<sensor_msgs::JointState> 	arm_joint_state;
-			InputPort<cart_state> 				arm_cart_state;
+			InputPort<homogeneous_matrix_t> 	arm_H_matrix;
+			InputPort<cart_efforts_t> 			arm_cart_efforts;
 
 			sensor_msgs::JointState m_base_joint_state;
 			nav_msgs::Odometry m_base_cart_state;
+
 			sensor_msgs::JointState m_arm_joint_state;
-			cart_state m_arm_cart_state;
+			homogeneous_matrix_t m_arm_H_matrix;
+			cart_efforts_t m_arm_cart_efforts;
 
 			OutputPort<std::string> events;
 			std::string m_events;
@@ -101,12 +102,7 @@ namespace YouBot
 				return compare(mon->indices, mon->values, imp->velocity, mon->c_type, mon->epsilon);
 				break;
 			}
-			case(MONITOR_FORCE):
-			{
-				return compare(mon->indices, mon->values, imp->effort, mon->c_type, mon->epsilon);
-				break;
-			}
-			case(MONITOR_TORQUE):
+			case(MONITOR_EFFORT):
 			{
 				return compare(mon->indices, mon->values, imp->effort, mon->c_type, mon->epsilon);
 				break;
@@ -149,15 +145,9 @@ namespace YouBot
 				return compare(mon->indices, mon->values, tmp2, mon->c_type, mon->epsilon);
 				break;
 			}
-			case(MONITOR_FORCE):
+			case(MONITOR_EFFORT):
 			{
-				log(Error) << "FORCE not included in message." << endlog();
-				this->error();
-				break;
-			}
-			case(MONITOR_TORQUE):
-			{
-				log(Error) << "TORQUE not included in message." << endlog();
+				log(Error) << "EFFORT not included in message." << endlog();
 				this->error();
 				break;
 			}
@@ -174,30 +164,34 @@ namespace YouBot
 
 	// For the arm
 	template<>
-	bool YouBotMonitorService::check_monitor<cart_state>(cart_state* const imp, monitor* const mon)
+	bool YouBotMonitorService::check_monitor<std_cart_t>(std_cart_t* const imp, monitor* const mon)
 	{
 		switch(mon->quantity)
 		{
 			case(MONITOR_POSITION):
 			{
-				return compare(mon->indices, mon->values, *imp, mon->c_type, mon->epsilon);
+				// input homogeneous matrix
+				xyzypr_t tmp(6, 0.0);
+				homogeneous_to_xyzypr(static_cast<homogeneous_matrix_t>(*imp), tmp);
+				return compare(mon->indices, mon->values, tmp, mon->c_type, mon->epsilon);
 				break;
 			}
 			case(MONITOR_VELOCITY):
 			{
-				return compare(mon->indices, mon->values, *imp, mon->c_type, mon->epsilon);
-				break;
-			}
-			case(MONITOR_FORCE):
-			{
-				log(Error) << "FORCE not included in message." << endlog();
+				log(Error) << "MONITOR_VELOCITY not included in message." << endlog();
 				this->error();
 				break;
 			}
-			case(MONITOR_TORQUE):
+			case(MONITOR_EFFORT):
 			{
-				log(Error) << "TORQUE not included in message." << endlog();
-				this->error();
+				xyzypr_t tmp(6, 0.0); //change from flow(w,x) to flow(x,w)
+				tmp[0] = imp->data[3]; // around yaw (x) axis
+				tmp[1] = imp->data[4];
+				tmp[2] = imp->data[5];
+				tmp[3] = imp->data[0]; //x axis
+				tmp[4] = imp->data[1];
+				tmp[5] = imp->data[2];
+				return compare(mon->indices, mon->values, tmp, mon->c_type, mon->epsilon);
 				break;
 			}
 			default:

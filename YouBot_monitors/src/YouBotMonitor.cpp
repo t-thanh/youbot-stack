@@ -38,7 +38,9 @@ namespace YouBot
 		this->addPort("events", events).doc("Joint events");
 
 		this->addPort("arm_joint_state", arm_joint_state).doc("Arm joint states");
-		this->addPort("arm_cart_state", arm_cart_state).doc("Arm cartesian states");
+		this->addPort("arm_H_matrix", arm_H_matrix).doc("Arm homogeneous matrix");
+		this->addPort("arm_cart_efforts", arm_cart_efforts).doc("Arm cartesian efforts");
+
 		this->addPort("base_joint_state", base_joint_state).doc("Base joint states");
 		this->addPort("base_cart_state", base_cart_state).doc("Base cartesian states");
 
@@ -66,25 +68,7 @@ namespace YouBot
 
 	bool YouBotMonitorService::startHook()
 	{
-		if(! (base_joint_state.connected() && base_cart_state.connected() && arm_joint_state.connected()) )
-		{
-			return false;
-		}
 		return true;
-	}
-
-	void YouBotMonitorService::listActiveMonitors()
-	{
-		unsigned int size = m_active_monitors.size();
-		for(unsigned int i = 0; i < size; ++i)
-		{
-			log(Info) << "[" << i << "] " << m_active_monitors[i]->descriptive_name << endlog();
-		}
-
-		if(size == 0)
-		{
-			log(Info) << "No active monitors." << endlog();
-		}
 	}
 
 	void YouBotMonitorService::updateHook()
@@ -92,7 +76,8 @@ namespace YouBot
 		base_joint_state.read(m_base_joint_state);
 		base_cart_state.read(m_base_cart_state);
 		arm_joint_state.read(m_arm_joint_state);
-		arm_cart_state.read(m_arm_cart_state);
+		arm_H_matrix.read(m_arm_H_matrix);
+		arm_cart_efforts.read(m_arm_cart_efforts);
 
 		unsigned int size = m_active_monitors.size();
 		for(unsigned int i = 0; i < size; ++i)
@@ -114,6 +99,20 @@ namespace YouBot
 				m_active_monitors[i]->state = false;
 				emitEvent(m_active_monitors[i]->id, m_active_monitors[i]->msg, false);
 			}
+		}
+	}
+
+	void YouBotMonitorService::listActiveMonitors()
+	{
+		unsigned int size = m_active_monitors.size();
+		for(unsigned int i = 0; i < size; ++i)
+		{
+			log(Info) << "[" << i << "] " << m_active_monitors[i]->descriptive_name << endlog();
+		}
+
+		if(size == 0)
+		{
+			log(Info) << "No active monitors." << endlog();
 		}
 	}
 
@@ -145,7 +144,6 @@ namespace YouBot
 
 		m->descriptive_name = descriptive_name;
 		p->addProperty("descriptive_name", m->descriptive_name).doc("Descriptive name of the monitor");
-		p->addProperty("active", m->active).doc("Is the monitor active?");
 		p->addProperty("physical_part", m->part).doc("Robot part: ARM, BASE or BOTH");
 		p->addProperty("control_space", m->space).doc("Compare in JOINT or CARTESIAN space");
 		p->addProperty("physical_quantity", m->quantity).doc("Interesting quantity: POSITION, VELOCITY, FORCE or TORQUE");
@@ -194,7 +192,6 @@ namespace YouBot
 
 		m->descriptive_name = target;
 		p->addProperty("descriptive_name", m->descriptive_name).doc("Descriptive name of the monitor");
-		p->addProperty("active", m->active).doc("Is the monitor active?");
 		p->addProperty("physical_part", m->part).doc("Robot part: ARM, BASE or BOTH");
 		p->addProperty("control_space", m->space).doc("Compare in JOINT or CARTESIAN space");
 		p->addProperty("physical_quantity", m->quantity).doc("Interesting quantity: POSITION, VELOCITY, FORCE or TORQUE");
@@ -260,6 +257,41 @@ namespace YouBot
 		return true;
 	}
 
+	bool YouBotMonitorService::monitor_input_connected(monitor* m)
+	{
+		if(m->part == ARM)
+		{
+			if(m->space == JOINT)
+				return arm_joint_state.connected();
+			else if(m->space == CARTESIAN)
+			{
+				if(m->quantity == MONITOR_POSITION)
+					return arm_H_matrix.connected();
+				else if(m->quantity == MONITOR_POSITION)
+					return false;
+				else if(m->quantity == MONITOR_EFFORT)
+					return arm_cart_efforts.connected();
+				else
+					return false;
+			}
+			else
+				return false;
+		}
+		else if(m->part == BASE)
+		{
+			if(m->space == CARTESIAN)
+			{
+				return base_cart_state.connected();
+			}
+			else
+			{
+				return base_joint_state.connected();
+			}
+		}
+		else
+			return false;
+	}
+
 	bool YouBotMonitorService::activate_monitor(std::string name)
 	{
 		vector<monitor*>::iterator i;
@@ -277,13 +309,10 @@ namespace YouBot
 			return false;
 		}
 
-		if(m->indices.size() == 1)
+		if(m->part == BASE && m->quantity == MONITOR_EFFORT )
 		{
-			m->is_single_value = true;
-		}
-		else
-		{
-			m->is_single_value = false;
+			log(Error) << "Cannot monitor base cartesian MONITOR_EFFORT at the moment." << endlog();
+			return false;
 		}
 
 		if(m->quantity == MONITOR_TIME)
@@ -292,8 +321,8 @@ namespace YouBot
 			m->id = m->descriptive_name;
 			m->e_type = LEVEL;
 			unsigned int size = m->values.size();
-			m->timer_state.reserve(size);
-			m->timer_expires.reserve(size);
+			m->timer_state.resize(size, false);
+			m->timer_expires.resize(size);
 			ros::Time now = ros::Time::now();
 			for(unsigned int i = 0; i < size; ++i)
 			{
@@ -308,16 +337,11 @@ namespace YouBot
 				m->timer_expires[i] = ros::Time((uint32_t)sec_sum, (uint32_t)nsec_sum);
 			}
 		}
-		else if(m->space == CARTESIAN && (m->quantity == MONITOR_FORCE || m->quantity == MONITOR_TORQUE) )
-		{
-			log(Error) << "Cannot monitor cartesian FORCE or TORQUE at the moment." << endlog();
-			return false;
-		}
 		else if(m->space == CARTESIAN)
 		{
 			m->id = control_space_toeventstring(m->space) + physical_quantity_toeventstring(m->quantity);
 		}
-		else
+		else // m->space == JOINT
 		{
 			m->id.reserve(13);
 			m->id = control_space_toeventstring(m->space);
@@ -328,9 +352,15 @@ namespace YouBot
 			m->id.append(physical_quantity_toeventstring(m->quantity));
 		}
 
+		if(m->quantity != MONITOR_TIME && !monitor_input_connected(m))
+		{
+			log(Error) << "Monitor input not connected." << endlog();
+			return false;
+		}
 
 		if(!bind_function(m))
 		{
+			log(Error) << "Could not bind the check function." << endlog();
 			m->check = NULL;
 			return false;
 		}
@@ -404,7 +434,25 @@ namespace YouBot
 		}
 		else if(m->space == CARTESIAN && m->part == ARM)
 		{
-			m->check = boost::bind(boost::mem_fn(&YouBotMonitorService::check_monitor<cart_state>), this, &m_arm_cart_state, m);
+			if(m->quantity == MONITOR_POSITION)
+			{
+				m->check = boost::bind(boost::mem_fn(&YouBotMonitorService::check_monitor<std_cart_t>), this, &m_arm_H_matrix, m);
+			}
+			else if(m->quantity == MONITOR_VELOCITY)
+			{
+				log(Info) << "CARTESIAN ARM MONITOR_VELOCITY not implemented yet." << endlog();
+				return false;
+//				m->check = boost::bind(boost::mem_fn(&YouBotMonitorService::check_monitor<std_cart_t>), this, &m_arm_H_matrix, m);
+			}
+			else if(m->quantity == MONITOR_EFFORT)
+			{
+				m->check = boost::bind(boost::mem_fn(&YouBotMonitorService::check_monitor<std_cart_t>), this, &m_arm_cart_efforts, m);
+			}
+			else
+			{
+				log(Error) << "bind_function - Case not recognized." << endlog();
+				return false;
+			}
 		}
 		else if(m->space == JOINT && m->part == BASE)
 		{
@@ -413,6 +461,11 @@ namespace YouBot
 		else if(m->space == JOINT && m->part == ARM)
 		{
 			m->check = boost::bind(boost::mem_fn(&YouBotMonitorService::check_monitor<sensor_msgs::JointState>), this, &m_arm_joint_state, m);
+		}
+		else
+		{
+			log(Error) << "bind_function - Case not recognized." << endlog();
+			return false;
 		}
 
 		return true;

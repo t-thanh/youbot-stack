@@ -69,15 +69,15 @@ namespace YouBot
 		return (size > 0) ? true : false;
 	}
 
-	void homogeneous_to_xyzypr(std::vector<double> H, std::vector<double> xyzypr)
+	void homogeneous_to_xyzypr(const homogeneous_matrix_t& H, xyzypr_t& xyzypr)
 	{
-		assert(H.size() == 16 && xyzypr.size() == 6);
+		assert(H.data.size() == 16 && xyzypr.size() == 6);
 
-		xyzypr[0] = H[3];
-		xyzypr[1] = H[7];
-		xyzypr[2] = H[11];
+		xyzypr[0] = H.data[3];
+		xyzypr[1] = H.data[7];
+		xyzypr[2] = H.data[11];
 
-		btMatrix3x3 rotMatrix(H[0], H[1], H[2], H[4], H[5], H[6], H[8], H[9], H[10]);
+		btMatrix3x3 rotMatrix(H.data[0], H.data[1], H.data[2], H.data[4], H.data[5], H.data[6], H.data[8], H.data[9], H.data[10]);
 
 		btScalar y, p, r;
 		rotMatrix.getEulerYPR(y, p, r);
@@ -112,10 +112,8 @@ namespace YouBot
 			return "MONITOR_POSITION";
 		else if(quantity == MONITOR_VELOCITY)
 			return "MONITOR_VELOCITY";
-		else if(quantity == MONITOR_FORCE)
-			return "MONITOR_FORCE";
-		else if(quantity == MONITOR_TORQUE)
-			return "MONITOR_TORQUE";
+		else if(quantity == MONITOR_EFFORT)
+			return "MONITOR_EFFORT";
 		else if(quantity == MONITOR_TIME)
 			return "MONITOR_TIME";
 		else
@@ -128,10 +126,8 @@ namespace YouBot
 			return "pos";
 		else if(quantity == MONITOR_VELOCITY)
 			return "vel";
-		else if(quantity == MONITOR_FORCE)
-			return "for";
-		else if(quantity == MONITOR_TORQUE)
-			return "tor";
+		else if(quantity == MONITOR_EFFORT)
+			return "eff";
 		else if(quantity == MONITOR_TIME)
 			return "time";
 		else

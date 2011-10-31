@@ -189,13 +189,9 @@ namespace YouBot
 				{
 					out = MONITOR_VELOCITY;
 				}
-				else if(boost::equals(str, "MONITOR_FORCE"))
+				else if(boost::equals(str, "MONITOR_EFFORT"))
 				{
-					out = MONITOR_FORCE;
-				}
-				else if(boost::equals(str, "MONITOR_TORQUE"))
-				{
-					out = MONITOR_TORQUE;
+					out = MONITOR_EFFORT;
 				}
 				else if(boost::equals(str, "MONITOR_TIME"))
 				{

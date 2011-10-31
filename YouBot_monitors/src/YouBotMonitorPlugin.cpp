@@ -48,8 +48,7 @@ bool loadRTTPlugin( RTT::TaskContext* t )
 
 	globals->setValue( new Constant<physical_quantity>("MONITOR_POSITION",YouBot::MONITOR_POSITION) );
 	globals->setValue( new Constant<physical_quantity>("MONITOR_VELOCITY",YouBot::MONITOR_VELOCITY) );
-	globals->setValue( new Constant<physical_quantity>("MONITOR_TORQUE",YouBot::MONITOR_TORQUE) );
-	globals->setValue( new Constant<physical_quantity>("MONITOR_FORCE",YouBot::MONITOR_FORCE) );
+	globals->setValue( new Constant<physical_quantity>("MONITOR_EFFORT",YouBot::MONITOR_EFFORT) );
 	globals->setValue( new Constant<physical_quantity>("MONITOR_TIME",YouBot::MONITOR_TIME) );
 
 	globals->setValue( new Constant<event_type>("EDGE",YouBot::EDGE) );
