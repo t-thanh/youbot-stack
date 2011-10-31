@@ -13,18 +13,20 @@
 
 #include <boost/function.hpp>
 #include <vector>
+#include <cassert>
 
 namespace YouBot
 {
 	using namespace RTT;
 	using namespace std;
 
-	std::string compare_type_tostring(const compare_type& c_type);
-
-	bool compare(const vector<unsigned int>& indices, const vector<double>& setp, const vector<double>& state, const compare_type ct, const double epsilon)
+	bool compare(const vector<unsigned int>& indices, const vector<double>& setp, const vector<double>& state, const vector<compare_type>& ct, const double epsilon)
 	{
+		assert(setp.size() == state.size() && ct.size() == indices.size());
+
 		unsigned int index = 0;
 		unsigned int size = indices.size();
+
 		for(unsigned int i = 0; i < size; ++i)
 		{
 			index = indices[i];
@@ -32,15 +34,15 @@ namespace YouBot
 
 //			log(Info) << compare_type_tostring(ct) << " diff (" << cur[index] << " - " << (*setp)[index] << ") : " << diff << " epsilon: " << epsilon << endlog();
 
-			if( ct == LESS && diff >= 0 )
+			if( ct[i] == LESS && diff >= 0 )
 			{
 				return false;
 			}
-			else if(ct == LESS_EQUAL && diff > 0 )
+			else if(ct[i] == LESS_EQUAL && diff > 0 )
 			{
 				return false;
 			}
-			else if(ct == EQUAL)
+			else if(ct[i] == EQUAL)
 			{
 				double relativeError = 0.0;
 				if(setp[i] == state[index])
@@ -56,11 +58,11 @@ namespace YouBot
 					return false;
 				}
 			}
-			else if(ct == GREATER_EQUAL && diff < 0 )
+			else if(ct[i] == GREATER_EQUAL && diff < 0 )
 			{
 				return false;
 			}
-			else if(ct == GREATER && diff <= 0 )
+			else if(ct[i] == GREATER && diff <= 0 )
 			{
 				return false;
 			}

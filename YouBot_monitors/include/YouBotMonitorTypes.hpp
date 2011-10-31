@@ -33,7 +33,7 @@ namespace YouBot
 		control_space space;
 		physical_quantity quantity;
 		event_type e_type;
-		compare_type c_type;
+		std::vector<compare_type> c_type;
 
 		std::string id; // determined beforehand to speed up runtime execution.
 		std::string msg;
@@ -49,7 +49,7 @@ namespace YouBot
 
 		monitor_fp check;
 
-		_monitor() : active(false), part(ARM), space(JOINT), quantity(MONITOR_POSITION), e_type(EDGE), c_type(LESS),
+		_monitor() : active(false), part(ARM), space(JOINT), quantity(MONITOR_POSITION), e_type(EDGE), c_type(1, EQUAL),
 				id(""), msg(""),
 				state(false),
 				timer_state(0),

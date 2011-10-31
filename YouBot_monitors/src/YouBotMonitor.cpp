@@ -315,10 +315,30 @@ namespace YouBot
 			return false;
 		}
 
+		// Set the e_EVENT id
 		if(m->quantity == MONITOR_TIME)
 		{
 			log(Debug) << "Ignoring physical_part, control_space, event_type, compare_type, epsilon and indices." << endlog();
 			m->id = m->descriptive_name;
+		}
+		else if(m->space == CARTESIAN)
+		{
+			m->id = control_space_toeventstring(m->space) + physical_quantity_toeventstring(m->quantity);
+		}
+		else // m->space == JOINT
+		{
+			m->id.reserve(13);
+			m->id = control_space_toeventstring(m->space);
+			for(unsigned int i = 0; i < m->indices.size(); ++i)
+			{
+				m->id.append( boost::lexical_cast<string>(m->indices[i]));
+			}
+			m->id.append(physical_quantity_toeventstring(m->quantity));
+		}
+
+		// Setup timer events
+		if(m->quantity == MONITOR_TIME)
+		{
 			m->e_type = LEVEL;
 			unsigned int size = m->values.size();
 			m->timer_state.resize(size, false);
@@ -337,27 +357,35 @@ namespace YouBot
 				m->timer_expires[i] = ros::Time((uint32_t)sec_sum, (uint32_t)nsec_sum);
 			}
 		}
-		else if(m->space == CARTESIAN)
-		{
-			m->id = control_space_toeventstring(m->space) + physical_quantity_toeventstring(m->quantity);
-		}
-		else // m->space == JOINT
-		{
-			m->id.reserve(13);
-			m->id = control_space_toeventstring(m->space);
-			for(unsigned int i = 0; i < m->indices.size(); ++i)
-			{
-				m->id.append( boost::lexical_cast<string>(m->indices[i]));
-			}
-			m->id.append(physical_quantity_toeventstring(m->quantity));
-		}
 
+		// Check if the monitors will receive input
 		if(m->quantity != MONITOR_TIME && !monitor_input_connected(m))
 		{
 			log(Error) << "Monitor input not connected." << endlog();
 			return false;
 		}
 
+		// Check if the indices match the values array
+		if(m->indices.size() != m->values.size())
+		{
+			log(Error) << "The number of indices does not match the number of values." << endlog();
+			return false;
+		}
+
+		// Check if the compare_type array makes sense
+		if(m->c_type.size() == 0 || (m->c_type.size() > 1 && m->c_type.size () != m->values.size()))
+		{
+			log(Error) << "c_type vector does not match values vector in a proper manner." << endlog();
+			return false;
+		}
+
+		// Copy compare_types if only one was given for the whole array (convenience function)
+		if(m->c_type.size() == 1 && m->values.size() > 1) // Copy the compare_type for all indices/values.
+		{
+			m->c_type.resize(m->values.size(), m->c_type[0]);
+		}
+
+		// Bind to the appropriate function
 		if(!bind_function(m))
 		{
 			log(Error) << "Could not bind the check function." << endlog();
@@ -365,7 +393,7 @@ namespace YouBot
 			return false;
 		}
 
-		m->active = true;
+		m->active = true; // Mark active
 		m_active_monitors.push_back(m);
 
 		return true;
