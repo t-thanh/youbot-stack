@@ -135,7 +135,7 @@ namespace YouBot
 
 		if(m != NULL)
 		{
-			log(Error) << "Monitor already in database." << endlog();
+			log(Error) << descriptive_name << ": monitor already in database." << endlog();
 			return false;
 		}
 
@@ -176,14 +176,14 @@ namespace YouBot
 		m = (i = getMonitor(m_monitors, source)) == m_monitors.end() ? NULL : *i;
 		if(m == NULL)
 		{
-			log(Error) << "Monitor not in database." << endlog();
+			log(Error) << source << ": monitor not in database." << endlog();
 			return false;
 		}
 
 		m2 = (i = getMonitor(m_monitors, target)) == m_monitors.end() ? NULL : *i;
 		if(m2 != NULL)
 		{
-			log(Error) << "Monitor already in database." << endlog();
+			log(Error) << target << ": monitor already in database." << endlog();
 			return false;
 		}
 
@@ -222,13 +222,13 @@ namespace YouBot
 
 		if(m == NULL)
 		{
-			log(Error) << "Monitor not found" << endlog();
+			log(Error) << name << ": monitor not found" << endlog();
 			return false;
 		}
 
 		if(m->active)
 		{
-			log(Warning) << "Cannot assign indices to an active monitor." << endlog();
+			log(Warning) << name << ": cannot assign indices to an active monitor." << endlog();
 			return false;
 		}
 
@@ -243,13 +243,13 @@ namespace YouBot
 
 		if(m == NULL)
 		{
-			log(Error) << "Monitor not found" << endlog();
+			log(Error) << name << ": monitor not found" << endlog();
 			return false;
 		}
 
 		if(m->active)
 		{
-			log(Warning) << "Cannot assign values to an active monitor." << endlog();
+			log(Warning) << name << ": cannot assign values to an active monitor." << endlog();
 			return false;
 		}
 
@@ -299,26 +299,26 @@ namespace YouBot
 
 		if(m == NULL)
 		{
-			log(Error) << "Monitor not found" << endlog();
+			log(Error) << name << ": monitor not found" << endlog();
 			return false;
 		}
 
 		if(m->active)
 		{
-			log(Warning) << "Cannot activate an already active monitor." << endlog();
+			log(Warning) << name << ": cannot activate an already active monitor." << endlog();
 			return false;
 		}
 
 		if(m->part == BASE && m->quantity == MONITOR_EFFORT )
 		{
-			log(Error) << "Cannot monitor base cartesian MONITOR_EFFORT at the moment." << endlog();
+			log(Error) << name << ": cannot monitor BASE CARTESIAN MONITOR_EFFORT at the moment." << endlog();
 			return false;
 		}
 
 		// Set the e_EVENT id
 		if(m->quantity == MONITOR_TIME)
 		{
-			log(Debug) << "Ignoring physical_part, control_space, event_type, compare_type, epsilon and indices." << endlog();
+			log(Debug) << name << ": ignoring physical_part, control_space, event_type, compare_type, epsilon and indices." << endlog();
 			m->id = m->descriptive_name;
 		}
 		else if(m->space == CARTESIAN)
@@ -361,7 +361,7 @@ namespace YouBot
 		// Check if the monitors will receive input
 		if(m->quantity != MONITOR_TIME && !monitor_input_connected(m))
 		{
-			log(Error) << "Monitor input not connected." << endlog();
+			log(Error) << name << ": monitor input not connected." << endlog();
 			return false;
 		}
 
@@ -370,14 +370,14 @@ namespace YouBot
 			// Check if the indices match the values array
 			if(m->indices.size() != m->values.size())
 			{
-				log(Error) << "The number of indices does not match the number of values." << endlog();
+				log(Error) << name << ": the number of indices does not match the number of values." << endlog();
 				return false;
 			}
 
 			// Check if the compare_type array makes sense
 			if(m->c_type.size() == 0 || (m->c_type.size() > 1 && m->c_type.size () != m->values.size()))
 			{
-				log(Error) << "c_type vector does not match values vector in a proper manner." << endlog();
+				log(Error) << name << ": c_type vector does not match values vector in a proper manner." << endlog();
 				return false;
 			}
 
@@ -391,7 +391,7 @@ namespace YouBot
 		// Bind to the appropriate function
 		if(!bind_function(m))
 		{
-			log(Error) << "Could not bind the check function." << endlog();
+			log(Error) << name << ": could not bind the check function." << endlog();
 			m->check = NULL;
 			return false;
 		}
@@ -409,7 +409,7 @@ namespace YouBot
 
 		if(m == NULL)
 		{
-			log(Error) << "Monitor not found." << endlog();
+			log(Error) << name << ": monitor not found." << endlog();
 			return false;
 		}
 
@@ -418,7 +418,7 @@ namespace YouBot
 		m = (i = getMonitor(m_active_monitors, name)) == m_active_monitors.end() ? NULL : *i;
 		if(m == NULL)
 		{
-			log(Warning) << "Monitor was not active." << endlog();
+			log(Warning) << name << ": monitor was not active." << endlog();
 			return false;
 		}
 
@@ -435,13 +435,13 @@ namespace YouBot
 
 		if(m == NULL || pb == NULL)
 		{
-			log(Error) << "Monitor not found." << endlog();
+			log(Error) << name << ": monitor not found." << endlog();
 			return false;
 		}
 
 		if(m->active)
 		{
-			log(Error) << "Cannot remove an active monitor." << endlog();
+			log(Error) << name << ": cannot remove an active monitor." << endlog();
 			return false;
 		}
 
