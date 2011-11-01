@@ -365,24 +365,27 @@ namespace YouBot
 			return false;
 		}
 
-		// Check if the indices match the values array
-		if(m->indices.size() != m->values.size())
+		if(m->quantity != MONITOR_TIME)
 		{
-			log(Error) << "The number of indices does not match the number of values." << endlog();
-			return false;
-		}
+			// Check if the indices match the values array
+			if(m->indices.size() != m->values.size())
+			{
+				log(Error) << "The number of indices does not match the number of values." << endlog();
+				return false;
+			}
 
-		// Check if the compare_type array makes sense
-		if(m->c_type.size() == 0 || (m->c_type.size() > 1 && m->c_type.size () != m->values.size()))
-		{
-			log(Error) << "c_type vector does not match values vector in a proper manner." << endlog();
-			return false;
-		}
+			// Check if the compare_type array makes sense
+			if(m->c_type.size() == 0 || (m->c_type.size() > 1 && m->c_type.size () != m->values.size()))
+			{
+				log(Error) << "c_type vector does not match values vector in a proper manner." << endlog();
+				return false;
+			}
 
-		// Copy compare_types if only one was given for the whole array (convenience function)
-		if(m->c_type.size() == 1 && m->values.size() > 1) // Copy the compare_type for all indices/values.
-		{
-			m->c_type.resize(m->values.size(), m->c_type[0]);
+			// Copy compare_types if only one was given for the whole array (convenience function)
+			if(m->c_type.size() == 1 && m->values.size() > 1) // Copy the compare_type for all indices/values.
+			{
+				m->c_type.resize(m->values.size(), m->c_type[0]);
+			}
 		}
 
 		// Bind to the appropriate function
