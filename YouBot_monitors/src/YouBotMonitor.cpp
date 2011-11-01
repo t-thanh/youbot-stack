@@ -399,6 +399,8 @@ namespace YouBot
 		m->active = true; // Mark active
 		m_active_monitors.push_back(m);
 
+		log(Info) << m->descriptive_name << " : activated." << endlog();
+
 		return true;
 	}
 
@@ -410,6 +412,7 @@ namespace YouBot
 		if(m == NULL)
 		{
 			log(Error) << name << ": monitor not found." << endlog();
+			listActiveMonitors();
 			return false;
 		}
 
@@ -419,11 +422,13 @@ namespace YouBot
 		if(m == NULL)
 		{
 			log(Warning) << name << ": monitor was not active." << endlog();
+			listActiveMonitors();
 			return false;
 		}
 
 		m_active_monitors.erase(i);
 
+		log(Info) << m->descriptive_name << " : deactivated." << endlog();
 		return true;
 	}
 
