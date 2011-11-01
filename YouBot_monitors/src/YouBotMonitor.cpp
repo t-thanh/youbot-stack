@@ -131,7 +131,7 @@ namespace YouBot
 	bool YouBotMonitorService::setup_monitor(std::string descriptive_name)
 	{
 		vector<monitor*>::iterator i;
-		monitor* m = (i = getMonitor(m_monitors, descriptive_name)) == m_monitors.end() ? NULL : *i;
+		monitor* m = (i = getMonitor(m_monitors, descriptive_name)) < m_monitors.end() ? *i : NULL;
 
 		if(m != NULL)
 		{
@@ -173,14 +173,14 @@ namespace YouBot
 		monitor* m(NULL);
 		monitor* m2(NULL);
 
-		m = (i = getMonitor(m_monitors, source)) == m_monitors.end() ? NULL : *i;
+		m = (i = getMonitor(m_monitors, source)) < m_monitors.end() ? *i : NULL;
 		if(m == NULL)
 		{
 			log(Error) << source << ": monitor not in database." << endlog();
 			return false;
 		}
 
-		m2 = (i = getMonitor(m_monitors, target)) == m_monitors.end() ? NULL : *i;
+		m2 = (i = getMonitor(m_monitors, target)) < m_monitors.end() ? *i : NULL;
 		if(m2 != NULL)
 		{
 			log(Error) << target << ": monitor already in database." << endlog();
@@ -218,7 +218,7 @@ namespace YouBot
 	bool YouBotMonitorService::assign_indices(std::string name, std::vector<uint32_t> indices)
 	{
 		vector<monitor*>::iterator i;
-		monitor* m = (i = getMonitor(m_monitors, name)) != m_monitors.end() ? *i : NULL;
+		monitor* m = (i = getMonitor(m_monitors, name)) < m_monitors.end() ? *i : NULL;
 
 		if(m == NULL)
 		{
@@ -239,7 +239,7 @@ namespace YouBot
 	bool YouBotMonitorService::assign_values(std::string name, std::vector<double> values)
 	{
 		vector<monitor*>::iterator i;
-		monitor* m = (i = getMonitor(m_monitors, name)) != m_monitors.end() ? *i : NULL;
+		monitor* m = (i = getMonitor(m_monitors, name)) < m_monitors.end() ? *i : NULL;
 
 		if(m == NULL)
 		{
@@ -295,7 +295,7 @@ namespace YouBot
 	bool YouBotMonitorService::activate_monitor(std::string name)
 	{
 		vector<monitor*>::iterator i;
-		monitor* m = (i = getMonitor(m_monitors, name)) != m_monitors.end() ? *i : NULL;
+		monitor* m = (i = getMonitor(m_monitors, name)) < m_monitors.end() ? *i : NULL;
 
 		if(m == NULL)
 		{
@@ -405,7 +405,7 @@ namespace YouBot
 	bool YouBotMonitorService::deactivate_monitor(std::string name)
 	{
 		vector<monitor*>::iterator i;
-		monitor* m = (i = getMonitor(m_monitors, name)) == m_monitors.end() ? NULL : *i;
+		monitor* m = (i = getMonitor(m_monitors, name)) < m_monitors.end() ? *i : NULL;
 
 		if(m == NULL)
 		{
@@ -415,7 +415,7 @@ namespace YouBot
 
 		m->active = false;
 
-		m = (i = getMonitor(m_active_monitors, name)) == m_active_monitors.end() ? NULL : *i;
+		m = (i = getMonitor(m_active_monitors, name)) < m_active_monitors.end() ? *i : NULL;
 		if(m == NULL)
 		{
 			log(Warning) << name << ": monitor was not active." << endlog();
@@ -430,7 +430,7 @@ namespace YouBot
 	bool YouBotMonitorService::remove_monitor(std::string name)
 	{
 		vector<monitor*>::iterator i;
-		monitor* m = (i = getMonitor(m_monitors, name)) == m_monitors.end() ? NULL : *i;
+		monitor* m = (i = getMonitor(m_monitors, name)) < m_monitors.end() ? *i : NULL;
 		base::PropertyBase* pb = this->getProperty(name);
 
 		if(m == NULL || pb == NULL)
