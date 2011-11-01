@@ -7,10 +7,10 @@ var ConnPolicy cp_m;
 cp_m.type = DATA;  
 cp_m.lock_policy = LOCK_FREE; 
 
-connectPeers("OODL", "monitor");
-connect("OODL.Arm1.joint_states","monitor.arm_joint_state",cp_m)
-connect("OODL.Base.joint_states","monitor.base_joint_state",cp_m)
-connect("OODL.Base.odometry_state","monitor.base_cart_state",cp_m)
+connectPeers("youbot", "monitor");
+connect("youbot.Arm1.joint_states","monitor.arm_joint_state",cp_m)
+connect("youbot.Base.joint_states","monitor.base_joint_state",cp_m)
+connect("youbot.Base.odometry_state","monitor.base_cart_state",cp_m)
 
 var ConnPolicy cp_2;
 cp_2.type = BUFFER;
@@ -21,7 +21,7 @@ connectPeers("monitor", "EventLogger");
 connect("monitor.events", "EventLogger.events", cp_2);
 
 monitor.configure();
-monitor.setPeriod(1);
+monitor.setPeriod(0.01);
 monitor.start();
 
 runScript("monitor_config.ops");
