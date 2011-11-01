@@ -22,7 +22,7 @@ namespace YouBot
 
 	bool compare(const vector<unsigned int>& indices, const vector<double>& setp, const vector<double>& state, const vector<compare_type>& ct, const double epsilon)
 	{
-		assert(setp.size() == state.size() && ct.size() == indices.size());
+		assert(setp.size() == ct.size() && ct.size() == indices.size());
 
 		unsigned int index = 0;
 		unsigned int size = indices.size();
