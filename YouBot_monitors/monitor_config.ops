@@ -58,7 +58,7 @@ monitor.jnt_torque_lim_exceeded.event_type = EDGE;
 monitor.jnt_torque_lim_exceeded.compare_type =  std.vector<compare_type>(GREATER);
 monitor.jnt_torque_lim_exceeded.msg = string("e_LIM_EXCEEDED");
 monitor.jnt_torque_lim_exceeded.indices = uint32[]( uint32(1));
-monitor.jnt_torque_lim_exceeded.values = float64[]( 6.5);
+monitor.jnt_torque_lim_exceeded.values = float64[]( 4.5);
 
 monitor.setup_monitor("jnt_pos_lim_exceeded");
 monitor.jnt_pos_lim_exceeded.physical_part = ARM;

@@ -27,6 +27,11 @@ void Top::e_guardedMove()
 {
 	setState<guardedMove>();
 }
+void Top::e_retractGripper()
+{
+	setState<retractGripper>();
+}
+
 void fullControl::run(YouBot::YouBot_executive* executive)
 {
 	vector<double> setPoint_j;
@@ -88,9 +93,11 @@ void catesianControl::run(YouBot::YouBot_executive* executive)
 	executive->getZeroStiffness(zeroStiffness_j,zeroStiffness_c);
 	executive->writeSetpoints(states_j,zeroStiffness_j,setPoint_c,stiffness_c);
 }
+const double guardedMove::STIFFNESS_C[]={2,70};
 void guardedMove::init()
 {
 	error.resize(6,0);
+	vecStiffness.assign(STIFFNESS_C,STIFFNESS_C+2);
 }
 void guardedMove::run(YouBot::YouBot_executive* executive)
 {
@@ -125,26 +132,27 @@ void guardedMove::run(YouBot::YouBot_executive* executive)
 		{
 			error.at(i)=guardForce.at(i);///stiffness_c.at(1);
 			done=done and (abs(guardForce.at(i)+stateForce.at(i))<alpha);
-			setPoint_c.at(i)=states_j.at(i)+error.at(i);
+			setPoint_c.at(i)=states_c.at(i)+error.at(i);
 		}
 	//	RTT::log(Info)<<"\t "<<i<<"="<<error.at(i);
 	}
 //	RTT::log(Info)<<RTT::endlog();
 //	RTT::log(Info)<<"error computed"<<RTT::endlog();
-	if (done)
-	{
-		executive->doneEvent();
-		executive->positionArm(states_j);
-	}
+//	if (done)
+//	{
+//		executive->doneEvent();
+//		executive->positionArm(states_j);
+//	}
 //	RTT::log(Info)<<"Position set "<<RTT::endlog();
-	executive->writeSetpoints(states_j,zeroStiffness_j,setPoint_c,stiffness_c);
+	executive->writeSetpoints(states_j,zeroStiffness_j,setPoint_c,vecStiffness);
 }
-const double retractGripper::STIFFNESS_C[]={50,150};
-const double retractGripper::GRIPPER_SIZE[]={0,0,2};
+const double retractGripper::STIFFNESS_C[]={50,500};
+const double retractGripper::GRIPPER_SIZE[]={0,0,-0.2,1};
 void retractGripper::init(){
 	setPoint.clear();
+	setPoint.resize(6,0);
 	vecStiffness.assign(STIFFNESS_C,STIFFNESS_C+2);
-	vecGripperSize.assign(GRIPPER_SIZE,GRIPPER_SIZE+3);
+	vecGripperSize.assign(GRIPPER_SIZE,GRIPPER_SIZE+4);
 	firstRun=true;
 }
 void retractGripper::run(YouBot::YouBot_executive* executive)
@@ -164,10 +172,16 @@ void retractGripper::run(YouBot::YouBot_executive* executive)
 	executive->getStiffness(stiffness_j, stiffness_c);
 	executive->getZeroStiffness(zeroStiffness_j,zeroStiffness_c);
 	executive->getGripperH(vecH);
-	if (firstRun){
+	if (firstRun)
+	{
 		vector<double> error;
 		Multiply(vecH,vecGripperSize,error);
-		Sum(setPoint_c,error, setPoint);
+		setPoint[0]=error[0];
+		setPoint[1]=error[1];
+		setPoint[2]=error[2];
+		setPoint[3]=states_c[3];
+		setPoint[4]=states_c[4];
+		setPoint[5]=states_c[5];
 		firstRun=false;
 	}
 	executive->writeSetpoints(states_j,zeroStiffness_j,setPoint,vecStiffness);
@@ -216,10 +230,10 @@ void Multiply(const vector<double>& H,const vector<double>& r, vector<double>& o
 	return;
 	}
 	output.clear();
-	output.resize(3,0);
-	for(int i=0;i<3;i++)
+	output.resize(4,0);
+	for(int i=0;i<4;i++)
 	{
-		for(int j=0;j<3;j++)
+		for(int j=0;j<4;j++)
 		{
 			output[i]+=H[i*4+j]*r[j];
 		}

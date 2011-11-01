@@ -16,6 +16,7 @@ namespace FlowControl
 		 void e_jointControl();
 		 void e_catesianControl();
 		 void e_guardedMove();
+		 void e_retractGripper();
 		  //overloaded function that does tracking
 		virtual void run(YouBot::YouBot_executive* executive) {}
 		virtual std::string toString();
@@ -49,7 +50,9 @@ namespace FlowControl
 	};
 	SUBSTATE(guardedMove,Top) {
 		STATE(guardedMove)
-
+	private:
+		static const double STIFFNESS_C[2];
+		std::vector<double> vecStiffness;
 	public:
 			std::vector<double> error;
 			void init();
@@ -60,7 +63,7 @@ namespace FlowControl
 		STATE(retractGripper)
 	private:
 				static const double STIFFNESS_C[2];
-				static const double GRIPPER_SIZE[3];
+				static const double GRIPPER_SIZE[4];
 				std::vector<double> setPoint;
 				std::vector<double> vecStiffness;
 				std::vector<double> vecGripperSize;

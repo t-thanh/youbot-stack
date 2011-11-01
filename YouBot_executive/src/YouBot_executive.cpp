@@ -56,7 +56,7 @@ YouBot_executive::YouBot_executive(const string& name) :
 			" ");
 	this->addOperation("guardMove", &YouBot_executive::guardMove, this).doc(
 			"Performs guarded move based on the set force, issue event e_done. NOTE: the edge of working envelope considered as obstacle. If the force 	limit is higher then max force allowed in controller e_done event will be never sent.");
-
+	this->addOperation("retractGripper",&YouBot_executive::retractGripper,this).doc("");
 	this->addPort("JointSpaceSetpoint", m_JointSpaceSetpoint).doc("");
 	this->addPort("JointSpaceStiffness", m_JointSpaceStiffness).doc("");
 	this->addPort("CartSpaceSetpoint", m_CartSpaceSetpoint).doc("");
@@ -208,6 +208,11 @@ void YouBot_executive::positionGripper(vector<double> position_c)
 	//RTT::log(Info) << "Call positionGripper" << endlog();
 	m_position_c.assign(position_c.begin(),position_c.end());
 	m_FlowControl->e_catesianControl();
+}
+void YouBot_executive::retractGripper()
+{
+	//ToDo move the init of the gripper retract to here
+	m_FlowControl->e_retractGripper();
 }
 
 void YouBot_executive::writeSetpoints(const vector<double> & position_j,

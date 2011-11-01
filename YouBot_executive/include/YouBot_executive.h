@@ -61,7 +61,7 @@ public:
 	void openGripper();// operation
 	void closeGripper();// operation
 	void init();// operation
-
+    void retractGripper(); //operation
 
 	vector<double> m_position_j;
 	vector<double> m_stiffness_j;

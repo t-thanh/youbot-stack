@@ -14,7 +14,7 @@
  &lt;KeepParameterValues&gt;False&lt;/KeepParameterValues&gt;
  &lt;AllowLibraryUpdate&gt;True&lt;/AllowLibraryUpdate&gt;
 &lt;/Description&gt;</description>
-		<date>2011-10-28T17:08:08.0Z</date>
+		<date>2011-10-31T10:57:57.0Z</date>
 		<modelDir></modelDir>
 		<originalModel>Z:\home\youbot\DEV\20SimModels\Tests\ModelControl.emx</originalModel>
 		<additional>Campuslicentie, Universiteit Twente</additional>
@@ -1000,7 +1000,7 @@ code
 		<modelVariable id="64">
 			<name>ControllableJ\tip.e</name>
 			<aliasOf>OneJunction\p2.e</aliasOf>
-			<kind>variable</kind>
+			<kind>output</kind>
 			<type>real</type>
 			<value>0.0; 0.0; 0.0; 0.0; 0.0; 0.0</value>
 			<description></description>
@@ -12174,7 +12174,7 @@ code
 			<name>VirtualLinkMap1\Wheelpos</name>
 			<kind>parameter</kind>
 			<type>real</type>
-			<value>0.235, 0.235, -0.235, -0.235; -0.15, 0.15, -0.15, 0.15</value>
+			<value>0.15, 0.15, -0.15, -0.15; -0.235, 0.235, -0.235, 0.235</value>
 			<description></description>
 			<size>
 				<rows>2</rows>
@@ -12376,54 +12376,6 @@ code
 			<iconindex>1</iconindex>
 		</modelVariable>
 		<modelVariable id="764">
-			<name>odometry_base</name>
-			<kind>input</kind>
-			<type>real</type>
-			<value>0.0; 0.0; 0.0</value>
-			<description></description>
-			<size>
-				<rows>3</rows>
-				<columns>1</columns>
-			</size>
-			<storage>
-				<name>V</name>
-				<index>2133</index>
-			</storage>
-			<iconindex>1</iconindex>
-		</modelVariable>
-		<modelVariable id="765">
-			<name>JointPositionSetpoint</name>
-			<kind>input</kind>
-			<type>real</type>
-			<value>0.0; 0.0; 0.0; 0.0; 0.0; 0.0; 0.0; 0.0</value>
-			<description></description>
-			<size>
-				<rows>8</rows>
-				<columns>1</columns>
-			</size>
-			<storage>
-				<name>V</name>
-				<index>2136</index>
-			</storage>
-			<iconindex>1</iconindex>
-		</modelVariable>
-		<modelVariable id="766">
-			<name>measured_angles_arm</name>
-			<kind>input</kind>
-			<type>real</type>
-			<value>0.0; 0.0; 0.0; 0.0; 0.0</value>
-			<description></description>
-			<size>
-				<rows>5</rows>
-				<columns>1</columns>
-			</size>
-			<storage>
-				<name>V</name>
-				<index>2144</index>
-			</storage>
-			<iconindex>1</iconindex>
-		</modelVariable>
-		<modelVariable id="767">
 			<name>xyzypr</name>
 			<kind>input</kind>
 			<type>real</type>
@@ -12435,7 +12387,55 @@ code
 			</size>
 			<storage>
 				<name>V</name>
-				<index>2149</index>
+				<index>2133</index>
+			</storage>
+			<iconindex>1</iconindex>
+		</modelVariable>
+		<modelVariable id="765">
+			<name>odometry_base</name>
+			<kind>input</kind>
+			<type>real</type>
+			<value>0.0; 0.0; 0.0</value>
+			<description></description>
+			<size>
+				<rows>3</rows>
+				<columns>1</columns>
+			</size>
+			<storage>
+				<name>V</name>
+				<index>2139</index>
+			</storage>
+			<iconindex>1</iconindex>
+		</modelVariable>
+		<modelVariable id="766">
+			<name>JointPositionSetpoint</name>
+			<kind>input</kind>
+			<type>real</type>
+			<value>0.0; 0.0; 0.0; 0.0; 0.0; 0.0; 0.0; 0.0</value>
+			<description></description>
+			<size>
+				<rows>8</rows>
+				<columns>1</columns>
+			</size>
+			<storage>
+				<name>V</name>
+				<index>2142</index>
+			</storage>
+			<iconindex>1</iconindex>
+		</modelVariable>
+		<modelVariable id="767">
+			<name>measured_angles_arm</name>
+			<kind>input</kind>
+			<type>real</type>
+			<value>0.0; 0.0; 0.0; 0.0; 0.0</value>
+			<description></description>
+			<size>
+				<rows>5</rows>
+				<columns>1</columns>
+			</size>
+			<storage>
+				<name>V</name>
+				<index>2150</index>
 			</storage>
 			<iconindex>1</iconindex>
 		</modelVariable>
