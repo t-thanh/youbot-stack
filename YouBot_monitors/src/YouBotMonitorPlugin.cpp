@@ -37,7 +37,7 @@ bool loadRTTPlugin( RTT::TaskContext* t )
 	RTT::types::Types()->addType( new PhysicalQuantityTypeInfo );
 	RTT::types::Types()->addType( new EventTypeTypeInfo );
 	RTT::types::Types()->addType( new CompareTypeTypeInfo );
-//	RTT::types::Types()->addType( new SequenceTypeInfo<std::vector<unsigned int> >("std.vector<uint>") );
+	RTT::types::Types()->addType( new SequenceTypeInfo<std::vector<compare_type> >("std.vector<compare_type>") );
 
 	GlobalsRepository::shared_ptr globals = GlobalsRepository::Instance();
 	globals->setValue( new Constant<control_space>("JOINT",YouBot::JOINT) );
