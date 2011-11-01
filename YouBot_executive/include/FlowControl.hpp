@@ -56,5 +56,22 @@ namespace FlowControl
 			void run(YouBot::YouBot_executive* executive);
 			 std::string toString();
 	};
+	SUBSTATE(retractGripper,Top) {
+		STATE(retractGripper)
+	private:
+				static const double STIFFNESS_C[2];
+				static const double GRIPPER_SIZE[3];
+				std::vector<double> setPoint;
+				std::vector<double> vecStiffness;
+				std::vector<double> vecGripperSize;
+				bool firstRun;
+	public:
+
+			void init();
+			void run(YouBot::YouBot_executive* executive);
+		    std::string toString();
+	};
 
 }//flowControl
+void Multiply(const std::vector<double>& H,const std::vector<double>& r, std::vector<double>& output);
+void Sum(const std::vector<double>& lhs,const std::vector<double>& rhs, std::vector<double>& output);

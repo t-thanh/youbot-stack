@@ -53,6 +53,7 @@ public:
 	void positionGripper(vector<double> position_c);// operation
 	void getArmPose(vector<double>& position_c); // operation
 	void getGripperPose(vector<double>& position_j); // operation
+	void getGripperH(vector<double>& H);
 
 	void setCartesianStiffness(vector<double> stiffness_c);// operation
 	void setJointStiffness(vector<double> stiffness_j);// operation

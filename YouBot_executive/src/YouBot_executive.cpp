@@ -252,6 +252,15 @@ void YouBot_executive::getGripperPose(vector<double> & position_c)
 		getXYZYPR(sample.data, position_c);
 	}
 }
+void YouBot_executive::getGripperH(vector<double>& H)
+{
+	std_msgs::Float64MultiArray sample;
+	if (m_CartGripperPose.read(sample) != RTT::NoData)
+	{
+		H.assign(sample.data.begin(),sample.data.end());
+	}
+}
+	
 
 void YouBot_executive::getXYZYPR(const vector<double> & H,
 		vector<double> & XYZYPR)
