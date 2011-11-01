@@ -48,9 +48,8 @@ return rfsm.csta {
           function()
             local deactivate_monitor=monitor:getOperation("deactivate_monitor")
             local handle1=deactivate_monitor:send("timer")
-            local deactivate_monitor_1=monitor:getOperation("deactivate_monitor")
-            local handle1_1=deactivate_monitor_1:send("timer")
-
+            local deactivate_monitor=monitor:getOperation("deactivate_monitor")
+            local deactivate_jnt_velocity_zero_result=deactivate_monitor:send("jnt_velocity_zero")
             print("Exit proving position")
           end,
     },
@@ -58,8 +57,6 @@ return rfsm.csta {
        entry=
           function() 
             print("Entry positioning_snake")
-            local deactivate_monitor=monitor:getOperation("deactivate_monitor")
-            local deactivate_jnt_velocity_zero_result=deactivate_monitor:send("jnt_velocity_zero")
           
             local copy_monitor=monitor:getOperation("copy_monitor")
             local copy_jnt_pos_reached_result=copy_monitor:send("jnt_pos_reached_up","jnt_pos_reached_snake")
@@ -90,7 +87,7 @@ return rfsm.csta {
          end,
       exit=
          function()
-            local deactivate_monitor=monitor:getOperation("activate_monitor")
+            local deactivate_monitor=monitor:getOperation("deactivate_monitor")
             local deactivate_jnt_torque_lim_exceeded_result=deactivate_monitor:send("jnt_torque_lim_exceeded")
             local closeGripper= executive:getOperation("closeGripper")
             local closeGripper_result=closeGripper:send()
@@ -101,8 +98,8 @@ return rfsm.csta {
        entry=
           function() 
              print("Entry positioning_2")
-             local deactivate_monitor=monitor:getOperation("deactivate_monitor")
-             local deactivate_jnt_velocity_zero_result=deactivate_monitor:send("jnt_velocity_zero")
+--             local deactivate_monitor=monitor:getOperation("deactivate_monitor")
+--             local deactivate_jnt_velocity_zero_result=deactivate_monitor:send("jnt_velocity_zero")
           
              local copy_monitor=monitor:getOperation("copy_monitor")
              local copy_jnt_pos_reached_result=copy_monitor:send("jnt_pos_reached_up","jnt_pos_reached_learned")
@@ -139,7 +136,7 @@ return rfsm.csta {
             setPoint[0]=20;
             setPoint[1]=100;
             local setCartesianStiffness_result=setCartesianStiffness:send(setPoint)
-            local deactivate_monitor=monitor:getOperation("activate_monitor")
+            local deactivate_monitor=monitor:getOperation("deactivate_monitor")
             local handle1=deactivate_monitor:send("jnt_velocity_zero")
 
          end
@@ -154,9 +151,9 @@ return rfsm.csta {
             local guardMove=executive:getOperation("guardMove")
             local setPoint=rtt.Variable("float64[]")
             setPoint:resize(6);
-            setPoint[0]=-0.01;
-            setPoint[1]=-0.05;
-            setPoint[2]=-0.05;
+            setPoint[0]=0.2;
+            setPoint[1]=-0.2;
+            setPoint[2]=-0.01;
             setPoint[3]=0.0;
             setPoint[4]=0.0;
             setPoint[5]=0.0;

@@ -96,7 +96,7 @@ void catesianControl::run(YouBot::YouBot_executive* executive)
 const double guardedMove::STIFFNESS_C[]={2,70};
 void guardedMove::init()
 {
-	error.resize(6,0);
+	error.resize(3,0);
 	vecStiffness.assign(STIFFNESS_C,STIFFNESS_C+2);
 }
 void guardedMove::run(YouBot::YouBot_executive* executive)
@@ -125,18 +125,31 @@ void guardedMove::run(YouBot::YouBot_executive* executive)
 //	RTT::log(Info)<<"stateForce "<<stateForce.size();
 //	RTT::log(Info)<<"guardForce "<<guardForce.size();
 //	RTT::log(Info)<<"setPoint_c "<<setPoint_c.size();
+	vector<double> vecH;
+	executive->getGripperH(vecH);
+	vector<double> temp;
+	temp.resize(4);
+	temp[0]=guardForce[0];
+	temp[1]=guardForce[1];
+	temp[2]=guardForce[2];
+	temp[3]=1;
+	Multiply(vecH,temp,error);
 
 	for(std::size_t i=0; i<3;i++)
 	{
-		if (guardForce.at(i)!=0)
+	//	if (guardForce.at(i)!=0)
 		{
-			error.at(i)=guardForce.at(i);///stiffness_c.at(1);
+
+		//	error.at(i)=guardForce.at(i);///stiffness_c.at(1);
+
+
 			done=done and (abs(guardForce.at(i)+stateForce.at(i))<alpha);
-			setPoint_c.at(i)=states_c.at(i)+error.at(i);
+			setPoint_c.at(i)=error.at(i);
 		}
-	//	RTT::log(Info)<<"\t "<<i<<"="<<error.at(i);
+		//RTT::log(Info)<<"\t "<<i<<"="<<error.at(i) << " setPoint_c: " << setPoint_c[i] << endlog();
 	}
-//	RTT::log(Info)<<RTT::endlog();
+	//RTT::log(Info)<<RTT::endlog();
+	//RTT::log(Info)<< setPoint_c[4] <<RTT::endlog();
 //	RTT::log(Info)<<"error computed"<<RTT::endlog();
 //	if (done)
 //	{
@@ -224,7 +237,7 @@ void Multiply(const vector<double>& H,const vector<double>& r, vector<double>& o
 {
 	using namespace std;
 
-	if(H.size()!=16 && r.size()!=3)
+	if(H.size()!=16 && r.size()!=4)
 	{
 		 __throw_out_of_range(__N("Multiply::vector::_M_range_check"));
 	return;

@@ -11,7 +11,7 @@ monitor.timer.event_type = LEVEL;
 // monitor.timer.epsilon = // NOT USED
 monitor.timer.msg = string("e_TIMEOUT");
 //monitor.timer.indices = // NOT USED
-monitor.timer.values = float64[](5.0);
+monitor.timer.values = float64[](2.0);
 
 //
 // joint space
@@ -45,7 +45,7 @@ monitor.jnt_velocity_zero.control_space = JOINT;
 monitor.jnt_velocity_zero.physical_quantity = MONITOR_VELOCITY;
 monitor.jnt_velocity_zero.event_type = EDGE;
 monitor.jnt_velocity_zero.compare_type = std.vector<compare_type>(EQUAL);
-monitor.jnt_velocity_zero.epsilon = 0.5;
+monitor.jnt_velocity_zero.epsilon = 0.1;
 monitor.jnt_velocity_zero.msg = string("e_VEL_ZERO");
 monitor.jnt_velocity_zero.indices = uint32[](uint32(0), uint32(1), uint32(2), uint32(3), uint32(4));
 monitor.jnt_velocity_zero.values = float64[](0.0, 0.0, 0.0, 0.0, 0.0);

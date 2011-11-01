@@ -710,7 +710,7 @@ code
 			<name>CartesianSafetyFilter\BW</name>
 			<kind>parameter</kind>
 			<type>real</type>
-			<value>0.3</value>
+			<value>3</value>
 			<description>Bandwidth (Hz)</description>
 			<storage>
 				<name>P</name>

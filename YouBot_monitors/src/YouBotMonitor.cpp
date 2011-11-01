@@ -386,6 +386,8 @@ namespace YouBot
 			{
 				m->c_type.resize(m->values.size(), m->c_type[0]);
 			}
+
+			m->state = false;
 		}
 
 		// Bind to the appropriate function
