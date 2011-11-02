@@ -39,6 +39,8 @@ void YouBot_executive::setupComponentInterface()
 
 	this->addOperation("openGripper", &YouBot_executive::openGripper, this).doc(" ");
 	this->addOperation("closeGripper", &YouBot_executive::closeGripper, this).doc(" ");
+	this->addOperation("retractGripper",&YouBot_executive::retractGripper,this).doc("");
+
 	this->addOperation("guardMove", &YouBot_executive::guardMove, this).doc(
 			"Performs guarded move based on the set force, issue event e_done. NOTE: the edge of working envelope considered as obstacle. If the force 	limit is higher then max force allowed in controller e_done event will be never sent.");
 
@@ -188,10 +190,10 @@ void YouBot_executive::getGripperPose(vector<double> & position_c)
 
 	homogeneous_to_xyzypr(m_CartGripperPose.data, position_c);
 }
+
 void YouBot_executive::retractGripper()
 {
-	//ToDo move the init of the gripper retract to here
-	m_FlowControl->e_retractGripper();
+	stateTransition(RETRACT_GRIPPER);
 }
 
 void YouBot_executive::getGripperH(vector<double>& H)
@@ -222,26 +224,33 @@ void YouBot_executive::doneEvent(){
 	events.write(m_events);
 }
 
-const double STIFFNESS_C[2]={50,150};
-const double GRIPPER_SIZE[3]={0,0,2};
+const double RETRACT_STIFFNESS_C[2]={50,500};
+const double GRIPPER_SIZE[3]={0,0,-0.2,1};
 
 void YouBot_executive::stateTransition(state_t new_state)
 {
 	// Includes init functions
 	if(new_state == RETRACT_GRIPPER)
 	{
-		vector<double> vecGripperSize(3, 0.0);
-		vecGripperSize.assign(GRIPPER_SIZE, GRIPPER_SIZE+3);
+		vector<double> vecGripperSize(4, 0.0);
+		vecGripperSize.assign(GRIPPER_SIZE, GRIPPER_SIZE+4);
+		vector<double> error(4, 0.0); //only translation
+		vector<double> setPoint(SIZE_CART_SPACE, 0.0);
+		vector<double> states_c(SIZE_CART_SPACE , 0.0);
 
-		vector<double> error(3, 0.0); //only translation
-		vector<double> setPoint(3, 0.0); //only translation
+		homogeneous_to_xyzypr(m_CartGripperPose.data, states_c);
 
 		// Calculate new virtual cartesian setpoint and stiffness once
 		Multiply(m_CartGripperPose.data, vecGripperSize, error); //H, 3, output
-		Sum(m_position_cart, error, setPoint);
+		setPoint[0]=error[0];
+		setPoint[1]=error[1];
+		setPoint[2]=error[2];
+		setPoint[3]=states_c[3];
+		setPoint[4]=states_c[4];
+		setPoint[5]=states_c[5];
 
 		m_position_cart.assign(setPoint.begin(), setPoint.end());
-		m_stiffness_cart.assign(STIFFNESS_C, STIFFNESS_C+2);
+		m_stiffness_cart.assign(RETRACT_STIFFNESS_C, RETRACT_STIFFNESS_C+2);
 
 		// Afterwards, just use cartesian control
 		m_state = CARTESIAN_CONTROL;
@@ -373,21 +382,27 @@ void YouBot_executive::stateCartesianControl()
 	m_CartSpaceStiffness_trans.data.at(0)=m_stiffness_cart.at(1);
 }
 
+const double GUARD_STIFFNESS_C[]={2,70};
+
 void YouBot_executive::stateGuardedMove()
 {
 	// Move with a predefined force in cartesian space
-	double error = 0.0
+	vector<double> error(4, 0.0);
 	bool done = true;
 
+	vector<double> temp(4, 0.0);
+	temp[0]=m_force_cart[0];
+	temp[1]=m_force_cart[1];
+	temp[2]=m_force_cart[2];
+	temp[3]=1;
+
 	// Calculate forces
-	for(std::size_t i=0; i<3;i++)
+	Multiply(m_CartGripperPose.data,temp,error);
+
+	for(unsigned int i=0; i<3;i++)
 	{
-		if (m_force_cart[i] != 0)
-		{
-			error = m_force_cart[i] + m_CartForceState.data[i+3]; // m_CartForceState is in w,x order
-			done = done && ( abs( error  ) < alpha);
-			m_position_cart[i] = error; // shouldn't this be devided by the spring constant?
-		}
+		done = done && ( abs(temp[i] + m_CartForceState.data[i+3]) < alpha ); // m_CartForceState is in w,x order
+		m_position_cart[i] = error[i];
 	}
 
 	// From states
@@ -400,16 +415,9 @@ void YouBot_executive::stateGuardedMove()
 	double stiffness_jnt[8] = { 0, 0, 0, 0, 0, 0, 0, 0 };
 	m_JointSpaceStiffness.data.assign(stiffness_jnt, stiffness_jnt + 8);
 
-	// From input
-	m_CartSpaceStiffness_rot.data[0] = m_stiffness_cart[0];
-	m_CartSpaceStiffness_trans.data[0] = m_stiffness_cart[1];
-
-	// When done, keep this position
-	if(done)
-	{
-		doneEvent();
-		stateTransition(POSITION_CONTROL);
-	}
+	// Use pre set stiffnesses (for now) // From input
+	m_CartSpaceStiffness_rot.data[0] = GUARD_STIFFNESS_C[0];//m_stiffness_cart[0];
+	m_CartSpaceStiffness_trans.data[0] = GUARD_STIFFNESS_C[1];//m_stiffness_cart[1];
 }
 
 }
