@@ -225,7 +225,7 @@ void YouBot_executive::doneEvent(){
 }
 
 const double RETRACT_STIFFNESS_C[2]={50,500};
-const double GRIPPER_SIZE[3]={0,0,-0.2,1};
+const double GRIPPER_SIZE[4]={0,0,-0.2,1};
 
 void YouBot_executive::stateTransition(state_t new_state)
 {
@@ -386,6 +386,8 @@ const double GUARD_STIFFNESS_C[]={2,70};
 
 void YouBot_executive::stateGuardedMove()
 {
+	double alpha = 0.1;
+
 	// Move with a predefined force in cartesian space
 	vector<double> error(4, 0.0);
 	bool done = true;
