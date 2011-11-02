@@ -188,6 +188,11 @@ void YouBot_executive::getGripperPose(vector<double> & position_c)
 
 	homogeneous_to_xyzypr(m_CartGripperPose.data, position_c);
 }
+void YouBot_executive::retractGripper()
+{
+	//ToDo move the init of the gripper retract to here
+	m_FlowControl->e_retractGripper();
+}
 
 void YouBot_executive::getGripperH(vector<double>& H)
 {

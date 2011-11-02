@@ -131,11 +131,11 @@ namespace YouBot
 	bool YouBotMonitorService::setup_monitor(std::string descriptive_name)
 	{
 		vector<monitor*>::iterator i;
-		monitor* m = (i = getMonitor(m_monitors, descriptive_name)) == m_monitors.end() ? NULL : *i;
+		monitor* m = (i = getMonitor(m_monitors, descriptive_name)) < m_monitors.end() ? *i : NULL;
 
 		if(m != NULL)
 		{
-			log(Error) << "Monitor already in database." << endlog();
+			log(Error) << descriptive_name << ": monitor already in database." << endlog();
 			return false;
 		}
 
@@ -173,17 +173,17 @@ namespace YouBot
 		monitor* m(NULL);
 		monitor* m2(NULL);
 
-		m = (i = getMonitor(m_monitors, source)) == m_monitors.end() ? NULL : *i;
+		m = (i = getMonitor(m_monitors, source)) < m_monitors.end() ? *i : NULL;
 		if(m == NULL)
 		{
-			log(Error) << "Monitor not in database." << endlog();
+			log(Error) << source << ": monitor not in database." << endlog();
 			return false;
 		}
 
-		m2 = (i = getMonitor(m_monitors, target)) == m_monitors.end() ? NULL : *i;
+		m2 = (i = getMonitor(m_monitors, target)) < m_monitors.end() ? *i : NULL;
 		if(m2 != NULL)
 		{
-			log(Error) << "Monitor already in database." << endlog();
+			log(Error) << target << ": monitor already in database." << endlog();
 			return false;
 		}
 
@@ -218,17 +218,17 @@ namespace YouBot
 	bool YouBotMonitorService::assign_indices(std::string name, std::vector<uint32_t> indices)
 	{
 		vector<monitor*>::iterator i;
-		monitor* m = (i = getMonitor(m_monitors, name)) != m_monitors.end() ? *i : NULL;
+		monitor* m = (i = getMonitor(m_monitors, name)) < m_monitors.end() ? *i : NULL;
 
 		if(m == NULL)
 		{
-			log(Error) << "Monitor not found" << endlog();
+			log(Error) << name << ": monitor not found" << endlog();
 			return false;
 		}
 
 		if(m->active)
 		{
-			log(Warning) << "Cannot assign indices to an active monitor." << endlog();
+			log(Warning) << name << ": cannot assign indices to an active monitor." << endlog();
 			return false;
 		}
 
@@ -239,17 +239,17 @@ namespace YouBot
 	bool YouBotMonitorService::assign_values(std::string name, std::vector<double> values)
 	{
 		vector<monitor*>::iterator i;
-		monitor* m = (i = getMonitor(m_monitors, name)) != m_monitors.end() ? *i : NULL;
+		monitor* m = (i = getMonitor(m_monitors, name)) < m_monitors.end() ? *i : NULL;
 
 		if(m == NULL)
 		{
-			log(Error) << "Monitor not found" << endlog();
+			log(Error) << name << ": monitor not found" << endlog();
 			return false;
 		}
 
 		if(m->active)
 		{
-			log(Warning) << "Cannot assign values to an active monitor." << endlog();
+			log(Warning) << name << ": cannot assign values to an active monitor." << endlog();
 			return false;
 		}
 
@@ -295,30 +295,30 @@ namespace YouBot
 	bool YouBotMonitorService::activate_monitor(std::string name)
 	{
 		vector<monitor*>::iterator i;
-		monitor* m = (i = getMonitor(m_monitors, name)) != m_monitors.end() ? *i : NULL;
+		monitor* m = (i = getMonitor(m_monitors, name)) < m_monitors.end() ? *i : NULL;
 
 		if(m == NULL)
 		{
-			log(Error) << "Monitor not found" << endlog();
+			log(Error) << name << ": monitor not found" << endlog();
 			return false;
 		}
 
 		if(m->active)
 		{
-			log(Warning) << "Cannot activate an already active monitor." << endlog();
+			log(Warning) << name << ": cannot activate an already active monitor." << endlog();
 			return false;
 		}
 
 		if(m->part == BASE && m->quantity == MONITOR_EFFORT )
 		{
-			log(Error) << "Cannot monitor base cartesian MONITOR_EFFORT at the moment." << endlog();
+			log(Error) << name << ": cannot monitor BASE CARTESIAN MONITOR_EFFORT at the moment." << endlog();
 			return false;
 		}
 
 		// Set the e_EVENT id
 		if(m->quantity == MONITOR_TIME)
 		{
-			log(Debug) << "Ignoring physical_part, control_space, event_type, compare_type, epsilon and indices." << endlog();
+			log(Debug) << name << ": ignoring physical_part, control_space, event_type, compare_type, epsilon and indices." << endlog();
 			m->id = m->descriptive_name;
 		}
 		else if(m->space == CARTESIAN)
@@ -361,34 +361,39 @@ namespace YouBot
 		// Check if the monitors will receive input
 		if(m->quantity != MONITOR_TIME && !monitor_input_connected(m))
 		{
-			log(Error) << "Monitor input not connected." << endlog();
+			log(Error) << name << ": monitor input not connected." << endlog();
 			return false;
 		}
 
-		// Check if the indices match the values array
-		if(m->indices.size() != m->values.size())
+		if(m->quantity != MONITOR_TIME)
 		{
-			log(Error) << "The number of indices does not match the number of values." << endlog();
-			return false;
-		}
+			// Check if the indices match the values array
+			if(m->indices.size() != m->values.size())
+			{
+				log(Error) << name << ": the number of indices does not match the number of values." << endlog();
+				return false;
+			}
 
-		// Check if the compare_type array makes sense
-		if(m->c_type.size() == 0 || (m->c_type.size() > 1 && m->c_type.size () != m->values.size()))
-		{
-			log(Error) << "c_type vector does not match values vector in a proper manner." << endlog();
-			return false;
-		}
+			// Check if the compare_type array makes sense
+			if(m->c_type.size() == 0 || (m->c_type.size() > 1 && m->c_type.size () != m->values.size()))
+			{
+				log(Error) << name << ": c_type vector does not match values vector in a proper manner." << endlog();
+				return false;
+			}
 
-		// Copy compare_types if only one was given for the whole array (convenience function)
-		if(m->c_type.size() == 1 && m->values.size() > 1) // Copy the compare_type for all indices/values.
-		{
-			m->c_type.resize(m->values.size(), m->c_type[0]);
+			// Copy compare_types if only one was given for the whole array (convenience function)
+			if(m->c_type.size() == 1 && m->values.size() > 1) // Copy the compare_type for all indices/values.
+			{
+				m->c_type.resize(m->values.size(), m->c_type[0]);
+			}
+
+			m->state = false;
 		}
 
 		// Bind to the appropriate function
 		if(!bind_function(m))
 		{
-			log(Error) << "Could not bind the check function." << endlog();
+			log(Error) << name << ": could not bind the check function." << endlog();
 			m->check = NULL;
 			return false;
 		}
@@ -396,49 +401,54 @@ namespace YouBot
 		m->active = true; // Mark active
 		m_active_monitors.push_back(m);
 
+		log(Info) << m->descriptive_name << " : activated." << endlog();
+
 		return true;
 	}
 
 	bool YouBotMonitorService::deactivate_monitor(std::string name)
 	{
 		vector<monitor*>::iterator i;
-		monitor* m = (i = getMonitor(m_monitors, name)) == m_monitors.end() ? NULL : *i;
+		monitor* m = (i = getMonitor(m_monitors, name)) < m_monitors.end() ? *i : NULL;
 
 		if(m == NULL)
 		{
-			log(Error) << "Monitor not found." << endlog();
+			log(Error) << name << ": monitor not found." << endlog();
+			listActiveMonitors();
 			return false;
 		}
 
 		m->active = false;
 
-		m = (i = getMonitor(m_active_monitors, name)) == m_active_monitors.end() ? NULL : *i;
+		m = (i = getMonitor(m_active_monitors, name)) < m_active_monitors.end() ? *i : NULL;
 		if(m == NULL)
 		{
-			log(Warning) << "Monitor was not active." << endlog();
+			log(Warning) << name << ": monitor was not active." << endlog();
+			listActiveMonitors();
 			return false;
 		}
 
 		m_active_monitors.erase(i);
 
+		log(Info) << m->descriptive_name << " : deactivated." << endlog();
 		return true;
 	}
 
 	bool YouBotMonitorService::remove_monitor(std::string name)
 	{
 		vector<monitor*>::iterator i;
-		monitor* m = (i = getMonitor(m_monitors, name)) == m_monitors.end() ? NULL : *i;
+		monitor* m = (i = getMonitor(m_monitors, name)) < m_monitors.end() ? *i : NULL;
 		base::PropertyBase* pb = this->getProperty(name);
 
 		if(m == NULL || pb == NULL)
 		{
-			log(Error) << "Monitor not found." << endlog();
+			log(Error) << name << ": monitor not found." << endlog();
 			return false;
 		}
 
 		if(m->active)
 		{
-			log(Error) << "Cannot remove an active monitor." << endlog();
+			log(Error) << name << ": cannot remove an active monitor." << endlog();
 			return false;
 		}
 

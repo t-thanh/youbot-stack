@@ -208,7 +208,7 @@ namespace YouBot
 	template<>
 	bool YouBotMonitorService::check_monitor<ros::Time>(ros::Time* const imp, monitor* const mon)
 	{
-		unsigned int size = mon->indices.size();
+		unsigned int size = mon->values.size();
 		ros::Time now = ros::Time::now();
 
 		for(unsigned int i = 0; i < size; ++i)

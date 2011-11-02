@@ -54,6 +54,7 @@ namespace YouBot
 		void guardMove(vector<double> force_c);// operation
 		void openGripper();// operation
 		void closeGripper();// operation
+		void retractGripper(); //operation
 
 		// Ports and their variables
 		RTT::OutputPort<flat_matrix_t> JointSpaceSetpoint;

@@ -22,7 +22,7 @@ namespace YouBot
 
 	bool compare(const vector<unsigned int>& indices, const vector<double>& setp, const vector<double>& state, const vector<compare_type>& ct, const double epsilon)
 	{
-		assert(setp.size() == state.size() && ct.size() == indices.size());
+		assert(setp.size() == ct.size() && ct.size() == indices.size());
 
 		unsigned int index = 0;
 		unsigned int size = indices.size();
@@ -44,15 +44,15 @@ namespace YouBot
 			}
 			else if(ct[i] == EQUAL)
 			{
-				double relativeError = 0.0;
-				if(setp[i] == state[index])
-					continue; // true
-				else if(abs(setp[i]) > abs(state[index]))
-					relativeError = abs( (state[index] - setp[i]) / setp[i]);
-				else
-					relativeError = abs( (state[index] - setp[i]) / state[index]);
+//				double relativeError = 0.0;
+//				if(setp[i] == state[index])
+//					continue; // true
+//				else if(abs(setp[i]) > abs(state[index]))
+//					relativeError = abs( (state[index] - setp[i]) / setp[i]);
+//				else
+//					relativeError =  / state[index]);
 
-				if(relativeError > epsilon)
+				if(abs(state[index] - setp[i]) > epsilon)
 				{
 //					log(Info) << "__false__" << endlog();
 					return false;
