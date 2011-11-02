@@ -29,4 +29,4 @@ runScript("monitor_config.ops");
 monitor.activate_monitor("jnt_velocity_zero");
 monitor.activate_monitor("jnt_pos_reached_up");
 
-
+monitor.activate_monitor("jnt_torque_lim_exceeded");
