@@ -1,0 +1,20 @@
+import("joystick_msgs");
+loadComponent("JoystickBase","YouBot::JoystickBase");
+
+JoystickBase.configure;
+JoystickBase.setPeriod(0.01);
+
+var ConnPolicy cp_rt;
+cp_rt.type = DATA;  // Use ''BUFFER'' or ''DATA''
+cp_rt.lock_policy = LOCK_FREE; // Use  ''LOCKED'', ''LOCK_FREE'' or ''UNSYNC''
+
+connectPeers("youbot", "JoystickBase")
+connect("youbot.Base.odometry_state","JoystickBase.odometry_state", cp_rt)
+connect("JoystickBase.cmd_twist","youbot.Base.cmd_twist", cp_rt)
+
+var ConnPolicy cp_ros;
+cp_ros.transport = 3;
+cp_ros.name_id = "/joy";
+stream("JoystickBase.joystick", cp_ros);
+
+JoystickBase.start;

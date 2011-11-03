@@ -4,14 +4,14 @@ return rfsm.csta {
          function() 
             print("Entry homing state")
             local unfoldArm=executive:getOperation("unfoldArm")
-            local result_unfoldArm=unfoldArm:send()
+            local result_unfoldArm=unfoldArm()
             local activate_monitor=monitor:getOperation("activate_monitor")
-            local result_activate_monitor=activate_monitor:send("jnt_pos_reached_up")
+            local result_activate_monitor=activate_monitor("jnt_pos_reached_up")
          end,
     exit  =
          function() 
             local deactivate_monitor=monitor:getOperation("deactivate_monitor")
-            local result_deactivate_monitor=deactivate_monitor:send("jnt_pos_reached_up")
+            local result_deactivate_monitor=deactivate_monitor("jnt_pos_reached_up")
             print("Exit homing state")
          end,
    },
@@ -20,9 +20,9 @@ return rfsm.csta {
           function()
              print("Entry wait for user")
              local gravityMode=executive:getOperation("gravityMode")
-             local handle1=gravityMode:send()
+             local handle1=gravityMode()
              local activate_monitor=monitor:getOperation("activate_monitor")
-             local handle1=activate_monitor:send("jnt_velocity_zero")
+             local handle1=activate_monitor("jnt_velocity_zero")
           end,
     },
     learning_position = rfsm.sista{
@@ -37,19 +37,19 @@ return rfsm.csta {
              print("Entry proving_position")
              --arm_pose & gripper_pose are global variables
              local getArmPose=executive:getOperation("getArmPose")
-             local handle1=getArmPose:send(arm_pose)
+             local handle1=getArmPose(arm_pose)
              local getGripperPose=executive:getOperation("getGripperPose")
-             local handle2=getGripperPose:send(gripper_pose)
+             local handle2=getGripperPose(gripper_pose)
              local activate_monitor=monitor:getOperation("activate_monitor")
-             local handle1=activate_monitor:send("timer")
+             local handle1=activate_monitor("timer")
 
           end,
           exit=
           function()
             local deactivate_monitor=monitor:getOperation("deactivate_monitor")
-            local handle1=deactivate_monitor:send("timer")
+            local handle1=deactivate_monitor("timer")
             local deactivate_monitor=monitor:getOperation("deactivate_monitor")
-            local deactivate_jnt_velocity_zero_result=deactivate_monitor:send("jnt_velocity_zero")
+            local deactivate_jnt_velocity_zero_result=deactivate_monitor("jnt_velocity_zero")
             print("Exit proving position")
           end,
     },
@@ -59,19 +59,19 @@ return rfsm.csta {
             print("Entry positioning_snake")
           
             local copy_monitor=monitor:getOperation("copy_monitor")
-            local copy_jnt_pos_reached_result=copy_monitor:send("jnt_pos_reached_up","jnt_pos_reached_snake")
+            local copy_jnt_pos_reached_result=copy_monitor("jnt_pos_reached_up","jnt_pos_reached_snake")
             local setup_monitor=monitor:getOperation("assign_values")
-            local setup_monitor_result=setup_monitor:send("jnt_pos_reached_snake",getOODLangles(snake_pose))
+            local setup_monitor_result=setup_monitor("jnt_pos_reached_snake",getOODLangles(snake_pose))
             local activate_monitor=monitor:getOperation("activate_monitor")
-            local activate_jnt_pos_reached_snake_result=activate_monitor:send("jnt_pos_reached_snake")
+            local activate_jnt_pos_reached_snake_result=activate_monitor("jnt_pos_reached_snake")
    
             local positionArm=executive:getOperation("positionArm")
-            local positionArm_result=positionArm:send(snake_pose)
+            local positionArm_result=positionArm(snake_pose)
           end,
        exit= 
           function()
             local deactivate_monitor=monitor:getOperation("deactivate_monitor")
-            local handle1=deactivate_monitor:send("jnt_pos_reached_snake")
+            local handle1=deactivate_monitor("jnt_pos_reached_snake")
             print("Exit positioning_snake")
           end,
 
@@ -81,16 +81,16 @@ return rfsm.csta {
          function()
             print("Entry wait_for_bric")
             local activate_monitor=monitor:getOperation("activate_monitor")
-            local activate_jnt_torque_lim_exceeded_result=activate_monitor:send("jnt_torque_lim_exceeded")
+            local activate_jnt_torque_lim_exceeded_result=activate_monitor("jnt_torque_lim_exceeded")
             local openGripper=executive:getOperation("openGripper")
-            local openGripper_result=openGripper:send()
+            local openGripper_result=openGripper()
          end,
       exit=
          function()
             local deactivate_monitor=monitor:getOperation("deactivate_monitor")
-            local deactivate_jnt_torque_lim_exceeded_result=deactivate_monitor:send("jnt_torque_lim_exceeded")
+            local deactivate_jnt_torque_lim_exceeded_result=deactivate_monitor("jnt_torque_lim_exceeded")
             local closeGripper= executive:getOperation("closeGripper")
-            local closeGripper_result=closeGripper:send()
+            local closeGripper_result=closeGripper()
             print("Exit wait_for_bric")
          end,
     },
@@ -99,22 +99,22 @@ return rfsm.csta {
           function() 
              print("Entry positioning_2")
 --             local deactivate_monitor=monitor:getOperation("deactivate_monitor")
---             local deactivate_jnt_velocity_zero_result=deactivate_monitor:send("jnt_velocity_zero")
+--             local deactivate_jnt_velocity_zero_result=deactivate_monitor("jnt_velocity_zero")
           
              local copy_monitor=monitor:getOperation("copy_monitor")
-             local copy_jnt_pos_reached_result=copy_monitor:send("jnt_pos_reached_up","jnt_pos_reached_learned")
+             local copy_jnt_pos_reached_result=copy_monitor("jnt_pos_reached_up","jnt_pos_reached_learned")
              local setup_monitor=monitor:getOperation("assign_values")
-             local setup_monitor_result=setup_monitor:send("jnt_pos_reached_learned",getOODLangles(arm_pose))
+             local setup_monitor_result=setup_monitor("jnt_pos_reached_learned",getOODLangles(arm_pose))
              local activate_monitor=monitor:getOperation("activate_monitor")
-             local activate_jnt_pos_reached_snake_result=activate_monitor:send("jnt_pos_reached_learned")
+             local activate_jnt_pos_reached_snake_result=activate_monitor("jnt_pos_reached_learned")
 
              local positionArm=executive:getOperation("positionArm")
-             local positionArm_result=positionArm:send(arm_pose)
+             local positionArm_result=positionArm(arm_pose)
           end,
        exit= 
           function()
             local deactivate_monitor=monitor:getOperation("deactivate_monitor")
-            local handle1=deactivate_monitor:send("jnt_pos_reached_learned")
+            local handle1=deactivate_monitor("jnt_pos_reached_learned")
             print("Exit positioning_2")
           end,
     },
@@ -124,9 +124,9 @@ return rfsm.csta {
             print("Entry move_down")
             local op=executive:getOperation("positionGripper")
             gripper_pose[2]=gripper_pose[2]-0.3 --30cm
-            local handle=op:send(gripper_pose)
+            local handle=op(gripper_pose)
             local activate_monitor=monitor:getOperation("activate_monitor")
-            local handle1=activate_monitor:send("jnt_velocity_zero")
+            local handle1=activate_monitor("jnt_velocity_zero")
          end,  
          exit=
          function()
@@ -135,9 +135,9 @@ return rfsm.csta {
             setPoint:resize(2);
             setPoint[0]=20;
             setPoint[1]=100;
-            local setCartesianStiffness_result=setCartesianStiffness:send(setPoint)
+            local setCartesianStiffness_result=setCartesianStiffness(setPoint)
             local deactivate_monitor=monitor:getOperation("deactivate_monitor")
-            local handle1=deactivate_monitor:send("jnt_velocity_zero")
+            local handle1=deactivate_monitor("jnt_velocity_zero")
 
          end
     },
@@ -147,22 +147,22 @@ return rfsm.csta {
          function()
             print("Entry align_brics")
             local activate_monitor=monitor:getOperation("activate_monitor")
-            local handle1=activate_monitor:send("timer")
+            local handle1=activate_monitor("timer")
             local guardMove=executive:getOperation("guardMove")
             local setPoint=rtt.Variable("float64[]")
-            setPoint:resize(6);
+            setPoint:resize(3);
             setPoint[0]=0.2;
             setPoint[1]=-0.2;
             setPoint[2]=-0.01;
-            setPoint[3]=0.0;
-            setPoint[4]=0.0;
-            setPoint[5]=0.0;
-            local guardMove_result=guardMove:send(setPoint)
+         --   setPoint[3]=0.0;
+          --  setPoint[4]=0.0;
+          --  setPoint[5]=0.0;
+            local guardMove_result=guardMove(setPoint)
             end,   
          exit=
          function()
             local deactivate_monitor=monitor:getOperation("deactivate_monitor")
-            local handle1=deactivate_monitor:send("timer")
+            local handle1=deactivate_monitor("timer")
             print("Exit align_brics ")
          end
 
@@ -173,17 +173,17 @@ return rfsm.csta {
          function()
             print("Entry lose_bric")
             local activate_monitor=monitor:getOperation("activate_monitor")
-            local handle1=activate_monitor:send("timer")
+            local handle1=activate_monitor("timer")
             local gravityMode=executive:getOperation("gravityMode")
-            local handle1=gravityMode:send()
+            local handle1=gravityMode()
 
             local openGripper=executive:getOperation("openGripper")
-            local openGripper_result=openGripper:send()
+            local openGripper_result=openGripper()
             end,   
          exit=
          function()
              local deactivate_monitor=monitor:getOperation("deactivate_monitor")
-            local handle1=deactivate_monitor:send("timer")
+            local handle1=deactivate_monitor("timer")
             print("Exit lose_bric ")
 
          end
@@ -196,14 +196,14 @@ return rfsm.csta {
          function()
             print("Entry align_brics")
             local activate_monitor=monitor:getOperation("activate_monitor")
-            local handle1=activate_monitor:send("timer")
+            local handle1=activate_monitor("timer")
             local retractGripper=executive:getOperation("retractGripper")
-            local retractGripper_result=retractGripper:send()
+            local retractGripper_result=retractGripper()
             end,   
          exit=
          function()
              local deactivate_monitor=monitor:getOperation("deactivate_monitor")
-            local handle1=deactivate_monitor:send("timer")
+            local handle1=deactivate_monitor("timer")
             print("Exit lose_bric ")
 
          end
@@ -214,13 +214,13 @@ return rfsm.csta {
          function()
              print("Entry move_down")
              local getGripperPose=executive:getOperation("getGripperPose")
-             local handle2=getGripperPose:send(gripper_pose)
+             local handle2=getGripperPose(gripper_pose)
 
             local op=executive:getOperation("positionGripper")
             gripper_pose[2]=gripper_pose[2]+0.6 --60cm
-            local handle=op:send(gripper_pose)
+            local handle=op(gripper_pose)
             local activate_monitor=monitor:getOperation("activate_monitor")
-            local handle1=activate_monitor:send("jnt_velocity_zero")
+            local handle1=activate_monitor("jnt_velocity_zero")
             end,   
          exit=
          function()
