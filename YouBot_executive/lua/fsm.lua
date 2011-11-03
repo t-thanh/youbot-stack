@@ -4,14 +4,14 @@ return rfsm.csta {
          function() 
             print("Entry homing state")
             local unfoldArm=executive:getOperation("unfoldArm")
-            local unfoldArm_result=unfoldArm:send()
+            local result_unfoldArm=unfoldArm:send()
             local activate_monitor=monitor:getOperation("activate_monitor")
-            local activate_monitor_result=activate_monitor:send("jnt_pos_reached_up")
+            local result_activate_monitor=activate_monitor:send("jnt_pos_reached_up")
          end,
     exit  =
          function() 
             local deactivate_monitor=monitor:getOperation("deactivate_monitor")
-            local handle1=deactivate_monitor:send("jnt_pos_reached_up")
+            local result_deactivate_monitor=deactivate_monitor:send("jnt_pos_reached_up")
             print("Exit homing state")
          end,
    },
