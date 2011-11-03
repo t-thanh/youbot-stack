@@ -53,6 +53,6 @@ EventLogger.configure;
 EventLogger.start;
 youbot.start;
 
-youbot.Arm1.clearControllerTimeouts;
-youbot.Base.clearControllerTimeouts;
+//youbot.Arm1.clearControllerTimeouts;
+//youbot.Base.clearControllerTimeouts;
 

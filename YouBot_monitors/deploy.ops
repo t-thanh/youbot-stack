@@ -1,5 +1,3 @@
-runScript("../YouBot_OODL/deploy.ops");
-
 import("YouBot_monitors");
 loadComponent("monitor", "YouBot::YouBotMonitorService")
 
@@ -12,21 +10,15 @@ connect("youbot.Arm1.joint_states","monitor.arm_joint_state",cp_m)
 connect("youbot.Base.joint_states","monitor.base_joint_state",cp_m)
 connect("youbot.Base.odometry_state","monitor.base_cart_state",cp_m)
 
-var ConnPolicy cp_2;
-cp_2.type = BUFFER;
-cp_2.lock_policy = LOCK_FREE;
-cp_2.size = 20;
+var ConnPolicy cp_nrt;
+cp_nrt.type = BUFFER;
+cp_nrt.lock_policy = LOCK_FREE;
+cp_nrt.size = 20;
 
 connectPeers("monitor", "EventLogger");
-connect("monitor.events", "EventLogger.events", cp_2);
+connect("monitor.events", "EventLogger.events", cp_nrt);
 
 monitor.configure();
 monitor.setPeriod(0.01);
 monitor.start();
 
-runScript("monitor_config.ops");
-
-monitor.activate_monitor("jnt_velocity_zero");
-monitor.activate_monitor("jnt_pos_reached_up");
-
-monitor.activate_monitor("jnt_torque_lim_exceeded");

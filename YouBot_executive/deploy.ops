@@ -56,11 +56,21 @@ FSM.exec_file(rospack.find("YouBot_executive")+"/lua/fsm_component.lua");
    var ConnPolicy cp_state;
    connect("FSM.state","fakeMonitor.state_in",cp_state);
    connectPeers("executive","FSM")
+   connectPeers("monitor","FSM")
+
+   var ConnPolicy cp_nrt;
+   cp_nrt.type = BUFFER;
+   cp_nrt.lock_policy = LOCK_FREE;
+   cp_nrt.size = 20;
+
+   connect("monitor.events", "FSM.events", cp_nrt);
+
 fakeMonitor.configure;
 FSM.configure;
+executive.setPeriod(0.01)
 executive.configure
 executive.unfoldArm
-FSM.start;
+//FSM.start;
 //fakeMonitor.start;
 executive.start
    // in snake position

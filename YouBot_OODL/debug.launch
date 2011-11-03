@@ -1,4 +1,0 @@
-<launch>                                                                                                                                                 
-	<node name="OODL_test" pkg="ocl" type="deployer-gnulinux" launch-prefix="konsole -e gdb --args" args="-ldebug -s $(find YouBot_OODL)/examples/JoystickBase/deploy.ops --">
-	</node>           
-</launch>

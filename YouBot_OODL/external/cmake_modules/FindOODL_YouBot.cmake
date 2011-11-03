@@ -57,9 +57,9 @@ ENDIF(OODL_YOUBOT_FOUND)
 
 # show warning that no configuration directory was found; given that OODL itself was found
 IF (OODL_YOUBOT_FOUND AND NOT OODL_YOUBOT_CONFIG_DIR)
-  SET(OODL_YOUBOT_CONFIG_DIR .)
+  SET(OODL_YOUBOT_CONFIG_DIR "./config")
   IF (NOT OODL_YouBot_FIND_QUIETLY)
-    MESSAGE(STATUS "Warning: oodl-youbot configuration directory not found, using default folder \".\"")
+    MESSAGE(STATUS "Warning: oodl-youbot configuration directory not found, using default folder \"./config\"")
   ENDIF (NOT OODL_YouBot_FIND_QUIETLY)
 ENDIF (OODL_YOUBOT_FOUND AND NOT OODL_YOUBOT_CONFIG_DIR)
 

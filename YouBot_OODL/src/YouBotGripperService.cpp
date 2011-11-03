@@ -115,25 +115,25 @@ namespace YouBot
 			m_manipulator->calibrateGripper();
 			m_gripper = &(m_manipulator->getArmGripper());
 
-			// Determine gripper limits to prevent exceptions
-			MaxTravelDistance _max_distance;
-			BarSpacingOffset _spacing;
-			quantity<length> max_distance;
-			quantity<length> spacing;
-			m_gripper->getConfigurationParameter(_max_distance, BAR_ONE);
-			m_gripper->getConfigurationParameter(_spacing, BAR_ONE);
-			_max_distance.getParameter(max_distance);
-			_spacing.getParameter(spacing);
-			log(Info) << "Spacing: " << spacing << " max_distance: " << max_distance << endlog();
-
-			m_gripper->getConfigurationParameter(_max_distance, BAR_TWO);
-			m_gripper->getConfigurationParameter(_spacing, BAR_TWO);
-			_max_distance.getParameter(max_distance);
-			_spacing.getParameter(spacing);
-			log(Info) << "Spacing: " << spacing << " max_distance: " << max_distance << endlog();
-
-			m_gripper_limits.min_position = spacing;
-			m_gripper_limits.max_position = max_distance + spacing;
+//			// Determine gripper limits to prevent exceptions
+//			MaxTravelDistance _max_distance;
+//			BarSpacingOffset _spacing;
+//			quantity<length> max_distance;
+//			quantity<length> spacing;
+//			m_gripper->getConfigurationParameter(_max_distance, BAR_ONE);
+//			m_gripper->getConfigurationParameter(_spacing, BAR_ONE);
+//			_max_distance.getParameter(max_distance);
+//			_spacing.getParameter(spacing);
+//			log(Info) << "Spacing: " << spacing << " max_distance: " << max_distance << endlog();
+//
+//			m_gripper->getConfigurationParameter(_max_distance, BAR_TWO);
+//			m_gripper->getConfigurationParameter(_spacing, BAR_TWO);
+//			_max_distance.getParameter(max_distance);
+//			_spacing.getParameter(spacing);
+//			log(Info) << "Spacing: " << spacing << " max_distance: " << max_distance << endlog();
+//
+//			m_gripper_limits.min_position = spacing;
+//			m_gripper_limits.max_position = max_distance + spacing;
 
 			log(Info) << "Gripper calibration min_position: " << m_gripper_limits.min_position << " max_position: " << m_gripper_limits.max_position << endlog();
 		}
