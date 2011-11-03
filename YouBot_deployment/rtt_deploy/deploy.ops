@@ -19,3 +19,6 @@ runScript(rospack.find("YouBot_executive")+"/deploy.ops")
 //runScript(rospack.find("YouBot_executive")+"/lua/deploy.ops")
 //runScript(rospack.find("YouBot_deployment")+"/rtt_deploy/monitors.ops")
 
+youbot.Arm1.clearControllerTimeouts();
+youbor.Base.clearControllerTimeouts();
+
