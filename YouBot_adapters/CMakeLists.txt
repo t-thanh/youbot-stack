@@ -41,6 +41,7 @@ include(${OROCOS-RTT_USE_FILE_PATH}/UseOROCOS-RTT.cmake)
 
 # Determine target
 set(OROCOS_TARGET $ENV{OROCOS_TARGET})
+include(${CMAKE_CURRENT_SOURCE_DIR}/../eclipse.cmake)
 
 #
 # Compile stuff
