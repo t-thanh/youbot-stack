@@ -30,7 +30,7 @@ include(${OROCOS-RTT_USE_FILE_PATH}/UseOROCOS-RTT.cmake)
 set(OROCOS_TARGET $ENV{OROCOS_TARGET})
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/external/cmake_modules)
-include(${CMAKE_CURRENT_SOURCE_DIR}/eclipse.cmake)
+include(${CMAKE_CURRENT_SOURCE_DIR}/../eclipse.cmake)
 
 #
 # Compile stuff
