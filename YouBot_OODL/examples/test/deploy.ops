@@ -1,5 +1,5 @@
-import("rtt_rospack")
-loadService("Deployer", "rospack");
+import("rtt_rosnode")
+//loadService("Deployer", "rospack");
 
 runScript( rospack.find("YouBot_OODL") + "/deploy.ops")
 

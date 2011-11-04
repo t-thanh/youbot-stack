@@ -49,8 +49,6 @@ namespace YouBot
 		this->addOperation("getJointAngles",&ArmControllerMockup::getJointAngles,this, OwnThread).doc("In degrees");
 		this->addOperation("unfoldManipulator",&ArmControllerMockup::unfoldManipulator,this, OwnThread);
 		this->addOperation("foldManipulator",&ArmControllerMockup::foldManipulator,this, OwnThread);
-
-		RTT::types::Types()->addType( new RTT::types::SequenceTypeInfo<std::vector<double> >("std.vector<double>") );
 	}
 
 	ArmControllerMockup::~ArmControllerMockup() {}
