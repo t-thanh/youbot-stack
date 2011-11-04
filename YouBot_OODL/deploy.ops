@@ -1,8 +1,8 @@
 import("YouBot_OODL")
-import("rtt_ros_integration_sensor_msgs");
-import("rtt_ros_integration_std_msgs");
-import("rtt_ros_integration_geometry_msgs");
-import("rtt_ros_integration_nav_msgs")
+import("rtt_sensor_msgs");
+import("rtt_std_msgs");
+import("rtt_geometry_msgs");
+import("rtt_nav_msgs")
 import("rtt_motion_control_msgs");
 
 displayComponentTypes;
