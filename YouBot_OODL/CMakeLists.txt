@@ -1,10 +1,9 @@
-cmake_minimum_required(VERSION 2.4.6)
+cmake_minimum_required(VERSION 2.6.3)
 
 #
-# This creates a standard cmake project. You may extend this file with
 # any cmake macro you see fit.
 #
-PROJECT(YouBot_OODL)
+project(YouBot_OODL)
 
 #
 # Do setup in case of ros package, If ROS_ROOT is set, it is
@@ -17,7 +16,7 @@ if (ROS_ROOT)
   rosbuild_find_ros_package( rtt )
   set( RTT_HINTS HINTS ${rtt_PACKAGE_PATH}/install )
   rosbuild_genmsg()
-  rosbuild_include(rtt_ros_integration GenerateRTTtypekit)
+  rosbuild_include(rtt_rosnode GenerateRTTtypekit)
   ros_generate_rtt_typekit(YouBot_OODL)
 
 # Set the CMAKE_PREFIX_PATH in case you're not using Orocos through ROS
@@ -43,8 +42,8 @@ ENDIF (SOEM_FOUND)
 
 FIND_PACKAGE(OODL_YouBot)
 IF (OODL_YOUBOT_FOUND)
-	MESSAGE(STATUS "SUCCESSFUL: OODL_YouBot found")
-	ADD_DEFINITIONS(-DOODL_YOUBOT_CONFIG_DIR='"${OODL_YOUBOT_CONFIG_DIR}"')
+	MESSAGE(STATUS "SUCCESSFUL: OODL_YouBot found in ${OODL_YOUBOT_CONFIG_DIR}")
+	ADD_DEFINITIONS(-DOODL_YOUBOT_CONFIG_DIR="${OODL_YOUBOT_CONFIG_DIR}")
 ELSE (OODL_YOUBOT_FOUND) 
 	MESSAGE(STATUS "ERROR: OODL_YouBot not found")
 ENDIF (OODL_YOUBOT_FOUND)
@@ -55,6 +54,7 @@ ENDIF (OODL_YOUBOT_FOUND)
 
 
 SET(LIBRARY_OUTPUT_PATH ${CMAKE_HOME_DIRECTORY}/lib)
+MESSAGE(STATUS "LIB PATH ${LIBRARY_OUTPUT_PATH}")
 SET(EXECUTABLE_OUTPUT_PATH ${CMAKE_HOME_DIRECTORY}/bin)
 SET (CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_HOME_DIRECTORY}/bin)
 

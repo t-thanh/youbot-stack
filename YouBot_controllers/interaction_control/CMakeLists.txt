@@ -1,5 +1,5 @@
-CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
-PROJECT(ModelControl_interaction_control)
+CMAKE_MINIMUM_REQUIRED(VERSION 2.6.3)
+project(ModelControl_interaction_control)
 
 #
 # Output structure
@@ -19,7 +19,7 @@ if (ROS_ROOT)
   rosbuild_find_ros_package( rtt )
   set( RTT_HINTS HINTS ${rtt_PACKAGE_PATH}/install )
 
-  rosbuild_include(rtt_ros_integration GenerateRTTtypekit)
+  rosbuild_include(rtt_rosnode GenerateRTTtypekit)
  
    #  Set the build type.  Options are:
    #  Coverage       : w/ debug symbols, w/o optimization, w/ code-coverage

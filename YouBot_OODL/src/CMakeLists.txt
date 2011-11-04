@@ -9,7 +9,7 @@ SET(YOUBOT_OODL_libs
 	${OODL_YOUBOT_LIBRARIES}
 	boost_thread
 	YouBot_OODL_plugin
-	rtt-ros-YouBot_OODL-typekit
+	rtt-YouBot_OODL-typekit
 )
 
 SET(YOUBOT_OODL_FILES YouBotGripperService.cpp YouBotService.cpp YouBotArmService.cpp YouBotBaseService.cpp YouBotOODL.cpp)

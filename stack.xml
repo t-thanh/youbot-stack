@@ -8,6 +8,6 @@
   <license>TBD</license>
   <review status="unreviewed" notes=""/>
   <url></url>
-  <depend stack="ros" />
+  <depend stack="rtt_ros_integration" />
   <depend stack="motion_control" />
 </stack>

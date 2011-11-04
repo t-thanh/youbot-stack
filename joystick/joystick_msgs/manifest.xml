@@ -8,13 +8,8 @@
   <license>BSD</license>
   <review status="unreviewed" notes=""/>
   <url>http://ros.org/wiki/rtt_ros_integration</url>
-  <depend package="rtt_ros_integration"/>
+  <depend package="rtt_rosnode"/>
   <depend package="joy"/>
-
-  <export>
-    <cpp cflags="-I${prefix}/include"/>
-  </export>
-
 
 </package>
 

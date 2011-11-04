@@ -1,10 +1,10 @@
-cmake_minimum_required(VERSION 2.4.6)
+cmake_minimum_required(VERSION 2.6.3)
 
 #
 # This creates a standard cmake project. You may extend this file with
 # any cmake macro you see fit.
 #
-PROJECT(YouBot_executive)
+project(YouBot_executive)
 
 #
 # Do setup in case of ros package, If ROS_ROOT is set, it is
@@ -16,7 +16,7 @@ if (ROS_ROOT)
   rosbuild_init()
   rosbuild_find_ros_package( rtt )
   set( RTT_HINTS HINTS ${rtt_PACKAGE_PATH}/install )
-  rosbuild_include(rtt_ros_integration GenerateRTTtypekit)
+  rosbuild_include(rtt_rosnode GenerateRTTtypekit)
 
 # Set the CMAKE_PREFIX_PATH in case you're not using Orocos through ROS
 # for helping these find commands find RTT.
@@ -29,7 +29,7 @@ include(${OROCOS-RTT_USE_FILE_PATH}/UseOROCOS-RTT.cmake)
 # Determine target
 set(OROCOS_TARGET $ENV{OROCOS_TARGET})
 
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/external/cmake_modules)
+#set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/external/cmake_modules)
 include(${CMAKE_CURRENT_SOURCE_DIR}/../eclipse.cmake)
 
 #

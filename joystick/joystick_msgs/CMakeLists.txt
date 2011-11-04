@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.4.6)
+cmake_minimum_required(VERSION 2.6.3)
 include($ENV{ROS_ROOT}/core/rosbuild/rosbuild.cmake)
 
 # Set the build type.  Options are:
@@ -11,7 +11,7 @@ set(ROS_BUILD_TYPE MinSizeRel)
 
 rosbuild_init()
 
-rosbuild_include(rtt_ros_integration GenerateRTTtypekit)
+rosbuild_include(rtt_rosnode GenerateRTTtypekit)
 
 ros_generate_rtt_typekit(joy)
 
