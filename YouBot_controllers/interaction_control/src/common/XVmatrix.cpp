@@ -47,7 +47,10 @@ namespace common20sim
 	*/
 	RTT::types::carray<double>& XVMatrix::getCArray()
 	{
+	//	RTT::log(RTT::Info)<<mat[size()]<<RTT::endlog();
 		mat_carray=RTT::types::carray<double>(mat, size());
+
+		//RTT::log(RTT::Info)<<size()<<"\t"<<mat_carray.count()<<RTT::endlog();
 		return mat_carray;
 	}
 

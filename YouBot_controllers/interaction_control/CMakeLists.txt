@@ -39,6 +39,7 @@ find_package(OROCOS-RTT REQUIRED ${RTT_HINTS})
 #Defines the orocos_* cmake macros. See that file for additional
 # documentation.
 include(${OROCOS-RTT_USE_FILE_PATH}/UseOROCOS-RTT.cmake)
+include(eclipse.cmake)
 # Determine target
 set(OROCOS_TARGET $ENV{OROCOS_TARGET})
 IF(${OROCOS_TARGET} MATCHES xenomai)
