@@ -1,5 +1,4 @@
-import("rtt_rospack")
-loadService("Deployer","rospack")
+import("rtt_rosnode")
 //make controller with adapters
 kickStart(rospack.find("interaction_control")+"/config/20sim_deploy.xml")
 //make youbot with events and monitor with standart output
@@ -20,5 +19,5 @@ runScript(rospack.find("YouBot_executive")+"/deploy.ops")
 //runScript(rospack.find("YouBot_deployment")+"/rtt_deploy/monitors.ops")
 
 youbot.Arm1.clearControllerTimeouts();
-youbor.Base.clearControllerTimeouts();
+youbot.Base.clearControllerTimeouts();
 
