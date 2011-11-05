@@ -5,8 +5,8 @@ The University of Twente(www.utwente.nl) is not liable for any damage arising di
 ==INSTALLATION==
 
 ===Prerequisites===
-* ROS (must be: diamondback) installed and setup (www.ros.org)
-* orocos_toolchain_ros (corresponding to diamondback) installed and setup (www.orocos.org)
+* ROS (electric) installed and setup (www.ros.org)
+* orocos_toolchain_ros (corresponding to electric) installed and setup (http://www.ros.org/wiki/orocos_toolchain_ros)
 
 For the UTwente YouBot-stack the following must also be installed:
 * KUL motion_control stack (see below).
@@ -23,8 +23,6 @@ For the UTwente YouBot-stack the following must also be installed:
 Proposed steps:
 1) git clone http://git.mech.kuleuven.be/robotics/motion_control.git
 2) cd motion_control
-3) git checkout devel
-4) git checkout c8455131594218267eb735db3e4ddc66b55da1fb
 5) rm -rf ./cartesian_motion_control ./naxes_motion_control
 6) rosmake
 
