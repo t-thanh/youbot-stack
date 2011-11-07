@@ -23,8 +23,9 @@ For the UTwente YouBot-stack the following must also be installed:
 Proposed steps:
 1) git clone http://git.mech.kuleuven.be/robotics/motion_control.git
 2) cd motion_control
-5) rm -rf ./cartesian_motion_control ./naxes_motion_control
-6) rosmake
+3) git checkout devel
+4) rm -rf ./cartesian_motion_control ./naxes_motion_control
+5) rosmake
 
 ===UTwente YouBot-stack install===
 1) git clone git@github.com:b-it-bots/youbot-stack.git
