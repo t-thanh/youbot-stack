@@ -14,9 +14,6 @@ runScript(rospack.find("YouBot_monitors")+"/deploy.ops")
 runScript(rospack.find("YouBot_monitors")+"/monitor_config.ops")
 //add executive
 runScript(rospack.find("YouBot_executive")+"/deploy.ops")
-//control.setPeriod(0)
-//runScript(rospack.find("YouBot_executive")+"/lua/deploy.ops")
-//runScript(rospack.find("YouBot_deployment")+"/rtt_deploy/monitors.ops")
 
 youbot.Arm1.clearControllerTimeouts();
 youbot.Base.clearControllerTimeouts();
