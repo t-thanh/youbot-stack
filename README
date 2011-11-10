@@ -11,6 +11,10 @@ The University of Twente(www.utwente.nl) is not liable for any damage arising di
 For the UTwente YouBot-stack the following must also be installed:
 * KUL motion_control stack (see below).
 * youbot_driver without internal thread (see below).
+* SOEM Ethercat drivers
+
+== SOEM driver ==
+1) See INSTALL in SOEM directory.
 
 ===youbot_driver===
 1) git clone https://github.com/youbot/youbot_driver.git
