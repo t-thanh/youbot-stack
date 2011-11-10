@@ -1,0 +1,9 @@
+Install instructions for non real-time SOEM.
+Please note: The CMakeLists.txt was taken from robotpkg (thank you!)
+
+1) Download SOEM 1.2.5 from (http://download.berlios.de/soem/)
+2) Copy CMakeLists.txt to the head directory.
+3) Configure using cmake: mkdir build; cd build; cmake ..;
+4) make; sudo make install
+
+NON VERIFIED
