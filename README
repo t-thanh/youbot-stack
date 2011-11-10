@@ -28,7 +28,7 @@ Proposed steps:
 1) git clone http://git.mech.kuleuven.be/robotics/motion_control.git
 2) cd motion_control
 3) git checkout devel
-4) rm -rf ./cartesian_motion_control ./naxes_motion_control
+4) OPTIONAL: rm -rf ./cartesian_motion_control ./naxes_motion_control
 5) rosmake
 
 ===UTwente YouBot-stack install===
