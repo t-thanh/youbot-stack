@@ -14,29 +14,29 @@ For the UTwente YouBot-stack the following must also be installed:
 * SOEM Ethercat drivers
 
 == SOEM driver ==
-1) See INSTALL in SOEM directory.
+See INSTALL in SOEM directory.
 
 ===youbot_driver===
-1) git clone https://github.com/youbot/youbot_driver.git
-2) Open CMakeLists.txt and change SET(USE_ETHERCAT_MASTER_WITH_THREAD ON) to OFF.
-3) Make sure the pkgmanager youbot-oodl is NOT installed.
-4) cd youbot_driver; make clean; make; cd build; sudo make install
+git clone https://github.com/youbot/youbot_driver.git
+Open CMakeLists.txt and change SET(USE_ETHERCAT_MASTER_WITH_THREAD ON) to OFF.
+Make sure the pkgmanager youbot-oodl is NOT installed.
+cd youbot_driver; make clean; make; cd build; sudo make install
 
 ===KUL motion_control stack install===
 * Note you only need the motion_control_msgs and rtt_motion_control_msgs directories. 
 Proposed steps:
-1) git clone http://git.mech.kuleuven.be/robotics/motion_control.git
-2) cd motion_control
-3) git checkout devel
-4) OPTIONAL: rm -rf ./cartesian_motion_control ./naxes_motion_control
-5) rosmake
+git clone http://git.mech.kuleuven.be/robotics/motion_control.git
+cd motion_control
+git checkout devel
+OPTIONAL: rm -rf ./cartesian_motion_control ./naxes_motion_control
+rosmake
 
 ===UTwente YouBot-stack install===
-1) git clone git@github.com:b-it-bots/youbot-stack.git
-2) cd youbot-stack
-3) git submodule init
-4) git submodule update
-5) rosmake
+git clone git@github.com:b-it-bots/youbot-stack.git
+cd youbot-stack
+git submodule init
+git submodule update
+rosmake
 
 Note: For all installation actions you have to manually adjust the ROS_PACKAGE_PATH probably.
 
