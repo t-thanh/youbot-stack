@@ -37,6 +37,8 @@ cd youbot-stack
 git submodule init
 git submodule update
 rosmake
+Adjust the run.sh files according to where you have installed ros and orocos.
+
 
 Note: For all installation actions you have to manually adjust the ROS_PACKAGE_PATH probably.
 
