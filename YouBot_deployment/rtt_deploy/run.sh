@@ -1,7 +1,7 @@
 #!/bin/bash
 
 source /opt/ros/electric/setup.bash;
-source /opt/ros/orocos_stacks/orocos_toolchain/env.sh;
+source /opt/ros/electric/stacks/orocos_toolchain/env.sh;
 
 export YOUBOT_PATH=$(rosstack find youbot-stack)
 
