@@ -29,7 +29,7 @@ Adjust the ROS_PACKAGE_PATH to find the stack.
 rosmake
 
 ===UTwente YouBot-stack install===
-git clone git@github.com:b-it-bots/youbot-stack.git
+git clone git://github.com/b-it-bots/youbot-stack.git
 cd youbot-stack
 git submodule init
 git submodule update
