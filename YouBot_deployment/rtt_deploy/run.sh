@@ -1,9 +1,9 @@
 #!/bin/bash
 
-source /opt/electric/ros/setup.bash;
-source /opt/electric/orocos_toolchain_ros/orocos_toolchain/env.sh;
+source /opt/ros/electric/setup.bash;
+source /opt/ros/orocos_stacks/orocos_toolchain/env.sh;
 
-export YOUBOT_PATH=$(rosstack find YouBot)
+export YOUBOT_PATH=$(rosstack find youbot-stack)
 
 RTTLUA_MODULES=`rospack find ocl`/lua/modules/?.lua
 if [ "x$LUA_PATH" == "x" ]; then
