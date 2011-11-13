@@ -1,0 +1,13 @@
+<package>
+  <description brief="soem">
+
+     Simple Open EtherCAT Master
+
+  </description>
+  <author>Arthur Ketels</author>
+  <license>GPL-v2</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://soem.berlios.de/</url>
+</package>
+
+
