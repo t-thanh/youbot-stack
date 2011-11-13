@@ -6,7 +6,7 @@ The University of Twente(www.utwente.nl) is not liable for any damage arising di
 
 ===Prerequisites===
 * ROS (electric) installed and setup (www.ros.org)
-* orocos_toolchain_ros (corresponding to electric) installed and setup (http://www.ros.org/wiki/orocos_toolchain_ros)
+* orocos_toolchain_ros (corresponding to electric) installed and setup. Please do a source install: http://www.ros.org/wiki/orocos_toolchain_ros
 
 For the UTwente YouBot-stack the following must also be installed:
 * KUL motion_control stack (see below).
