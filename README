@@ -26,6 +26,7 @@ git clone http://git.mech.kuleuven.be/robotics/motion_control.git
 cd motion_control
 git checkout devel
 OPTIONAL: rm -rf ./cartesian_motion_control ./naxes_motion_control
+Adjust the ROS_PACKAGE_PATH to find the stack.
 rosmake
 
 ===UTwente YouBot-stack install===
@@ -33,13 +34,16 @@ git clone git@github.com:b-it-bots/youbot-stack.git
 cd youbot-stack
 git submodule init
 git submodule update
+Adjust the ROS_PACKAGE_PATH to find the stack.
 rosmake
-Adjust the run.sh files according to where you have installed ros and orocos.
 
+Note: If you did not install the pre-compiled packages, adjust the run.sh files accordingly.
 
-Note: For all installation actions you have to manually adjust the ROS_PACKAGE_PATH probably.
+== USAGE (example) ==
+1) roscd YouBot_deployment/rtt_deploy
+2) sudo ./run.sh deploy.ops
+Note: Almost every package contains a separate deploy.ops (Orocos deployment script), which can be used as an example.
 
-== USAGE ==
-Almost every package contains a deploy.ops (Orocos deployment script), which can be used as an example.
-Documentation will follow shortly.
+== DOCUMENTATION == 
+http://www.best-of-robotics.org/3rd_researchcamp/CodeGenerationForRTT
 
