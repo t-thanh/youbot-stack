@@ -17,7 +17,6 @@ For the UTwente YouBot-stack the following must also be installed:
 git clone https://github.com/youbot/youbot_driver.git
 Open CMakeLists.txt and change SET(USE_ETHERCAT_MASTER_WITH_THREAD ON) to OFF.
 Make sure the pkgmanager youbot-oodl is NOT installed.
-cd youbot_driver; make clean; make; cd build; sudo make install
 
 ===KUL motion_control stack install===
 * Note you only need the motion_control_msgs and rtt_motion_control_msgs directories. 
