@@ -15,8 +15,9 @@
 
 FIND_PATH(OODL_YOUBOT_INCLUDE_DIR NAMES youbot/YouBotBase.hpp
   PATHS
+  ${youbot_driver_PACKAGE_PATH}/
   $ENV{YOUBOTDIR}/ 
-  $ENV{ROBOTPKG_BASE}/include/youbot/ 
+  $ENV{ROBOTPKG_BASE}/include/youbot/
   ENV CPATH
   /usr/include/youbot/
   /usr/local/include/youbot/
@@ -26,6 +27,7 @@ FIND_PATH(OODL_YOUBOT_INCLUDE_DIR NAMES youbot/YouBotBase.hpp
 
 FIND_LIBRARY(OODL_YOUBOT_LIBRARIES NAMES "YouBotDriver"
   PATHS
+  ${youbot_driver_PACKAGE_PATH}/lib/
   $ENV{YOUBOTDIR}/lib 
   $ENV{ROBOTPKG_BASE}/lib
   ENV LD_LIBRARY_PATH

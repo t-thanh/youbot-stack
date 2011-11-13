@@ -9,6 +9,7 @@
   <review status="unreviewed" notes=""/>
   <url>ce203</url>
   <depend package="rtt"/>
+  <depend package="youbot_driver"/>
   <depend package="soem"/>
   <depend package="rtt_std_msgs"/>
   <depend package="rtt_rosnode"/>
