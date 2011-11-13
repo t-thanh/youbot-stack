@@ -6,16 +6,12 @@ The University of Twente(www.utwente.nl) is not liable for any damage arising di
 
 ===Prerequisites===
 * ROS (electric) installed and setup (www.ros.org)
- * Use full ros-electric-desktop-full
-* orocos_toolchain_ros (corresponding to electric) installed and setup. Please do a source install: http://www.ros.org/wiki/orocos_toolchain_ros
- * Use debian packages sudo apt-get install ros-electric-orocos-toolchain-ros
+ * Use ubuntu packages, ATLEAST: ros-electric-desktop
+* orocos_toolchain_ros (corresponding to electric) installed and setup. 
+ * Use ubuntu packages: sudo apt-get install ros-electric-orocos-toolchain ros-electric-rtt-ros-integration ros-electric-rtt-ros-comm ros-electric-rtt-common-msgs ros-electric-rtt-geometry
 For the UTwente YouBot-stack the following must also be installed:
 * KUL motion_control stack (see below).
 * youbot_driver without internal thread (see below).
-* SOEM Ethercat drivers
-
-== SOEM driver ==
-See INSTALL in SOEM directory.
 
 ===youbot_driver===
 git clone https://github.com/youbot/youbot_driver.git
