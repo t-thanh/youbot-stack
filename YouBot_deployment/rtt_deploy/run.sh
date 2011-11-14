@@ -3,6 +3,8 @@
 source /opt/ros/electric/setup.bash;
 source /opt/ros/electric/stacks/orocos_toolchain/env.sh;
 
+export ROS_PACKAGE_PATH=${ROS_PACKAGE_PATH}:~/DEV
+
 export YOUBOT_PATH=$(rosstack find youbot-stack)
 
 RTTLUA_MODULES=`rospack find ocl`/lua/modules/?.lua

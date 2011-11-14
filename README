@@ -40,7 +40,8 @@ Note: If you did not install the pre-compiled packages, adjust the run.sh files 
 
 == USAGE (example) ==
 1) roscd YouBot_deployment/rtt_deploy
-2) sudo ./run.sh deploy.ops
+2) Adjust the run.sh to have the proper ROS_PACKAGE_PATH
+3) sudo ./run.sh deploy.ops
 Note: Almost every package contains a separate deploy.ops (Orocos deployment script), which can be used as an example.
 
 == DOCUMENTATION == 
