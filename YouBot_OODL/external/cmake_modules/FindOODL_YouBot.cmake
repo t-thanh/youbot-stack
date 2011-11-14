@@ -40,6 +40,7 @@ FIND_LIBRARY(OODL_YOUBOT_LIBRARIES NAMES "YouBotDriver"
 
 FIND_PATH(OODL_YOUBOT_CONFIG_DIR NAMES youbot-ethercat.cfg
   PATHS
+  ${youbot_driver_PACKAGE_PATH}/config
   $ENV{YOUBOTDIR}/config
   $ENV{ROBOTPKG_BASE}/config
   /etc/youbot
