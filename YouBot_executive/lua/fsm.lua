@@ -24,11 +24,25 @@ return rfsm.csta {
              local activate_monitor=monitor:getOperation("activate_monitor")
              local handle1=activate_monitor("jnt_velocity_zero")
           end,
+	exit=
+          function()
+            local deactivate_monitor=monitor:getOperation("deactivate_monitor")
+            local deactivate_jnt_velocity_zero_result=deactivate_monitor("jnt_velocity_zero")
+            print("Exit wait for user")
+          end,
     },
     learning_position = rfsm.sista{
        entry=
           function() 
              print("Entry learning_position") 
+             local activate_monitor=monitor:getOperation("activate_monitor")
+             local handle1=activate_monitor("jnt_velocity_zero")
+          end,
+       exit=
+          function()
+            local deactivate_monitor=monitor:getOperation("deactivate_monitor")
+            local deactivate_jnt_velocity_zero_result=deactivate_monitor("jnt_velocity_zero")
+            print("Exit learning_position")
           end,
     },
     proving_position = rfsm.sista{
@@ -42,7 +56,8 @@ return rfsm.csta {
              local handle2=getGripperPose(gripper_pose)
              local activate_monitor=monitor:getOperation("activate_monitor")
              local handle1=activate_monitor("timer")
-
+             local activate_monitor=monitor:getOperation("activate_monitor")
+             local handle1=activate_monitor("jnt_velocity_zero")
           end,
           exit=
           function()
