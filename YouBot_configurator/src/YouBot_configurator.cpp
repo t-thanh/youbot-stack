@@ -24,6 +24,8 @@
 #include <YouBotTypes.hpp>
 #include <JointConfigurator.hpp>
 
+#include <ros/package.h>
+
 using namespace RTT;
 using namespace std;
 using namespace youbot;
@@ -32,17 +34,49 @@ namespace YouBot
 {
 
 YouBot_configurator::YouBot_configurator(const string& name) :
-	TaskContext(name)
-{ }
+	TaskContext(name, PreOperational), m_manipulator(NULL), m_base(NULL)
+{
+	log(Info) << "YouBot_configurator started." << endlog();
+}
 
 YouBot_configurator::~YouBot_configurator()
-{ }
+{
+	log(Info) << "YouBot_configurator destroyed." << endlog();
+}
 
 bool YouBot_configurator::configureHook()
 {
+	log(Info) << "configureHook" << endlog();
+
+	// MUST BE THE FIRST ONE TO CALL getInstance!!!
+	unsigned int nr_slaves = 0;
+
 	try
 	{
+		log(Info) << "config path: " << OODL_YOUBOT_CONFIG_DIR << endlog();
+
+		EthercatMaster* ec_master = &(EthercatMaster::getInstance("/youbot-ethercat.cfg", OODL_YOUBOT_CONFIG_DIR));
+
+		nr_slaves = ec_master->getNumberOfSlaves();
+	}
+	catch (std::exception& e)
+	{
+		log(Error) << e.what() << endlog();
+		this->error();
+		return false;
+	}
+
+	if(nr_slaves != (NR_OF_BASE_SLAVES + NR_OF_ARM_SLAVES) && nr_slaves != (NR_OF_BASE_SLAVES + 2*NR_OF_ARM_SLAVES))
+	{
+		log(Error) << "Not a proper amount of Ethercat slaves, got:" << nr_slaves << endlog();
+		return false;
+	}
+
+	try
+	{
+		log(Error) << "before YouBotManipulator" << endlog();
 		m_manipulator = new YouBotManipulator("/youbot-manipulator", OODL_YOUBOT_CONFIG_DIR);
+		log(Error) << "after YouBotManipulator" << endlog();
 		if(m_manipulator == NULL)
 		{
 			log(Error) << "Could not create the YouBotManipulator." << endlog();
@@ -64,19 +98,23 @@ bool YouBot_configurator::configureHook()
 		return false;
 	}
 
+	string path = ros::package::getPath("YouBot_configurator");
+	stringstream arm_path;
+	arm_path << path << "/config/arm";
+	stringstream base_path;
+	base_path << path << "/config/base";
+
 	for(unsigned int i = 0; i < NR_OF_ARM_SLAVES; ++i)
 	{
-		stringstream name("arm-");
-		name << i;
-		name << "-parameter.cfg";
+		stringstream name;
+		name << "/arm-" << i << "-parameter.cfg";
 
-		stringstream protected_name("protected-arm-");
-		protected_name << i;
-		protected_name << "-parameter.cfg";
+		stringstream protected_name;
+		protected_name << "/protected-arm-" << i << "-parameter.cfg";
 
 		try
 		{
-			JointConfigurator jc(&(m_manipulator->getArmJoint(i)), "../config/arm", name.str(), protected_name.str());
+			JointConfigurator jc(&(m_manipulator->getArmJoint(i)), arm_path.str(), name.str(), protected_name.str());
 			jc.readParameters();
 			jc.setParametersToJoint();
 		}
@@ -88,17 +126,15 @@ bool YouBot_configurator::configureHook()
 
 	for(unsigned int i = 0; i < NR_OF_BASE_SLAVES; ++i)
 	{
-		stringstream name("base-");
-		name << i;
-		name << "-parameter.cfg";
+		stringstream name;
+		name << "/base-" << i << "-parameter.cfg";
 
-		stringstream protected_name("protected-base-");
-		protected_name << i;
-		protected_name << "-parameter.cfg";
+		stringstream protected_name;
+		protected_name << "/protected-base-" << i << "-parameter.cfg";
 
 		try
 		{
-			JointConfigurator jc(&(m_base->getBaseJoint(i)), "../config/base", name.str(), protected_name.str());
+			JointConfigurator jc(&(m_base->getBaseJoint(i)), base_path.str(), name.str(), protected_name.str());
 			jc.readParameters();
 			jc.setParametersToJoint();
 		}
@@ -108,7 +144,7 @@ bool YouBot_configurator::configureHook()
 		}
 	}
 
-	return true;
+	return TaskContext::configureHook();
 }
 
 bool YouBot_configurator::startHook()

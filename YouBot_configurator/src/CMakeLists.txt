@@ -19,19 +19,9 @@ INCLUDE_DIRECTORIES(${YOUBOT_CONFIGURATOR_INCLUDE_DIR})
 LINK_DIRECTORIES(${LIBRARY_OUTPUT_PATH} ${joint_configurator_PACKAGE_PATH}/lib)
 
 #Executable component and can also be a library usable for orocos deployment
-orocos_component(YouBot_CONFIGURATOR ${YOUBOT_CONFIGURATOR_FILES} )
+orocos_component(YouBot_configurator ${YOUBOT_CONFIGURATOR_FILES} )
 
-TARGET_LINK_LIBRARIES(YouBot_CONFIGURATOR ${YOUBOT_CONFIGURATOR_libs})
+TARGET_LINK_LIBRARIES(YouBot_configurator ${YOUBOT_CONFIGURATOR_libs})
 
-set_target_properties(YouBot_CONFIGURATOR PROPERTIES COMPILE_FLAGS "-Wall")
+set_target_properties(YouBot_configurator PROPERTIES COMPILE_FLAGS "-Wall")
 
-
-#
-# Plugin
-#
-
-#defines where static libraries are stored
-SET(LIBRARY_OUTPUT_PATH ${CMAKE_HOME_DIRECTORY}/lib/plugins)
-
-#defines where dynamic libraries (plugins) are stored
-SET (CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_HOME_DIRECTORY}/bin/plugins)
