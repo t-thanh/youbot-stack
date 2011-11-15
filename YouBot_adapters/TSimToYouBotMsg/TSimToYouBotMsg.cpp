@@ -104,7 +104,7 @@ namespace YouBot
 			{
 				case(PLANE_ANGLE):
 				{
-					for(unsigned int i = 0; i < m_dimension; ++i)
+					for(unsigned int i = 0; i < m_input_cmd_signal.data.size(); ++i)
 					{
 						m_output_cmd_angles.positions[i] = m_input_cmd_signal.data[i];
 					}
@@ -113,7 +113,7 @@ namespace YouBot
 				}
 				case(ANGULAR_VELOCITY):
 				{
-					for(unsigned int i = 0; i < m_dimension; ++i)
+					for(unsigned int i = 0; i < m_input_cmd_signal.data.size(); ++i)
 					{
 						m_output_cmd_velocities.velocities[i] = m_input_cmd_signal.data[i];
 					}
@@ -122,7 +122,7 @@ namespace YouBot
 				}
 				case(TORQUE):
 				{
-					for(unsigned int i = 0; i < m_dimension; ++i)
+					for(unsigned int i = 0; i < m_input_cmd_signal.data.size(); ++i)
 					{
 						m_output_cmd_torques.efforts[i] = m_input_cmd_signal.data[i];
 					}
