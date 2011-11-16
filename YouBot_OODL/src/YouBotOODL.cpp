@@ -53,7 +53,7 @@ namespace YouBot
 			return false;
 		}
 
-		if(nr_slaves != (NR_OF_BASE_SLAVES + NR_OF_ARM_SLAVES) && nr_slaves != (NR_OF_BASE_SLAVES + 2*NR_OF_ARM_SLAVES))
+		if(nr_slaves != (NR_OF_BASE_SLAVES) && nr_slaves != (NR_OF_BASE_SLAVES + NR_OF_ARM_SLAVES) && nr_slaves != (NR_OF_BASE_SLAVES + 2*NR_OF_ARM_SLAVES))
 		{
 			log(Error) << "Not a proper amount of Ethercat slaves, got:" << nr_slaves << endlog();
 			return false;
@@ -68,23 +68,26 @@ namespace YouBot
 		cleanup_ops.push_back(this->provides("Base")->getOperation("cleanup"));
 		log(Info) << "Detected youbot base, loading Base service" << endlog();
 
-		// Arm 1
-		this->provides()->addService(Service::shared_ptr( new YouBotArmService("Arm1",this, 1) ) );
-		update_ops.push_back(this->provides("Arm1")->getOperation("update"));
-		calibrate_ops.push_back(this->provides("Arm1")->getOperation("calibrate"));
-		start_ops.push_back(this->provides("Arm1")->getOperation("start"));
-		stop_ops.push_back(this->provides("Arm1")->getOperation("stop"));
-		cleanup_ops.push_back(this->provides("Arm1")->getOperation("cleanup"));
-		log(Info) << "Detected youbot arm, loading Arm1 service" << endlog();
+		if(nr_slaves == NR_OF_BASE_SLAVES + NR_OF_ARM_SLAVES) // Arm 2
+		{
+			// Arm 1
+			this->provides()->addService(Service::shared_ptr( new YouBotArmService("Arm1",this, 1) ) );
+			update_ops.push_back(this->provides("Arm1")->getOperation("update"));
+			calibrate_ops.push_back(this->provides("Arm1")->getOperation("calibrate"));
+			start_ops.push_back(this->provides("Arm1")->getOperation("start"));
+			stop_ops.push_back(this->provides("Arm1")->getOperation("stop"));
+			cleanup_ops.push_back(this->provides("Arm1")->getOperation("cleanup"));
+			log(Info) << "Detected youbot arm, loading Arm1 service" << endlog();
 
-		// Gripper 1
-		this->provides()->addService(Service::shared_ptr( new YouBotGripperService("Gripper1",this) ) );
-		update_ops.push_back(this->provides("Gripper1")->getOperation("update"));
-		calibrate_ops.push_back(this->provides("Gripper1")->getOperation("calibrate"));
-		start_ops.push_back(this->provides("Gripper1")->getOperation("start"));
-		stop_ops.push_back(this->provides("Gripper1")->getOperation("stop"));
-		cleanup_ops.push_back(this->provides("Gripper1")->getOperation("cleanup"));
-		log(Info) << "Detected youbot gripper, loading Gripper1 service" << endlog();
+			// Gripper 1
+			this->provides()->addService(Service::shared_ptr( new YouBotGripperService("Gripper1",this) ) );
+			update_ops.push_back(this->provides("Gripper1")->getOperation("update"));
+			calibrate_ops.push_back(this->provides("Gripper1")->getOperation("calibrate"));
+			start_ops.push_back(this->provides("Gripper1")->getOperation("start"));
+			stop_ops.push_back(this->provides("Gripper1")->getOperation("stop"));
+			cleanup_ops.push_back(this->provides("Gripper1")->getOperation("cleanup"));
+			log(Info) << "Detected youbot gripper, loading Gripper1 service" << endlog();
+		}
 
 		if(nr_slaves == NR_OF_BASE_SLAVES + 2*NR_OF_ARM_SLAVES) // Arm 2
 		{

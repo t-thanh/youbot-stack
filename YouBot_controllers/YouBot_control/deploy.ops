@@ -1,24 +1,24 @@
 import("YouBot_control");
 import("YouBot_adapters");
 
-loadComponent("control","RCCMotionStack::YouBot_control");
-loadComponent("arm2control","YouBot::YouBotMsgToTSim");
-loadComponent("control2arm","YouBot::TSimToYouBotMsg");
-loadComponent("base2control","YouBot::YouBotOdometryToTSim");
-loadComponent("control2base","YouBot::TSimToYouBotMsg");
+loadComponent("control_test","RCCMotionStack::YouBot_control");
+//loadComponent("arm2control","YouBot::YouBotMsgToTSim");
+loadComponent("control2arm_test","YouBot::TSimToYouBotMsg");
+//loadComponent("base2control","YouBot::YouBotOdometryToTSim");
+//loadComponent("control2base","YouBot::TSimToYouBotMsg");
 var ConnPolicy cp_rtt_noBuf;
 cp_rtt_noBuf.type = DATA;  // Use ''BUFFER'' or ''DATA''
 cp_rtt_noBuf.lock_policy = LOCK_FREE; // Use  ''LOCKED'', ''LOCK_FREE'' or ''UNSYNC''
 
-connect("control.Arm1_joint_velocites","arm2control.output_velocities",cp_rtt_noBuf);
-connect("control.Arm1_joint_states","arm2control.output_positions",cp_rtt_noBuf);
+connect("control_test.Arm1_joint_velocites","arm2control.output_velocities",cp_rtt_noBuf);
+connect("control_test.Arm1_joint_states","arm2control.output_positions",cp_rtt_noBuf);
 
-connect("control.Measured_odometry","arm2control.output_velocities",cp_rtt_noBuf);
-connect("control.Base_joint_velocities","base2control.output_odometry",cp_rtt_noBuf);
+//connect("control.Measured_odometry","arm2control.output_velocities",cp_rtt_noBuf);
+//connect("control.Base_joint_velocities","base2control.output_odometry",cp_rtt_noBuf);
 
-connect("control.Arm1_joint_cmd","control2arm.input_cmd_signal",cp_rtt_noBuf);
+connect("control_test.Arm1_joint_cmd","control2arm_test.input_cmd_signal",cp_rtt_noBuf);
 //connect("control.Base_twist_cmd","control2base.input_cmd_signal",cp_rtt_noBuf);
-control.configure
+control_test.configure
 
-control.start
+control_test.start
 
