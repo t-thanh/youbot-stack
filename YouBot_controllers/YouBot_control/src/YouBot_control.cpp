@@ -6,7 +6,7 @@
  *  model: RCCMotionStack
  *  expmt: RCCMotionStack
  *  date:  November 16, 2011
- *  time:  10:20:39 am
+ *  time:  11:40:34 am
  *  user:  Campuslicentie
  *  from:  Universiteit Twente
  *  build: 4.1.2.2
@@ -1246,8 +1246,8 @@ namespace RCCMotionStack
 	/* Htip0 = CalculateJ\Htip0; */
 	XXMatrixMov (&M[270], &M[1]);
 
-	/* CartesianSpaceStiffness\H1_0 = inverse (CalculateJ\Htip0) * Gain1\H; */
-	XXMatrixInverse (&M[345], &M[1], workarray);
+	/* CartesianSpaceStiffness\H1_0 = inverseH (CalculateJ\Htip0) * Gain1\H; */
+	XXMatrixInverseH (&M[345], &M[1]);
 	XXMatrixMul (&M[55], &M[345], &M[69]);
 
 	/* CartesianSpaceStiffness\skew21 = skew (CartesianSpaceStiffness\H1_0[1:3,4]); */
@@ -1301,13 +1301,15 @@ namespace RCCMotionStack
 	XXScalarMatrixMul (&M[372], 2.0, &M[373]);
 	XXMatrixAdd (&M[63], &M[361], &M[372]);
 
-	/* CartesianSpaceStiffness\effort = [CartesianSpaceStiffness\dummy4[3,2]; CartesianSpaceStiffness\dummy4[1,3]; CartesianSpaceStiffness\dummy4[2,1]; CartesianSpaceStiffness\dummy5[3,2]; CartesianSpaceStiffness\dummy5[1,3]; CartesianSpaceStiffness\dummy5[2,1]]; */
-	M[50].mat[0] = M[62].mat[7];
-	M[50].mat[1] = M[62].mat[2];
-	M[50].mat[2] = M[62].mat[3];
-	M[50].mat[3] = M[63].mat[7];
-	M[50].mat[4] = M[63].mat[2];
-	M[50].mat[5] = M[63].mat[3];
+	/* CartesianSpaceStiffness\effort = Adjoint (CalculateJ\Htip0) * [CartesianSpaceStiffness\dummy4[3,2]; CartesianSpaceStiffness\dummy4[1,3]; CartesianSpaceStiffness\dummy4[2,1]; CartesianSpaceStiffness\dummy5[3,2]; CartesianSpaceStiffness\dummy5[1,3]; CartesianSpaceStiffness\dummy5[2,1]]; */
+	XXMatrixAdjoint (&M[375], &M[1]);
+	M[376].mat[0] = M[62].mat[7];
+	M[376].mat[1] = M[62].mat[2];
+	M[376].mat[2] = M[62].mat[3];
+	M[376].mat[3] = M[63].mat[7];
+	M[376].mat[4] = M[63].mat[2];
+	M[376].mat[5] = M[63].mat[3];
+	XXMatrixMul (&M[50], &M[375], &M[376]);
 
 	/* Limit1\output[1] = (if JointSpaceStiffness\output[1] < -Limit1\force_lim then -Limit1\force_lim else if JointSpaceStiffness\output[1] > Limit1\force_lim then Limit1\force_lim else JointSpaceStiffness\output[1] end end); */
 	M[248].mat[0] = (M[246].mat[0] < -P[328]) ? (-P[328]) : ((M[246].mat[0] > P[328]) ? P[328] : M[246].mat[0]);
@@ -1337,8 +1339,8 @@ namespace RCCMotionStack
 	XXMatrixMul (&M[130], &M[86], &M[127]);
 
 	/* TF\joints_e = transpose (CalculateJ\controllableJ) * CartesianSpaceStiffness\effort; */
-	XXMatrixTranspose (&M[375], &M[0]);
-	XXMatrixMul (&M[265], &M[375], &M[50]);
+	XXMatrixTranspose (&M[377], &M[0]);
+	XXMatrixMul (&M[265], &M[377], &M[50]);
 
 	/* Limit3\output[1] = (if TF\joints_e[1] < -Limit3\force_lim then -Limit3\force_lim else if TF\joints_e[1] > Limit3\force_lim then Limit3\force_lim else TF\joints_e[1] end end); */
 	M[249].mat[0] = (M[265].mat[0] < -P[329]) ? (-P[329]) : ((M[265].mat[0] > P[329]) ? P[329] : M[265].mat[0]);
@@ -1386,13 +1388,13 @@ namespace RCCMotionStack
 		M[135].mat[11] = 0.0;
 
 		/* GravityCompensationModel\Link1\AdHi0\p2.e = transpose (Adjoint (GravityCompensationModel\Link1\AdHi0\onlyRotH)) * GravityCompensationModel\Link1\Gravity\effort; */
-		XXMatrixAdjoint (&M[377], &M[135]);
-		XXMatrixTranspose (&M[376], &M[377]);
-		XXMatrixMul (&M[134], &M[376], &M[145]);
+		XXMatrixAdjoint (&M[379], &M[135]);
+		XXMatrixTranspose (&M[378], &M[379]);
+		XXMatrixMul (&M[134], &M[378], &M[145]);
 
 		/* GravityCompensationModel\Link1\AdHi0\p1.f = Adjoint (GravityCompensationModel\Link1\AdHi0\onlyRotH) * GravityCompensationModel\Link1\AdHik1\p2.f; */
-		XXMatrixAdjoint (&M[378], &M[135]);
-		XXMatrixMul (&M[133], &M[378], &M[139]);
+		XXMatrixAdjoint (&M[380], &M[135]);
+		XXMatrixMul (&M[133], &M[380], &M[139]);
 
 	/* PlusMinus4\output = JointSoftLimits\output + PlusMinus3\output; */
 	XXMatrixAdd (&M[263], &M[236], &M[262]);
@@ -1401,9 +1403,9 @@ namespace RCCMotionStack
 	XXMatrixMul (&M[98], &M[146], &M[95]);
 
 	/* GravityCompensationModel\Link1\AdHik1\p1.e = (1.0 / transpose (GravityCompensationModel\Link1\AdHik1\AdH)) * GravityCompensationModel\Link1\AdHi0\p2.e; */
-	XXMatrixTranspose (&M[380], &M[144]);
-	XXScalarMatrixDiv (&M[379], 1.0, &M[380], workarray);
-	XXMatrixMul (&M[138], &M[379], &M[134]);
+	XXMatrixTranspose (&M[382], &M[144]);
+	XXScalarMatrixDiv (&M[381], 1.0, &M[382], workarray);
+	XXMatrixMul (&M[138], &M[381], &M[134]);
 
 	/* GravityCompensationModel\Link2\Hij\output = GravityCompensationModel\Joint12\MatrixMul\output * GravityCompensationModel\Link2\Hij\Hab; */
 	XXMatrixMul (&M[165], &M[98], &M[166]);
@@ -1424,18 +1426,18 @@ namespace RCCMotionStack
 		M[154].mat[11] = 0.0;
 
 		/* GravityCompensationModel\Link2\AdHi0\p2.e = transpose (Adjoint (GravityCompensationModel\Link2\AdHi0\onlyRotH)) * GravityCompensationModel\Link2\Gravity\effort; */
-		XXMatrixAdjoint (&M[382], &M[154]);
-		XXMatrixTranspose (&M[381], &M[382]);
-		XXMatrixMul (&M[153], &M[381], &M[164]);
+		XXMatrixAdjoint (&M[384], &M[154]);
+		XXMatrixTranspose (&M[383], &M[384]);
+		XXMatrixMul (&M[153], &M[383], &M[164]);
 
 		/* GravityCompensationModel\Link2\AdHi0\p1.f = Adjoint (GravityCompensationModel\Link2\AdHi0\onlyRotH) * GravityCompensationModel\Link2\AdHik1\p2.f; */
-		XXMatrixAdjoint (&M[383], &M[154]);
-		XXMatrixMul (&M[152], &M[383], &M[158]);
+		XXMatrixAdjoint (&M[385], &M[154]);
+		XXMatrixMul (&M[152], &M[385], &M[158]);
 
 	/* GravityCompensationModel\Link2\AdHik1\p1.e = (1.0 / transpose (GravityCompensationModel\Link2\AdHik1\AdH)) * GravityCompensationModel\Link2\AdHi0\p2.e; */
-	XXMatrixTranspose (&M[385], &M[163]);
-	XXScalarMatrixDiv (&M[384], 1.0, &M[385], workarray);
-	XXMatrixMul (&M[157], &M[384], &M[153]);
+	XXMatrixTranspose (&M[387], &M[163]);
+	XXScalarMatrixDiv (&M[386], 1.0, &M[387], workarray);
+	XXMatrixMul (&M[157], &M[386], &M[153]);
 
 	/* GravityCompensationModel\Link3\Hij\output = GravityCompensationModel\Joint23\MatrixMul\output * GravityCompensationModel\Link3\Hij\Hab; */
 	XXMatrixMul (&M[184], &M[106], &M[185]);
@@ -1456,18 +1458,18 @@ namespace RCCMotionStack
 		M[173].mat[11] = 0.0;
 
 		/* GravityCompensationModel\Link3\AdHi0\p2.e = transpose (Adjoint (GravityCompensationModel\Link3\AdHi0\onlyRotH)) * GravityCompensationModel\Link3\Gravity\effort; */
-		XXMatrixAdjoint (&M[387], &M[173]);
-		XXMatrixTranspose (&M[386], &M[387]);
-		XXMatrixMul (&M[172], &M[386], &M[183]);
+		XXMatrixAdjoint (&M[389], &M[173]);
+		XXMatrixTranspose (&M[388], &M[389]);
+		XXMatrixMul (&M[172], &M[388], &M[183]);
 
 		/* GravityCompensationModel\Link3\AdHi0\p1.f = Adjoint (GravityCompensationModel\Link3\AdHi0\onlyRotH) * GravityCompensationModel\Link3\AdHik1\p2.f; */
-		XXMatrixAdjoint (&M[388], &M[173]);
-		XXMatrixMul (&M[171], &M[388], &M[177]);
+		XXMatrixAdjoint (&M[390], &M[173]);
+		XXMatrixMul (&M[171], &M[390], &M[177]);
 
 	/* GravityCompensationModel\Link3\AdHik1\p1.e = (1.0 / transpose (GravityCompensationModel\Link3\AdHik1\AdH)) * GravityCompensationModel\Link3\AdHi0\p2.e; */
-	XXMatrixTranspose (&M[390], &M[182]);
-	XXScalarMatrixDiv (&M[389], 1.0, &M[390], workarray);
-	XXMatrixMul (&M[176], &M[389], &M[172]);
+	XXMatrixTranspose (&M[392], &M[182]);
+	XXScalarMatrixDiv (&M[391], 1.0, &M[392], workarray);
+	XXMatrixMul (&M[176], &M[391], &M[172]);
 
 	/* GravityCompensationModel\Link4\Hij\output = GravityCompensationModel\Joint34\MatrixMul\output * GravityCompensationModel\Link4\Hij\Hab; */
 	XXMatrixMul (&M[203], &M[114], &M[204]);
@@ -1488,18 +1490,18 @@ namespace RCCMotionStack
 		M[192].mat[11] = 0.0;
 
 		/* GravityCompensationModel\Link4\AdHi0\p2.e = transpose (Adjoint (GravityCompensationModel\Link4\AdHi0\onlyRotH)) * GravityCompensationModel\Link4\Gravity\effort; */
-		XXMatrixAdjoint (&M[392], &M[192]);
-		XXMatrixTranspose (&M[391], &M[392]);
-		XXMatrixMul (&M[191], &M[391], &M[202]);
+		XXMatrixAdjoint (&M[394], &M[192]);
+		XXMatrixTranspose (&M[393], &M[394]);
+		XXMatrixMul (&M[191], &M[393], &M[202]);
 
 		/* GravityCompensationModel\Link4\AdHi0\p1.f = Adjoint (GravityCompensationModel\Link4\AdHi0\onlyRotH) * GravityCompensationModel\Link4\AdHik1\p2.f; */
-		XXMatrixAdjoint (&M[393], &M[192]);
-		XXMatrixMul (&M[190], &M[393], &M[196]);
+		XXMatrixAdjoint (&M[395], &M[192]);
+		XXMatrixMul (&M[190], &M[395], &M[196]);
 
 	/* GravityCompensationModel\Link4\AdHik1\p1.e = (1.0 / transpose (GravityCompensationModel\Link4\AdHik1\AdH)) * GravityCompensationModel\Link4\AdHi0\p2.e; */
-	XXMatrixTranspose (&M[395], &M[201]);
-	XXScalarMatrixDiv (&M[394], 1.0, &M[395], workarray);
-	XXMatrixMul (&M[195], &M[394], &M[191]);
+	XXMatrixTranspose (&M[397], &M[201]);
+	XXScalarMatrixDiv (&M[396], 1.0, &M[397], workarray);
+	XXMatrixMul (&M[195], &M[396], &M[191]);
 
 		/* GravityCompensationModel\Link5\AdHi0\onlyRotH = GravityCompensationModel\Joint45\MatrixMul\output; */
 		XXMatrixMov (&M[211], &M[122]);
@@ -1514,35 +1516,35 @@ namespace RCCMotionStack
 		M[211].mat[11] = 0.0;
 
 		/* GravityCompensationModel\Link5\AdHi0\p2.e = transpose (Adjoint (GravityCompensationModel\Link5\AdHi0\onlyRotH)) * GravityCompensationModel\Link5\Gravity\effort; */
-		XXMatrixAdjoint (&M[397], &M[211]);
-		XXMatrixTranspose (&M[396], &M[397]);
-		XXMatrixMul (&M[210], &M[396], &M[221]);
+		XXMatrixAdjoint (&M[399], &M[211]);
+		XXMatrixTranspose (&M[398], &M[399]);
+		XXMatrixMul (&M[210], &M[398], &M[221]);
 
 		/* GravityCompensationModel\Link5\AdHi0\p1.f = Adjoint (GravityCompensationModel\Link5\AdHi0\onlyRotH) * GravityCompensationModel\Link5\AdHik1\p2.f; */
-		XXMatrixAdjoint (&M[398], &M[211]);
-		XXMatrixMul (&M[209], &M[398], &M[215]);
+		XXMatrixAdjoint (&M[400], &M[211]);
+		XXMatrixMul (&M[209], &M[400], &M[215]);
 
 	/* GravityCompensationModel\Link5\AdHik1\p1.e = (1.0 / transpose (GravityCompensationModel\Link5\AdHik1\AdH)) * GravityCompensationModel\Link5\AdHi0\p2.e; */
-	XXMatrixTranspose (&M[400], &M[220]);
-	XXScalarMatrixDiv (&M[399], 1.0, &M[400], workarray);
-	XXMatrixMul (&M[214], &M[399], &M[210]);
+	XXMatrixTranspose (&M[402], &M[220]);
+	XXScalarMatrixDiv (&M[401], 1.0, &M[402], workarray);
+	XXMatrixMul (&M[214], &M[401], &M[210]);
 
 	/* GravityCompensationModel\Link5\Ta0i\p2.e = GravityCompensationModel\Link5\AdHik1\p1.e + GravityCompensationModel\Link5\AdHij\p1.e; */
 	XXMatrixAdd (&M[225], &M[214], &M[212]);
 
 	/* GravityCompensationModel\Joint45\AdHji\p1.e = (1.0 / transpose (Adjoint (GravityCompensationModel\Joint45\Integrate\output))) * GravityCompensationModel\Link5\Ta0i\p2.e; */
-	XXMatrixAdjoint (&M[403], &M[119]);
-	XXMatrixTranspose (&M[402], &M[403]);
-	XXScalarMatrixDiv (&M[401], 1.0, &M[402], workarray);
-	XXMatrixMul (&M[117], &M[401], &M[225]);
+	XXMatrixAdjoint (&M[405], &M[119]);
+	XXMatrixTranspose (&M[404], &M[405]);
+	XXScalarMatrixDiv (&M[403], 1.0, &M[404], workarray);
+	XXMatrixMul (&M[117], &M[403], &M[225]);
 
 	/* GravityCompensationModel\Joint45\uTbai\p1.e = GravityCompensationModel\Joint45\AdHji\p1.e[3]; */
 	V[1018] = M[117].mat[2];
 
 	/* GravityCompensationModel\Link4\AdHij\p1.e = transpose (Adjoint (GravityCompensationModel\Link4\Hij\Hab)) * GravityCompensationModel\Joint45\AdHji\p1.e; */
-	XXMatrixAdjoint (&M[405], &M[204]);
-	XXMatrixTranspose (&M[404], &M[405]);
-	XXMatrixMul (&M[193], &M[404], &M[117]);
+	XXMatrixAdjoint (&M[407], &M[204]);
+	XXMatrixTranspose (&M[406], &M[407]);
+	XXMatrixMul (&M[193], &M[406], &M[117]);
 
 	/* GravityCompensationModel\Link4\Ta0i\p2.e = GravityCompensationModel\Link4\AdHik1\p1.e + GravityCompensationModel\Link4\AdHij\p1.e; */
 	XXMatrixAdd (&M[206], &M[195], &M[193]);
@@ -1551,18 +1553,18 @@ namespace RCCMotionStack
 	M[228].mat[7] = V[1018] * P[237];
 
 	/* GravityCompensationModel\Joint34\AdHji\p1.e = (1.0 / transpose (Adjoint (GravityCompensationModel\Joint34\Integrate\output))) * GravityCompensationModel\Link4\Ta0i\p2.e; */
-	XXMatrixAdjoint (&M[408], &M[111]);
-	XXMatrixTranspose (&M[407], &M[408]);
-	XXScalarMatrixDiv (&M[406], 1.0, &M[407], workarray);
-	XXMatrixMul (&M[109], &M[406], &M[206]);
+	XXMatrixAdjoint (&M[410], &M[111]);
+	XXMatrixTranspose (&M[409], &M[410]);
+	XXScalarMatrixDiv (&M[408], 1.0, &M[409], workarray);
+	XXMatrixMul (&M[109], &M[408], &M[206]);
 
 	/* GravityCompensationModel\Joint34\uTbai\p1.e = GravityCompensationModel\Joint34\AdHji\p1.e[2]; */
 	V[949] = M[109].mat[1];
 
 	/* GravityCompensationModel\Link3\AdHij\p1.e = transpose (Adjoint (GravityCompensationModel\Link3\Hij\Hab)) * GravityCompensationModel\Joint34\AdHji\p1.e; */
-	XXMatrixAdjoint (&M[410], &M[185]);
-	XXMatrixTranspose (&M[409], &M[410]);
-	XXMatrixMul (&M[174], &M[409], &M[109]);
+	XXMatrixAdjoint (&M[412], &M[185]);
+	XXMatrixTranspose (&M[411], &M[412]);
+	XXMatrixMul (&M[174], &M[411], &M[109]);
 
 	/* GravityCompensationModel\Link3\Ta0i\p2.e = GravityCompensationModel\Link3\AdHik1\p1.e + GravityCompensationModel\Link3\AdHij\p1.e; */
 	XXMatrixAdd (&M[187], &M[176], &M[174]);
@@ -1571,18 +1573,18 @@ namespace RCCMotionStack
 	M[228].mat[6] = V[949] * P[237];
 
 	/* GravityCompensationModel\Joint23\AdHji\p1.e = (1.0 / transpose (Adjoint (GravityCompensationModel\Joint23\Integrate\output))) * GravityCompensationModel\Link3\Ta0i\p2.e; */
-	XXMatrixAdjoint (&M[413], &M[103]);
-	XXMatrixTranspose (&M[412], &M[413]);
-	XXScalarMatrixDiv (&M[411], 1.0, &M[412], workarray);
-	XXMatrixMul (&M[101], &M[411], &M[187]);
+	XXMatrixAdjoint (&M[415], &M[103]);
+	XXMatrixTranspose (&M[414], &M[415]);
+	XXScalarMatrixDiv (&M[413], 1.0, &M[414], workarray);
+	XXMatrixMul (&M[101], &M[413], &M[187]);
 
 	/* GravityCompensationModel\Joint23\uTbai\p1.e = GravityCompensationModel\Joint23\AdHji\p1.e[2]; */
 	V[880] = M[101].mat[1];
 
 	/* GravityCompensationModel\Link2\AdHij\p1.e = transpose (Adjoint (GravityCompensationModel\Link2\Hij\Hab)) * GravityCompensationModel\Joint23\AdHji\p1.e; */
-	XXMatrixAdjoint (&M[415], &M[166]);
-	XXMatrixTranspose (&M[414], &M[415]);
-	XXMatrixMul (&M[155], &M[414], &M[101]);
+	XXMatrixAdjoint (&M[417], &M[166]);
+	XXMatrixTranspose (&M[416], &M[417]);
+	XXMatrixMul (&M[155], &M[416], &M[101]);
 
 	/* GravityCompensationModel\Link2\Ta0i\p2.e = GravityCompensationModel\Link2\AdHik1\p1.e + GravityCompensationModel\Link2\AdHij\p1.e; */
 	XXMatrixAdd (&M[168], &M[157], &M[155]);
@@ -1591,18 +1593,18 @@ namespace RCCMotionStack
 	M[228].mat[5] = V[880] * P[237];
 
 	/* GravityCompensationModel\Joint12\AdHji\p1.e = (1.0 / transpose (Adjoint (GravityCompensationModel\Joint12\Integrate\output))) * GravityCompensationModel\Link2\Ta0i\p2.e; */
-	XXMatrixAdjoint (&M[418], &M[95]);
-	XXMatrixTranspose (&M[417], &M[418]);
-	XXScalarMatrixDiv (&M[416], 1.0, &M[417], workarray);
-	XXMatrixMul (&M[93], &M[416], &M[168]);
+	XXMatrixAdjoint (&M[420], &M[95]);
+	XXMatrixTranspose (&M[419], &M[420]);
+	XXScalarMatrixDiv (&M[418], 1.0, &M[419], workarray);
+	XXMatrixMul (&M[93], &M[418], &M[168]);
 
 	/* GravityCompensationModel\Joint12\uTbai\p1.e = GravityCompensationModel\Joint12\AdHji\p1.e[2]; */
 	V[811] = M[93].mat[1];
 
 	/* GravityCompensationModel\Link1\AdHij\p1.e = transpose (Adjoint (GravityCompensationModel\Link1\Hij\Hab)) * GravityCompensationModel\Joint12\AdHji\p1.e; */
-	XXMatrixAdjoint (&M[420], &M[147]);
-	XXMatrixTranspose (&M[419], &M[420]);
-	XXMatrixMul (&M[136], &M[419], &M[93]);
+	XXMatrixAdjoint (&M[422], &M[147]);
+	XXMatrixTranspose (&M[421], &M[422]);
+	XXMatrixMul (&M[136], &M[421], &M[93]);
 
 	/* GravityCompensationModel\Link1\Ta0i\p2.e = GravityCompensationModel\Link1\AdHik1\p1.e + GravityCompensationModel\Link1\AdHij\p1.e; */
 	XXMatrixAdd (&M[149], &M[138], &M[136]);
@@ -1611,10 +1613,10 @@ namespace RCCMotionStack
 	M[228].mat[4] = V[811] * P[237];
 
 	/* GravityCompensationModel\JointBase1\AdHji\p1.e = (1.0 / transpose (Adjoint (GravityCompensationModel\JointBase1\Integrate\output))) * GravityCompensationModel\Link1\Ta0i\p2.e; */
-	XXMatrixAdjoint (&M[423], &M[127]);
-	XXMatrixTranspose (&M[422], &M[423]);
-	XXScalarMatrixDiv (&M[421], 1.0, &M[422], workarray);
-	XXMatrixMul (&M[125], &M[421], &M[149]);
+	XXMatrixAdjoint (&M[425], &M[127]);
+	XXMatrixTranspose (&M[424], &M[425]);
+	XXScalarMatrixDiv (&M[423], 1.0, &M[424], workarray);
+	XXMatrixMul (&M[125], &M[423], &M[149]);
 
 	/* GravityCompensationModel\JointBase1\uTbai\p1.e = GravityCompensationModel\JointBase1\AdHji\p1.e[3]; */
 	V[1087] = M[125].mat[2];
@@ -1672,9 +1674,9 @@ namespace RCCMotionStack
 	V[1912] = M[231].mat[7];
 
 	/* GravityCompensationModel\Base\AdHik1\p1.e = (1.0 / transpose (GravityCompensationModel\Base\AdHik1\AdH)) * GravityCompensationModel\Base\AdHi0\p2.e; */
-	XXMatrixTranspose (&M[425], &M[84]);
-	XXScalarMatrixDiv (&M[424], 1.0, &M[425], workarray);
-	XXMatrixMul (&M[78], &M[424], &M[74]);
+	XXMatrixTranspose (&M[427], &M[84]);
+	XXScalarMatrixDiv (&M[426], 1.0, &M[427], workarray);
+	XXMatrixMul (&M[78], &M[426], &M[74]);
 
 	/* GravityCompensationModel\Joint12\uTbai\p2.f = [0; GravityCompensationModel\Mux\port6.f; 0; 0; 0; 0]; */
 	M[99].mat[0] = 0.0;
@@ -1720,65 +1722,65 @@ namespace RCCMotionStack
 	XXMatrixSub (&M[132], &M[77], &M[131]);
 
 	/* GravityCompensationModel\JointBase1\AdHji\p2.f = (1.0 / Adjoint (GravityCompensationModel\JointBase1\Integrate\output)) * GravityCompensationModel\JointBase1\Wbai\p1.f; */
-	XXMatrixAdjoint (&M[427], &M[127]);
-	XXScalarMatrixDiv (&M[426], 1.0, &M[427], workarray);
-	XXMatrixMul (&M[126], &M[426], &M[132]);
+	XXMatrixAdjoint (&M[429], &M[127]);
+	XXScalarMatrixDiv (&M[428], 1.0, &M[429], workarray);
+	XXMatrixMul (&M[126], &M[428], &M[132]);
 
 	/* GravityCompensationModel\Link1\AdHij\p2.f = Adjoint (GravityCompensationModel\Link1\Hij\Hab) * GravityCompensationModel\JointBase1\AdHji\p2.f; */
-	XXMatrixAdjoint (&M[428], &M[147]);
-	XXMatrixMul (&M[137], &M[428], &M[126]);
+	XXMatrixAdjoint (&M[430], &M[147]);
+	XXMatrixMul (&M[137], &M[430], &M[126]);
 
 	/* GravityCompensationModel\Link1\AdHik1\p2.f = (1.0 / GravityCompensationModel\Link1\AdHik1\AdH) * GravityCompensationModel\JointBase1\AdHji\p2.f; */
-	XXScalarMatrixDiv (&M[429], 1.0, &M[144], workarray);
-	XXMatrixMul (&M[139], &M[429], &M[126]);
+	XXScalarMatrixDiv (&M[431], 1.0, &M[144], workarray);
+	XXMatrixMul (&M[139], &M[431], &M[126]);
 
 	/* GravityCompensationModel\Joint12\Wbai\p3.f = GravityCompensationModel\Link1\AdHij\p2.f - GravityCompensationModel\Joint12\uTbai\p2.f; */
 	XXMatrixSub (&M[100], &M[137], &M[99]);
 
 	/* GravityCompensationModel\Joint12\AdHji\p2.f = (1.0 / Adjoint (GravityCompensationModel\Joint12\Integrate\output)) * GravityCompensationModel\Joint12\Wbai\p3.f; */
-	XXMatrixAdjoint (&M[431], &M[95]);
-	XXScalarMatrixDiv (&M[430], 1.0, &M[431], workarray);
-	XXMatrixMul (&M[94], &M[430], &M[100]);
+	XXMatrixAdjoint (&M[433], &M[95]);
+	XXScalarMatrixDiv (&M[432], 1.0, &M[433], workarray);
+	XXMatrixMul (&M[94], &M[432], &M[100]);
 
 	/* GravityCompensationModel\Link2\AdHij\p2.f = Adjoint (GravityCompensationModel\Link2\Hij\Hab) * GravityCompensationModel\Joint12\AdHji\p2.f; */
-	XXMatrixAdjoint (&M[432], &M[166]);
-	XXMatrixMul (&M[156], &M[432], &M[94]);
+	XXMatrixAdjoint (&M[434], &M[166]);
+	XXMatrixMul (&M[156], &M[434], &M[94]);
 
 	/* GravityCompensationModel\Link2\AdHik1\p2.f = (1.0 / GravityCompensationModel\Link2\AdHik1\AdH) * GravityCompensationModel\Joint12\AdHji\p2.f; */
-	XXScalarMatrixDiv (&M[433], 1.0, &M[163], workarray);
-	XXMatrixMul (&M[158], &M[433], &M[94]);
+	XXScalarMatrixDiv (&M[435], 1.0, &M[163], workarray);
+	XXMatrixMul (&M[158], &M[435], &M[94]);
 
 	/* GravityCompensationModel\Joint23\Wbai\p3.f = GravityCompensationModel\Link2\AdHij\p2.f - GravityCompensationModel\Joint23\uTbai\p2.f; */
 	XXMatrixSub (&M[108], &M[156], &M[107]);
 
 	/* GravityCompensationModel\Joint23\AdHji\p2.f = (1.0 / Adjoint (GravityCompensationModel\Joint23\Integrate\output)) * GravityCompensationModel\Joint23\Wbai\p3.f; */
-	XXMatrixAdjoint (&M[435], &M[103]);
-	XXScalarMatrixDiv (&M[434], 1.0, &M[435], workarray);
-	XXMatrixMul (&M[102], &M[434], &M[108]);
+	XXMatrixAdjoint (&M[437], &M[103]);
+	XXScalarMatrixDiv (&M[436], 1.0, &M[437], workarray);
+	XXMatrixMul (&M[102], &M[436], &M[108]);
 
 	/* GravityCompensationModel\Link3\AdHij\p2.f = Adjoint (GravityCompensationModel\Link3\Hij\Hab) * GravityCompensationModel\Joint23\AdHji\p2.f; */
-	XXMatrixAdjoint (&M[436], &M[185]);
-	XXMatrixMul (&M[175], &M[436], &M[102]);
+	XXMatrixAdjoint (&M[438], &M[185]);
+	XXMatrixMul (&M[175], &M[438], &M[102]);
 
 	/* GravityCompensationModel\Link3\AdHik1\p2.f = (1.0 / GravityCompensationModel\Link3\AdHik1\AdH) * GravityCompensationModel\Joint23\AdHji\p2.f; */
-	XXScalarMatrixDiv (&M[437], 1.0, &M[182], workarray);
-	XXMatrixMul (&M[177], &M[437], &M[102]);
+	XXScalarMatrixDiv (&M[439], 1.0, &M[182], workarray);
+	XXMatrixMul (&M[177], &M[439], &M[102]);
 
 	/* GravityCompensationModel\Joint34\Wbai\p3.f = GravityCompensationModel\Link3\AdHij\p2.f - GravityCompensationModel\Joint34\uTbai\p2.f; */
 	XXMatrixSub (&M[116], &M[175], &M[115]);
 
 	/* GravityCompensationModel\Joint34\AdHji\p2.f = (1.0 / Adjoint (GravityCompensationModel\Joint34\Integrate\output)) * GravityCompensationModel\Joint34\Wbai\p3.f; */
-	XXMatrixAdjoint (&M[439], &M[111]);
-	XXScalarMatrixDiv (&M[438], 1.0, &M[439], workarray);
-	XXMatrixMul (&M[110], &M[438], &M[116]);
+	XXMatrixAdjoint (&M[441], &M[111]);
+	XXScalarMatrixDiv (&M[440], 1.0, &M[441], workarray);
+	XXMatrixMul (&M[110], &M[440], &M[116]);
 
 	/* GravityCompensationModel\Link4\AdHij\p2.f = Adjoint (GravityCompensationModel\Link4\Hij\Hab) * GravityCompensationModel\Joint34\AdHji\p2.f; */
-	XXMatrixAdjoint (&M[440], &M[204]);
-	XXMatrixMul (&M[194], &M[440], &M[110]);
+	XXMatrixAdjoint (&M[442], &M[204]);
+	XXMatrixMul (&M[194], &M[442], &M[110]);
 
 	/* GravityCompensationModel\Link4\AdHik1\p2.f = (1.0 / GravityCompensationModel\Link4\AdHik1\AdH) * GravityCompensationModel\Joint34\AdHji\p2.f; */
-	XXScalarMatrixDiv (&M[441], 1.0, &M[201], workarray);
-	XXMatrixMul (&M[196], &M[441], &M[110]);
+	XXScalarMatrixDiv (&M[443], 1.0, &M[201], workarray);
+	XXMatrixMul (&M[196], &M[443], &M[110]);
 
 	/* GravityCompensationModel\Joint45\Wbai\p1.f = GravityCompensationModel\Link4\AdHij\p2.f - GravityCompensationModel\Joint45\uTbai\p2.f; */
 	XXMatrixSub (&M[124], &M[194], &M[123]);
@@ -1787,22 +1789,22 @@ namespace RCCMotionStack
 	XXMatrixMul (&M[222], &M[122], &M[223]);
 
 	/* GravityCompensationModel\Joint45\AdHji\p2.f = (1.0 / Adjoint (GravityCompensationModel\Joint45\Integrate\output)) * GravityCompensationModel\Joint45\Wbai\p1.f; */
-	XXMatrixAdjoint (&M[443], &M[119]);
-	XXScalarMatrixDiv (&M[442], 1.0, &M[443], workarray);
-	XXMatrixMul (&M[118], &M[442], &M[124]);
+	XXMatrixAdjoint (&M[445], &M[119]);
+	XXScalarMatrixDiv (&M[444], 1.0, &M[445], workarray);
+	XXMatrixMul (&M[118], &M[444], &M[124]);
 
 	/* GravityCompensationModel\Link5\AdHij\p2.f = Adjoint (GravityCompensationModel\Link5\Hij\Hab) * GravityCompensationModel\Joint45\AdHji\p2.f; */
-	XXMatrixAdjoint (&M[444], &M[223]);
-	XXMatrixMul (&M[213], &M[444], &M[118]);
+	XXMatrixAdjoint (&M[446], &M[223]);
+	XXMatrixMul (&M[213], &M[446], &M[118]);
 
 	/* GravityCompensationModel\Link5\AdHik1\p2.f = (1.0 / GravityCompensationModel\Link5\AdHik1\AdH) * GravityCompensationModel\Joint45\AdHji\p2.f; */
-	XXScalarMatrixDiv (&M[445], 1.0, &M[220], workarray);
-	XXMatrixMul (&M[215], &M[445], &M[118]);
+	XXScalarMatrixDiv (&M[447], 1.0, &M[220], workarray);
+	XXMatrixMul (&M[215], &M[447], &M[118]);
 
 	/* GravityCompensationModel\Base\AdHij\p1.e = transpose (Adjoint (GravityCompensationModel\Base\Hij\Hab)) * GravityCompensationModel\JointBase1\AdHji\p1.e; */
-	XXMatrixAdjoint (&M[447], &M[87]);
-	XXMatrixTranspose (&M[446], &M[447]);
-	XXMatrixMul (&M[76], &M[446], &M[125]);
+	XXMatrixAdjoint (&M[449], &M[87]);
+	XXMatrixTranspose (&M[448], &M[449]);
+	XXMatrixMul (&M[76], &M[448], &M[125]);
 
 	/* GravityCompensationModel\Base\Ta0i\p2.e = GravityCompensationModel\Base\AdHik1\p1.e + GravityCompensationModel\Base\AdHij\p1.e; */
 	XXMatrixAdd (&M[89], &M[78], &M[76]);
@@ -2161,8 +2163,8 @@ namespace RCCMotionStack
 		number_variables = 2218;
 		number_states = 12;
 		number_rates = 12;
-		number_matrices = 448;
-		number_unnamed = 4018;
+		number_matrices = 450;
+		number_unnamed = 4060;
 
 		/* the variable arrays */
 		C = new XXDouble[24 + 1]; /* constants */
@@ -2172,8 +2174,8 @@ namespace RCCMotionStack
 
 		s = new XXDouble[12 + 1]; /* states */
 		R = new XXDouble[12 + 1]; /* rates (or new states) */
-		M = new XXMatrix[448 + 1]; /* matrices */
-		U = new XXDouble[4018 + 1]; /* unnamed */
+		M = new XXMatrix[450 + 1]; /* matrices */
+		U = new XXDouble[4060 + 1]; /* unnamed */
 		workarray = new XXDouble[120 + 1];
 
 		myintegmethod.Initialize(this);
@@ -3349,224 +3351,230 @@ namespace RCCMotionStack
 	M[374].rows = 3;
 	M[374].columns = 3;
 	M[375].mat = &U[1378];		/* U96 */
-	M[375].rows = 8;
+	M[375].rows = 6;
 	M[375].columns = 6;
-	M[376].mat = &U[1426];		/* U97 */
+	M[376].mat = &U[1414];		/* U97 */
 	M[376].rows = 6;
-	M[376].columns = 6;
-	M[377].mat = &U[1462];		/* U98 */
-	M[377].rows = 6;
+	M[376].columns = 1;
+	M[377].mat = &U[1420];		/* U98 */
+	M[377].rows = 8;
 	M[377].columns = 6;
-	M[378].mat = &U[1498];		/* U99 */
+	M[378].mat = &U[1468];		/* U99 */
 	M[378].rows = 6;
 	M[378].columns = 6;
-	M[379].mat = &U[1534];		/* U100 */
+	M[379].mat = &U[1504];		/* U100 */
 	M[379].rows = 6;
 	M[379].columns = 6;
-	M[380].mat = &U[1570];		/* U101 */
+	M[380].mat = &U[1540];		/* U101 */
 	M[380].rows = 6;
 	M[380].columns = 6;
-	M[381].mat = &U[1606];		/* U102 */
+	M[381].mat = &U[1576];		/* U102 */
 	M[381].rows = 6;
 	M[381].columns = 6;
-	M[382].mat = &U[1642];		/* U103 */
+	M[382].mat = &U[1612];		/* U103 */
 	M[382].rows = 6;
 	M[382].columns = 6;
-	M[383].mat = &U[1678];		/* U104 */
+	M[383].mat = &U[1648];		/* U104 */
 	M[383].rows = 6;
 	M[383].columns = 6;
-	M[384].mat = &U[1714];		/* U105 */
+	M[384].mat = &U[1684];		/* U105 */
 	M[384].rows = 6;
 	M[384].columns = 6;
-	M[385].mat = &U[1750];		/* U106 */
+	M[385].mat = &U[1720];		/* U106 */
 	M[385].rows = 6;
 	M[385].columns = 6;
-	M[386].mat = &U[1786];		/* U107 */
+	M[386].mat = &U[1756];		/* U107 */
 	M[386].rows = 6;
 	M[386].columns = 6;
-	M[387].mat = &U[1822];		/* U108 */
+	M[387].mat = &U[1792];		/* U108 */
 	M[387].rows = 6;
 	M[387].columns = 6;
-	M[388].mat = &U[1858];		/* U109 */
+	M[388].mat = &U[1828];		/* U109 */
 	M[388].rows = 6;
 	M[388].columns = 6;
-	M[389].mat = &U[1894];		/* U110 */
+	M[389].mat = &U[1864];		/* U110 */
 	M[389].rows = 6;
 	M[389].columns = 6;
-	M[390].mat = &U[1930];		/* U111 */
+	M[390].mat = &U[1900];		/* U111 */
 	M[390].rows = 6;
 	M[390].columns = 6;
-	M[391].mat = &U[1966];		/* U112 */
+	M[391].mat = &U[1936];		/* U112 */
 	M[391].rows = 6;
 	M[391].columns = 6;
-	M[392].mat = &U[2002];		/* U113 */
+	M[392].mat = &U[1972];		/* U113 */
 	M[392].rows = 6;
 	M[392].columns = 6;
-	M[393].mat = &U[2038];		/* U114 */
+	M[393].mat = &U[2008];		/* U114 */
 	M[393].rows = 6;
 	M[393].columns = 6;
-	M[394].mat = &U[2074];		/* U115 */
+	M[394].mat = &U[2044];		/* U115 */
 	M[394].rows = 6;
 	M[394].columns = 6;
-	M[395].mat = &U[2110];		/* U116 */
+	M[395].mat = &U[2080];		/* U116 */
 	M[395].rows = 6;
 	M[395].columns = 6;
-	M[396].mat = &U[2146];		/* U117 */
+	M[396].mat = &U[2116];		/* U117 */
 	M[396].rows = 6;
 	M[396].columns = 6;
-	M[397].mat = &U[2182];		/* U118 */
+	M[397].mat = &U[2152];		/* U118 */
 	M[397].rows = 6;
 	M[397].columns = 6;
-	M[398].mat = &U[2218];		/* U119 */
+	M[398].mat = &U[2188];		/* U119 */
 	M[398].rows = 6;
 	M[398].columns = 6;
-	M[399].mat = &U[2254];		/* U120 */
+	M[399].mat = &U[2224];		/* U120 */
 	M[399].rows = 6;
 	M[399].columns = 6;
-	M[400].mat = &U[2290];		/* U121 */
+	M[400].mat = &U[2260];		/* U121 */
 	M[400].rows = 6;
 	M[400].columns = 6;
-	M[401].mat = &U[2326];		/* U122 */
+	M[401].mat = &U[2296];		/* U122 */
 	M[401].rows = 6;
 	M[401].columns = 6;
-	M[402].mat = &U[2362];		/* U123 */
+	M[402].mat = &U[2332];		/* U123 */
 	M[402].rows = 6;
 	M[402].columns = 6;
-	M[403].mat = &U[2398];		/* U124 */
+	M[403].mat = &U[2368];		/* U124 */
 	M[403].rows = 6;
 	M[403].columns = 6;
-	M[404].mat = &U[2434];		/* U125 */
+	M[404].mat = &U[2404];		/* U125 */
 	M[404].rows = 6;
 	M[404].columns = 6;
-	M[405].mat = &U[2470];		/* U126 */
+	M[405].mat = &U[2440];		/* U126 */
 	M[405].rows = 6;
 	M[405].columns = 6;
-	M[406].mat = &U[2506];		/* U127 */
+	M[406].mat = &U[2476];		/* U127 */
 	M[406].rows = 6;
 	M[406].columns = 6;
-	M[407].mat = &U[2542];		/* U128 */
+	M[407].mat = &U[2512];		/* U128 */
 	M[407].rows = 6;
 	M[407].columns = 6;
-	M[408].mat = &U[2578];		/* U129 */
+	M[408].mat = &U[2548];		/* U129 */
 	M[408].rows = 6;
 	M[408].columns = 6;
-	M[409].mat = &U[2614];		/* U130 */
+	M[409].mat = &U[2584];		/* U130 */
 	M[409].rows = 6;
 	M[409].columns = 6;
-	M[410].mat = &U[2650];		/* U131 */
+	M[410].mat = &U[2620];		/* U131 */
 	M[410].rows = 6;
 	M[410].columns = 6;
-	M[411].mat = &U[2686];		/* U132 */
+	M[411].mat = &U[2656];		/* U132 */
 	M[411].rows = 6;
 	M[411].columns = 6;
-	M[412].mat = &U[2722];		/* U133 */
+	M[412].mat = &U[2692];		/* U133 */
 	M[412].rows = 6;
 	M[412].columns = 6;
-	M[413].mat = &U[2758];		/* U134 */
+	M[413].mat = &U[2728];		/* U134 */
 	M[413].rows = 6;
 	M[413].columns = 6;
-	M[414].mat = &U[2794];		/* U135 */
+	M[414].mat = &U[2764];		/* U135 */
 	M[414].rows = 6;
 	M[414].columns = 6;
-	M[415].mat = &U[2830];		/* U136 */
+	M[415].mat = &U[2800];		/* U136 */
 	M[415].rows = 6;
 	M[415].columns = 6;
-	M[416].mat = &U[2866];		/* U137 */
+	M[416].mat = &U[2836];		/* U137 */
 	M[416].rows = 6;
 	M[416].columns = 6;
-	M[417].mat = &U[2902];		/* U138 */
+	M[417].mat = &U[2872];		/* U138 */
 	M[417].rows = 6;
 	M[417].columns = 6;
-	M[418].mat = &U[2938];		/* U139 */
+	M[418].mat = &U[2908];		/* U139 */
 	M[418].rows = 6;
 	M[418].columns = 6;
-	M[419].mat = &U[2974];		/* U140 */
+	M[419].mat = &U[2944];		/* U140 */
 	M[419].rows = 6;
 	M[419].columns = 6;
-	M[420].mat = &U[3010];		/* U141 */
+	M[420].mat = &U[2980];		/* U141 */
 	M[420].rows = 6;
 	M[420].columns = 6;
-	M[421].mat = &U[3046];		/* U142 */
+	M[421].mat = &U[3016];		/* U142 */
 	M[421].rows = 6;
 	M[421].columns = 6;
-	M[422].mat = &U[3082];		/* U143 */
+	M[422].mat = &U[3052];		/* U143 */
 	M[422].rows = 6;
 	M[422].columns = 6;
-	M[423].mat = &U[3118];		/* U144 */
+	M[423].mat = &U[3088];		/* U144 */
 	M[423].rows = 6;
 	M[423].columns = 6;
-	M[424].mat = &U[3154];		/* U145 */
+	M[424].mat = &U[3124];		/* U145 */
 	M[424].rows = 6;
 	M[424].columns = 6;
-	M[425].mat = &U[3190];		/* U146 */
+	M[425].mat = &U[3160];		/* U146 */
 	M[425].rows = 6;
 	M[425].columns = 6;
-	M[426].mat = &U[3226];		/* U147 */
+	M[426].mat = &U[3196];		/* U147 */
 	M[426].rows = 6;
 	M[426].columns = 6;
-	M[427].mat = &U[3262];		/* U148 */
+	M[427].mat = &U[3232];		/* U148 */
 	M[427].rows = 6;
 	M[427].columns = 6;
-	M[428].mat = &U[3298];		/* U149 */
+	M[428].mat = &U[3268];		/* U149 */
 	M[428].rows = 6;
 	M[428].columns = 6;
-	M[429].mat = &U[3334];		/* U150 */
+	M[429].mat = &U[3304];		/* U150 */
 	M[429].rows = 6;
 	M[429].columns = 6;
-	M[430].mat = &U[3370];		/* U151 */
+	M[430].mat = &U[3340];		/* U151 */
 	M[430].rows = 6;
 	M[430].columns = 6;
-	M[431].mat = &U[3406];		/* U152 */
+	M[431].mat = &U[3376];		/* U152 */
 	M[431].rows = 6;
 	M[431].columns = 6;
-	M[432].mat = &U[3442];		/* U153 */
+	M[432].mat = &U[3412];		/* U153 */
 	M[432].rows = 6;
 	M[432].columns = 6;
-	M[433].mat = &U[3478];		/* U154 */
+	M[433].mat = &U[3448];		/* U154 */
 	M[433].rows = 6;
 	M[433].columns = 6;
-	M[434].mat = &U[3514];		/* U155 */
+	M[434].mat = &U[3484];		/* U155 */
 	M[434].rows = 6;
 	M[434].columns = 6;
-	M[435].mat = &U[3550];		/* U156 */
+	M[435].mat = &U[3520];		/* U156 */
 	M[435].rows = 6;
 	M[435].columns = 6;
-	M[436].mat = &U[3586];		/* U157 */
+	M[436].mat = &U[3556];		/* U157 */
 	M[436].rows = 6;
 	M[436].columns = 6;
-	M[437].mat = &U[3622];		/* U158 */
+	M[437].mat = &U[3592];		/* U158 */
 	M[437].rows = 6;
 	M[437].columns = 6;
-	M[438].mat = &U[3658];		/* U159 */
+	M[438].mat = &U[3628];		/* U159 */
 	M[438].rows = 6;
 	M[438].columns = 6;
-	M[439].mat = &U[3694];		/* U160 */
+	M[439].mat = &U[3664];		/* U160 */
 	M[439].rows = 6;
 	M[439].columns = 6;
-	M[440].mat = &U[3730];		/* U161 */
+	M[440].mat = &U[3700];		/* U161 */
 	M[440].rows = 6;
 	M[440].columns = 6;
-	M[441].mat = &U[3766];		/* U162 */
+	M[441].mat = &U[3736];		/* U162 */
 	M[441].rows = 6;
 	M[441].columns = 6;
-	M[442].mat = &U[3802];		/* U163 */
+	M[442].mat = &U[3772];		/* U163 */
 	M[442].rows = 6;
 	M[442].columns = 6;
-	M[443].mat = &U[3838];		/* U164 */
+	M[443].mat = &U[3808];		/* U164 */
 	M[443].rows = 6;
 	M[443].columns = 6;
-	M[444].mat = &U[3874];		/* U165 */
+	M[444].mat = &U[3844];		/* U165 */
 	M[444].rows = 6;
 	M[444].columns = 6;
-	M[445].mat = &U[3910];		/* U166 */
+	M[445].mat = &U[3880];		/* U166 */
 	M[445].rows = 6;
 	M[445].columns = 6;
-	M[446].mat = &U[3946];		/* U167 */
+	M[446].mat = &U[3916];		/* U167 */
 	M[446].rows = 6;
 	M[446].columns = 6;
-	M[447].mat = &U[3982];		/* U168 */
+	M[447].mat = &U[3952];		/* U168 */
 	M[447].rows = 6;
 	M[447].columns = 6;
+	M[448].mat = &U[3988];		/* U169 */
+	M[448].rows = 6;
+	M[448].columns = 6;
+	M[449].mat = &U[4024];		/* U170 */
+	M[449].rows = 6;
+	M[449].columns = 6;
 
 
 		/* end of initialization phase */
