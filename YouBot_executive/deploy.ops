@@ -3,9 +3,6 @@ loadComponent("executive","YouBot::YouBot_executive")
 loadComponent("FSM","OCL::LuaComponent");
 FSM.exec_file(rospack.find("YouBot_executive")+"/lua/fsm_component.lua");
   //adding test
-   loadComponent("fakeMonitor","OCL::LuaComponent");
-   fakeMonitor.exec_file(rospack.find("YouBot_executive")+"/lua/test.lua");
- 
 
   //making connections
    var ConnPolicy cp_JointSpaceSetpoint;
@@ -50,11 +47,8 @@ FSM.exec_file(rospack.find("YouBot_executive")+"/lua/fsm_component.lua");
    connect("executive.gripper_cmd","youbot.Gripper1.gripper_cmd_position",cp_rtt)
    connect("executive.CartForceState","control.ControllableJ_tip_e",cp_rtt)
    var ConnPolicy cp_events;
-   connect("FSM.events","fakeMonitor.events_out",cp_events);
    connect("FSM.events","executive.events_out",cp_events);
    
-   var ConnPolicy cp_state;
-   connect("FSM.state","fakeMonitor.state_in",cp_state);
    connectPeers("executive","FSM")
    connectPeers("monitor","FSM")
 
@@ -65,13 +59,11 @@ FSM.exec_file(rospack.find("YouBot_executive")+"/lua/fsm_component.lua");
 
    connect("monitor.events", "FSM.events", cp_nrt);
 
-fakeMonitor.configure;
 FSM.configure;
 executive.setPeriod(0.01)
 executive.configure
 executive.unfoldArm
 //FSM.start;
-//fakeMonitor.start;
 executive.start
    // in snake position
    executive.Joint_position_setpoint=array(0.0,0.0,0.0,0.0,-0.3,0.5,0.5,0.0)
