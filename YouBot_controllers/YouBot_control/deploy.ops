@@ -18,4 +18,7 @@ connect("control.Base_joint_velocities","base2control.output_odometry",cp_rtt_no
 
 connect("control.Arm1_joint_cmd","control2arm.input_cmd_signal",cp_rtt_noBuf);
 //connect("control.Base_twist_cmd","control2base.input_cmd_signal",cp_rtt_noBuf);
+control.configure
+
+control.start
 
