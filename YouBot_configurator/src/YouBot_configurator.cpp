@@ -96,7 +96,7 @@ bool YouBot_configurator::configureHook()
 	stringstream base_path;
 	base_path << path << "/config/base";
 
-	for(unsigned int i = 0; i < NR_OF_ARM_SLAVES; ++i)
+	for(unsigned int i = 1; i <= NR_OF_ARM_SLAVES; ++i)
 	{
 		stringstream name;
 		name << "/arm-" << i << "-parameter.cfg";
@@ -116,7 +116,7 @@ bool YouBot_configurator::configureHook()
 		}
 	}
 
-	for(unsigned int i = 0; i < NR_OF_BASE_SLAVES; ++i)
+	for(unsigned int i = 1; i <= NR_OF_BASE_SLAVES; ++i)
 	{
 		stringstream name;
 		name << "/base-" << i << "-parameter.cfg";
