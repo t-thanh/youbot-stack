@@ -6,7 +6,7 @@
  *  model: RCCMotionStack
  *  expmt: RCCMotionStack
  *  date:  November 16, 2011
- *  time:  9:49:52 pm
+ *  time:  10:30:31 pm
  *  user:  Campuslicentie
  *  from:  Universiteit Twente
  *  build: 4.1.2.2
@@ -549,8 +549,8 @@ namespace RCCMotionStack
 	M[54].mat[34] = 0.0;
 	M[54].mat[35] = 1.0;
 
-	/* CartesianSpaceStiffness\dummy1 = diag (CartesianSpaceStiffness\Kt); */
-	XXMatrixDiag (&M[59], &M[51]);
+	/* CartesianSpaceStiffness\dummy1 = diag (CartesianSpaceStiffness\Kr); */
+	XXMatrixDiag (&M[59], &M[52]);
 
 	/* CartesianSpaceStiffness\dummy2 = diag (CartesianSpaceStiffness\Kc); */
 	XXMatrixDiag (&M[60], &M[53]);
@@ -812,20 +812,20 @@ namespace RCCMotionStack
 	R[10] = s[4];
 	R[11] = s[5];
 
-	/* Mux\measured_odometry = Measured_odometry; */
-	XXMatrixMov (&M[252], &M[266]);
-
 	/* Mux\Arm1_joint_velocites = Arm1_joint_velocites; */
-	XXMatrixMov (&M[253], &M[268]);
+	XXMatrixMov (&M[253], &M[267]);
 
 	/* PlusMinus2\plus1 = JointPoistionSetpoint; */
-	XXMatrixMov (&M[261], &M[269]);
+	XXMatrixMov (&M[261], &M[268]);
 
 	/* Mux\Arm1_joint_states = Arm1_joint_states; */
-	XXMatrixMov (&M[251], &M[270]);
+	XXMatrixMov (&M[251], &M[269]);
 
 	/* CartesianSafetyFilter1\u = xyzypr; */
-	XXMatrixMov (&M[49], &M[272]);
+	XXMatrixMov (&M[49], &M[271]);
+
+	/* Mux\measured_odometry = Measured_odometry; */
+	XXMatrixMov (&M[252], &M[274]);
 
 	/* CartesianSafetyFilter1\s2y = CartesianSafetyFilter1\BWrad ^ 2 * (CartesianSafetyFilter1\u - CartesianSafetyFilter1\y) - (1.4142 * CartesianSafetyFilter1\BWrad) * CartesianSafetyFilter1\s1y; */
 	XXMatrixSub (&M[313], &M[49], &M[278]);
@@ -1257,7 +1257,7 @@ namespace RCCMotionStack
 	XXMatrixMul (&M[246], &M[343], &M[260]);
 
 	/* Htip0 = CalculateJ\Htip0; */
-	XXMatrixMov (&M[273], &M[1]);
+	XXMatrixMov (&M[272], &M[1]);
 
 	/* CartesianSpaceStiffness\H1_0 = inverseH (CalculateJ\Htip0) * Gain1\H; */
 	XXMatrixInverseH (&M[344], &M[1]);
@@ -1653,10 +1653,10 @@ namespace RCCMotionStack
 	M[256].mat[4] = M[259].mat[7];
 
 	/* Base_twist_cmd = Mux\Base_twist_cmd; */
-	XXMatrixMov (&M[267], &M[257]);
+	XXMatrixMov (&M[266], &M[257]);
 
 	/* Arm1_joint_cmd = Mux\Arm1_joint_cmd; */
-	XXMatrixMov (&M[274], &M[256]);
+	XXMatrixMov (&M[273], &M[256]);
 
 	}
 
@@ -1669,7 +1669,7 @@ namespace RCCMotionStack
 	void YouBot_control::CalculateOutput (void)
 	{
 			/* Mux\base_joint_velocities = Base_joint_velocities; */
-	XXMatrixMov (&M[255], &M[271]);
+	XXMatrixMov (&M[255], &M[270]);
 
 	/* GravityCompensationModel\Mux\port5.f = GravityCompensationModel\ZeroJunction1\p1.f[4]; */
 	V[1944] = M[231].mat[3];
@@ -3036,32 +3036,32 @@ namespace RCCMotionStack
 	M[265].mat = &V[2191];		/* TF\joints_e */
 	M[265].rows = 8;
 	M[265].columns = 1;
-	M[266].mat = &V[2199];		/* Measured_odometry */
+	M[266].mat = &V[2199];		/* Base_twist_cmd */
 	M[266].rows = 3;
 	M[266].columns = 1;
-	M[267].mat = &V[2202];		/* Base_twist_cmd */
-	M[267].rows = 3;
+	M[267].mat = &V[2202];		/* Arm1_joint_velocites */
+	M[267].rows = 5;
 	M[267].columns = 1;
-	M[268].mat = &V[2205];		/* Arm1_joint_velocites */
-	M[268].rows = 5;
+	M[268].mat = &V[2207];		/* JointPoistionSetpoint */
+	M[268].rows = 8;
 	M[268].columns = 1;
-	M[269].mat = &V[2210];		/* JointPoistionSetpoint */
-	M[269].rows = 8;
+	M[269].mat = &V[2215];		/* Arm1_joint_states */
+	M[269].rows = 5;
 	M[269].columns = 1;
-	M[270].mat = &V[2218];		/* Arm1_joint_states */
-	M[270].rows = 5;
+	M[270].mat = &V[2220];		/* Base_joint_velocities */
+	M[270].rows = 4;
 	M[270].columns = 1;
-	M[271].mat = &V[2223];		/* Base_joint_velocities */
-	M[271].rows = 4;
+	M[271].mat = &V[2224];		/* xyzypr */
+	M[271].rows = 6;
 	M[271].columns = 1;
-	M[272].mat = &V[2227];		/* xyzypr */
-	M[272].rows = 6;
-	M[272].columns = 1;
-	M[273].mat = &V[2233];		/* Htip0 */
-	M[273].rows = 4;
-	M[273].columns = 4;
-	M[274].mat = &V[2249];		/* Arm1_joint_cmd */
-	M[274].rows = 5;
+	M[272].mat = &V[2230];		/* Htip0 */
+	M[272].rows = 4;
+	M[272].columns = 4;
+	M[273].mat = &V[2246];		/* Arm1_joint_cmd */
+	M[273].rows = 5;
+	M[273].columns = 1;
+	M[274].mat = &V[2251];		/* Measured_odometry */
+	M[274].rows = 3;
 	M[274].columns = 1;
 	M[275].mat = &R[0];		/* CartesianSafetyFilter1\s2y */
 	M[275].rows = 6;
