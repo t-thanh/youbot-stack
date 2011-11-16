@@ -36,25 +36,19 @@ namespace YouBot
 YouBot_configurator::YouBot_configurator(const string& name) :
 	TaskContext(name, PreOperational), m_manipulator(NULL), m_base(NULL)
 {
-	log(Info) << "YouBot_configurator started." << endlog();
 }
 
 YouBot_configurator::~YouBot_configurator()
 {
-	log(Info) << "YouBot_configurator destroyed." << endlog();
 }
 
 bool YouBot_configurator::configureHook()
 {
-	log(Info) << "configureHook" << endlog();
-
 	// MUST BE THE FIRST ONE TO CALL getInstance!!!
 	unsigned int nr_slaves = 0;
 
 	try
 	{
-		log(Info) << "config path: " << OODL_YOUBOT_CONFIG_DIR << endlog();
-
 		EthercatMaster* ec_master = &(EthercatMaster::getInstance("/youbot-ethercat.cfg", OODL_YOUBOT_CONFIG_DIR));
 
 		nr_slaves = ec_master->getNumberOfSlaves();
@@ -74,9 +68,7 @@ bool YouBot_configurator::configureHook()
 
 	try
 	{
-		log(Error) << "before YouBotManipulator" << endlog();
 		m_manipulator = new YouBotManipulator("/youbot-manipulator", OODL_YOUBOT_CONFIG_DIR);
-		log(Error) << "after YouBotManipulator" << endlog();
 		if(m_manipulator == NULL)
 		{
 			log(Error) << "Could not create the YouBotManipulator." << endlog();
