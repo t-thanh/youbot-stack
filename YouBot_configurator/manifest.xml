@@ -1,0 +1,19 @@
+<package>
+  <description brief="YouBot_configurator">
+
+    YouBot_configurator
+
+  </description>
+  <author>RC3</author>
+  <license>LGPLv2.1 / BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>ce203</url>
+  <depend package="rtt"/>
+  <depend package="youbot_driver"/>
+  <depend package="soem"/>
+  <depend package="rtt_rosnode"/>
+  <depend package="YouBot_OODL"/>
+  <depend package="joint_configurator"/>
+</package>
+
+

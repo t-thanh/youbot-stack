@@ -48,7 +48,7 @@ stream("youbot.Base.motor_statuses", cp_ros);
 # 
 # Start running
 # 
-
+setActivity("EventLogger", 0.1, LowestPriority, ORO_SCHED_OTHER)
 EventLogger.configure;
 EventLogger.start;
 youbot.start;

@@ -1,0 +1,45 @@
+import("rtt_rosnode")
+import("Constant1")
+import("YouBot_adapters")
+
+//Configure the YouBot parameters on startup
+runScript(rospack.find("YouBot_configurator")+"/deploy.ops");
+
+//make youbot with events and monitor with standart output
+runScript(rospack.find("YouBot_OODL")+"/deploy.ops")
+
+loadComponent("base_1", "Constant_1::Constant1");
+loadComponent("trace", "YouBot::DataTracer");
+loadComponent("control2base", "YouBot::TSimToYouBotMsg");
+
+var std.vector<ctrl_modes>  base_ctrl_modes=std.vector<ctrl_modes>(4,TORQUE)
+control2base.configure;
+
+//setup control mode
+youbot.Base.clearControllerTimeouts();
+youbot.Base.setControlModes(base_ctrl_modes);
+control2base.initialize(TORQUE,4)
+
+setActivity("trace", 0.001, HighestPriority, ORO_SCHED_RT);
+setActivity("base_1", 0.001, HighestPriority, ORO_SCHED_RT);
+
+var ConnPolicy cp_rt;
+cp_rt.type = DATA;  // Use ''BUFFER'' or ''DATA''
+cp_rt.lock_policy = LOCK_FREE; // Use  ''LOCKED'', ''LOCK_FREE'' or ''UNSYNC''
+connect("base_1.output", "trace.setpoint", cp_rt)
+
+connect("control2base.output_cmd_torques", "youbot.Base.joint_cmd_torques", cp_rt);
+connect("base_1.output", "control2base.input_cmd_signal", cp_rt);
+
+trace.setJoint(BASE, 1);
+trace.setpointType(3)
+trace.configure;
+trace.start;
+
+control2base.start;
+base_1.configure;
+//base_1.start;
+
+youbot.Arm1.clearControllerTimeouts();
+youbot.Base.clearControllerTimeouts();
+

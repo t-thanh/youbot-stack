@@ -1,6 +1,10 @@
 import("rtt_rosnode")
 //make controller with adapters
 kickStart(rospack.find("interaction_control")+"/config/20sim_deploy.xml")
+
+//Configure the YouBot parameters on startup
+runScript(rospack.find("YouBot_configurator")+"/deploy.ops");
+
 //make youbot with events and monitor with standart output
 runScript(rospack.find("YouBot_OODL")+"/deploy.ops")
 //setup connections from rtt to ros
@@ -12,9 +16,11 @@ runScript(rospack.find("YouBot_deployment")+"/rtt_deploy/adapter_connections.ops
 runScript(rospack.find("YouBot_monitors")+"/deploy.ops")
 // Configure monitors
 runScript(rospack.find("YouBot_monitors")+"/monitor_config.ops")
+
 //add executive
 runScript(rospack.find("YouBot_executive")+"/deploy.ops")
 
 youbot.Arm1.clearControllerTimeouts();
 youbot.Base.clearControllerTimeouts();
+
 

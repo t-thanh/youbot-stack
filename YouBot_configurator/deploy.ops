@@ -1,0 +1,4 @@
+import("YouBot_configurator")
+loadComponent("configurator","YouBot::YouBot_configurator")
+
+configurator.configure;
