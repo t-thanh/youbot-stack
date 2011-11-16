@@ -20,8 +20,8 @@ if (ROS_ROOT)
   rosbuild_find_ros_package(YouBot_OODL)
   rosbuild_find_ros_package(joint_configurator)
   set( RTT_HINTS HINTS ${rtt_PACKAGE_PATH}/install )
-#  rosbuild_genmsg()
-#  rosbuild_include(rtt_rosnode GenerateRTTtypekit)
+  rosbuild_genmsg()
+  rosbuild_include(rtt_rosnode GenerateRTTtypekit)
 #  ros_generate_rtt_typekit(YouBot_OODL)
 
 # Set the CMAKE_PREFIX_PATH in case you're not using Orocos through ROS
