@@ -14,7 +14,7 @@
  &lt;KeepParameterValues&gt;False&lt;/KeepParameterValues&gt;
  &lt;AllowLibraryUpdate&gt;True&lt;/AllowLibraryUpdate&gt;
 &lt;/Description&gt;</description>
-		<date>2011-11-17T16:04:04.0Z</date>
+		<date>2011-11-17T18:34:34.0Z</date>
 		<modelDir></modelDir>
 		<originalModel>Z:\Users\yury\workspaces\Ubuntu_shared\ut_git\20SimModels\Tests\RCCMotionStack.emx</originalModel>
 		<additional>Campuslicentie, Universiteit Twente</additional>
@@ -783,7 +783,7 @@ code
 			<name>CartesianSpaceStiffness\Kt</name>
 			<kind>parameter</kind>
 			<type>real</type>
-			<value>10.0; 10.0; 10.0</value>
+			<value>0.0; 0.0; 0.0</value>
 			<size>
 				<rows>3</rows>
 				<columns>1</columns>
@@ -11296,7 +11296,7 @@ code
 			<name>JointSpaceDamping\r</name>
 			<kind>parameter</kind>
 			<type>real</type>
-			<value>10.0; 10.0; 10.0; 10.0; 10.0; 10.0; 10.0; 10.0</value>
+			<value>0.0; 0.0; 0.0; 0.0; 0.0; 0.0; 0.0; 0.0</value>
 			<size>
 				<rows>8</rows>
 				<columns>1</columns>
@@ -11648,23 +11648,6 @@ code
 		</modelVariable>
 		<modelVariable id="730">
 			<name>PlusMinus1\plus1</name>
-			<aliasOf>GravityCompensationModel\Mux\port.e</aliasOf>
-			<kind>variable</kind>
-			<type>real</type>
-			<value>0.0; 0.0; 0.0; 0.0; 0.0; 0.0; 0.0; 0.0</value>
-			<description></description>
-			<size>
-				<rows>8</rows>
-				<columns>1</columns>
-			</size>
-			<storage>
-				<name>V</name>
-				<index>2012</index>
-			</storage>
-			<iconindex>179</iconindex>
-		</modelVariable>
-		<modelVariable id="731">
-			<name>PlusMinus1\plus2</name>
 			<aliasOf>PlusMinus4\output</aliasOf>
 			<kind>variable</kind>
 			<type>real</type>
@@ -11677,6 +11660,23 @@ code
 			<storage>
 				<name>V</name>
 				<index>2251</index>
+			</storage>
+			<iconindex>179</iconindex>
+		</modelVariable>
+		<modelVariable id="731">
+			<name>PlusMinus1\plus2</name>
+			<aliasOf>GravityCompensationModel\Mux\port.e</aliasOf>
+			<kind>variable</kind>
+			<type>real</type>
+			<value>0.0; 0.0; 0.0; 0.0; 0.0; 0.0; 0.0; 0.0</value>
+			<description></description>
+			<size>
+				<rows>8</rows>
+				<columns>1</columns>
+			</size>
+			<storage>
+				<name>V</name>
+				<index>2012</index>
 			</storage>
 			<iconindex>179</iconindex>
 		</modelVariable>
@@ -11797,23 +11797,6 @@ code
 		</modelVariable>
 		<modelVariable id="739">
 			<name>PlusMinus4\plus1</name>
-			<aliasOf>PlusMinus3\output</aliasOf>
-			<kind>variable</kind>
-			<type>real</type>
-			<value>0.0; 0.0; 0.0; 0.0; 0.0; 0.0; 0.0; 0.0</value>
-			<description></description>
-			<size>
-				<rows>8</rows>
-				<columns>1</columns>
-			</size>
-			<storage>
-				<name>V</name>
-				<index>2243</index>
-			</storage>
-			<iconindex>182</iconindex>
-		</modelVariable>
-		<modelVariable id="740">
-			<name>PlusMinus4\plus2</name>
 			<aliasOf>JointSoftLimits\output</aliasOf>
 			<kind>variable</kind>
 			<type>real</type>
@@ -11826,6 +11809,23 @@ code
 			<storage>
 				<name>V</name>
 				<index>2050</index>
+			</storage>
+			<iconindex>182</iconindex>
+		</modelVariable>
+		<modelVariable id="740">
+			<name>PlusMinus4\plus2</name>
+			<aliasOf>PlusMinus3\output</aliasOf>
+			<kind>variable</kind>
+			<type>real</type>
+			<value>0.0; 0.0; 0.0; 0.0; 0.0; 0.0; 0.0; 0.0</value>
+			<description></description>
+			<size>
+				<rows>8</rows>
+				<columns>1</columns>
+			</size>
+			<storage>
+				<name>V</name>
+				<index>2243</index>
 			</storage>
 			<iconindex>182</iconindex>
 		</modelVariable>
@@ -12370,54 +12370,6 @@ code
 			<iconindex>193</iconindex>
 		</modelVariable>
 		<modelVariable id="773">
-			<name>Measured_odometry</name>
-			<kind>input</kind>
-			<type>real</type>
-			<value>0.0; 0.0; 0.0</value>
-			<description></description>
-			<size>
-				<rows>3</rows>
-				<columns>1</columns>
-			</size>
-			<storage>
-				<name>V</name>
-				<index>2287</index>
-			</storage>
-			<iconindex>1</iconindex>
-		</modelVariable>
-		<modelVariable id="774">
-			<name>JointPoistionSetpoint</name>
-			<kind>input</kind>
-			<type>real</type>
-			<value>0.0; 0.0; 0.0; 0.0; 0.0; 0.0; 0.0; 0.0</value>
-			<description></description>
-			<size>
-				<rows>8</rows>
-				<columns>1</columns>
-			</size>
-			<storage>
-				<name>V</name>
-				<index>2290</index>
-			</storage>
-			<iconindex>1</iconindex>
-		</modelVariable>
-		<modelVariable id="775">
-			<name>Base_joint_velocities</name>
-			<kind>input</kind>
-			<type>real</type>
-			<value>0.0; 0.0; 0.0; 0.0</value>
-			<description></description>
-			<size>
-				<rows>4</rows>
-				<columns>1</columns>
-			</size>
-			<storage>
-				<name>V</name>
-				<index>2298</index>
-			</storage>
-			<iconindex>1</iconindex>
-		</modelVariable>
-		<modelVariable id="776">
 			<name>xyzypr</name>
 			<kind>input</kind>
 			<type>real</type>
@@ -12429,11 +12381,11 @@ code
 			</size>
 			<storage>
 				<name>V</name>
-				<index>2302</index>
+				<index>2287</index>
 			</storage>
 			<iconindex>1</iconindex>
 		</modelVariable>
-		<modelVariable id="777">
+		<modelVariable id="774">
 			<name>Htip0</name>
 			<kind>output</kind>
 			<type>real</type>
@@ -12445,11 +12397,11 @@ code
 			</size>
 			<storage>
 				<name>V</name>
-				<index>2308</index>
+				<index>2293</index>
 			</storage>
 			<iconindex>1</iconindex>
 		</modelVariable>
-		<modelVariable id="778">
+		<modelVariable id="775">
 			<name>Arm1_joint_states</name>
 			<kind>input</kind>
 			<type>real</type>
@@ -12461,11 +12413,11 @@ code
 			</size>
 			<storage>
 				<name>V</name>
-				<index>2324</index>
+				<index>2309</index>
 			</storage>
 			<iconindex>1</iconindex>
 		</modelVariable>
-		<modelVariable id="779">
+		<modelVariable id="776">
 			<name>Arm1_joint_cmd</name>
 			<kind>output</kind>
 			<type>real</type>
@@ -12477,11 +12429,27 @@ code
 			</size>
 			<storage>
 				<name>V</name>
-				<index>2329</index>
+				<index>2314</index>
 			</storage>
 			<iconindex>1</iconindex>
 		</modelVariable>
-		<modelVariable id="780">
+		<modelVariable id="777">
+			<name>JointPoistionSetpoint</name>
+			<kind>input</kind>
+			<type>real</type>
+			<value>0.0; 0.0; 0.0; 0.0; 0.0; 0.0; 0.0; 0.0</value>
+			<description></description>
+			<size>
+				<rows>8</rows>
+				<columns>1</columns>
+			</size>
+			<storage>
+				<name>V</name>
+				<index>2319</index>
+			</storage>
+			<iconindex>1</iconindex>
+		</modelVariable>
+		<modelVariable id="778">
 			<name>Base_twist_cmd</name>
 			<kind>output</kind>
 			<type>real</type>
@@ -12493,11 +12461,11 @@ code
 			</size>
 			<storage>
 				<name>V</name>
-				<index>2334</index>
+				<index>2327</index>
 			</storage>
 			<iconindex>1</iconindex>
 		</modelVariable>
-		<modelVariable id="781">
+		<modelVariable id="779">
 			<name>Arm1_joint_velocites</name>
 			<kind>input</kind>
 			<type>real</type>
@@ -12509,7 +12477,39 @@ code
 			</size>
 			<storage>
 				<name>V</name>
-				<index>2337</index>
+				<index>2330</index>
+			</storage>
+			<iconindex>1</iconindex>
+		</modelVariable>
+		<modelVariable id="780">
+			<name>Measured_odometry</name>
+			<kind>input</kind>
+			<type>real</type>
+			<value>0.0; 0.0; 0.0</value>
+			<description></description>
+			<size>
+				<rows>3</rows>
+				<columns>1</columns>
+			</size>
+			<storage>
+				<name>V</name>
+				<index>2335</index>
+			</storage>
+			<iconindex>1</iconindex>
+		</modelVariable>
+		<modelVariable id="781">
+			<name>Base_joint_velocities</name>
+			<kind>input</kind>
+			<type>real</type>
+			<value>0.0; 0.0; 0.0; 0.0</value>
+			<description></description>
+			<size>
+				<rows>4</rows>
+				<columns>1</columns>
+			</size>
+			<storage>
+				<name>V</name>
+				<index>2338</index>
 			</storage>
 			<iconindex>1</iconindex>
 		</modelVariable>
