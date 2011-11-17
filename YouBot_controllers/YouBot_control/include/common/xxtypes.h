@@ -4,8 +4,8 @@
  *  file:  include\common\xxtypes.h
  *  model: RCCMotionStack
  *  expmt: RCCMotionStack
- *  date:  November 16, 2011
- *  time:  10:30:31 pm
+ *  date:  November 17, 2011
+ *  time:  12:16:29 pm
  *  user:  Campuslicentie 
  *  from:  Universiteit Twente
  *  build: 4.1.2.2
