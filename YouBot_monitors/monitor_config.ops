@@ -106,6 +106,3 @@ monitor.cart_pos_reached.msg = string("e_POS_REACHED");
 monitor.cart_pos_reached.indices = uint32[](uint32(0));
 monitor.cart_pos_reached.values = float64[](0.0);
 
-monitor.setPeriod(1);
-monitor.start();
-
