@@ -14,7 +14,7 @@
  &lt;KeepParameterValues&gt;False&lt;/KeepParameterValues&gt;
  &lt;AllowLibraryUpdate&gt;True&lt;/AllowLibraryUpdate&gt;
 &lt;/Description&gt;</description>
-		<date>2011-11-17T12:16:16.0Z</date>
+		<date>2011-11-17T13:52:52.0Z</date>
 		<modelDir></modelDir>
 		<originalModel>Z:\Users\yury\workspaces\Ubuntu_shared\ut_git\20SimModels\Tests\RCCMotionStack.emx</originalModel>
 		<additional>Campuslicentie, Universiteit Twente</additional>
@@ -11031,23 +11031,6 @@ code
 			<iconindex>172</iconindex>
 		</modelVariable>
 		<modelVariable id="690">
-			<name>GravityCompensationModel\jointPos</name>
-			<aliasOf>Mux\joint_states</aliasOf>
-			<kind>variable</kind>
-			<type>real</type>
-			<value>0.0; 0.0; 0.0; 0.0; 0.0; 0.0; 0.0; 0.0</value>
-			<description></description>
-			<size>
-				<rows>8</rows>
-				<columns>1</columns>
-			</size>
-			<storage>
-				<name>V</name>
-				<index>2177</index>
-			</storage>
-			<iconindex>12</iconindex>
-		</modelVariable>
-		<modelVariable id="691">
 			<name>GravityCompensationModel\joints</name>
 			<aliasOf>GravityCompensationModel\Mux\port.e</aliasOf>
 			<kind>variable</kind>
@@ -11061,6 +11044,23 @@ code
 			<storage>
 				<name>V</name>
 				<index>2011</index>
+			</storage>
+			<iconindex>12</iconindex>
+		</modelVariable>
+		<modelVariable id="691">
+			<name>GravityCompensationModel\jointPos</name>
+			<aliasOf>Mux\joint_states</aliasOf>
+			<kind>variable</kind>
+			<type>real</type>
+			<value>0.0; 0.0; 0.0; 0.0; 0.0; 0.0; 0.0; 0.0</value>
+			<description></description>
+			<size>
+				<rows>8</rows>
+				<columns>1</columns>
+			</size>
+			<storage>
+				<name>V</name>
+				<index>2177</index>
 			</storage>
 			<iconindex>12</iconindex>
 		</modelVariable>
@@ -12385,8 +12385,8 @@ code
 			<iconindex>1</iconindex>
 		</modelVariable>
 		<modelVariable id="774">
-			<name>Measured_odometry</name>
-			<kind>input</kind>
+			<name>Base_twist_cmd</name>
+			<kind>output</kind>
 			<type>real</type>
 			<value>0.0; 0.0; 0.0</value>
 			<description></description>
@@ -12401,7 +12401,7 @@ code
 			<iconindex>1</iconindex>
 		</modelVariable>
 		<modelVariable id="775">
-			<name>Arm1_joint_states</name>
+			<name>Arm1_joint_velocites</name>
 			<kind>input</kind>
 			<type>real</type>
 			<value>0.0; 0.0; 0.0; 0.0; 0.0</value>
@@ -12417,8 +12417,8 @@ code
 			<iconindex>1</iconindex>
 		</modelVariable>
 		<modelVariable id="776">
-			<name>Base_twist_cmd</name>
-			<kind>output</kind>
+			<name>Measured_odometry</name>
+			<kind>input</kind>
 			<type>real</type>
 			<value>0.0; 0.0; 0.0</value>
 			<description></description>
@@ -12433,22 +12433,6 @@ code
 			<iconindex>1</iconindex>
 		</modelVariable>
 		<modelVariable id="777">
-			<name>Arm1_joint_velocites</name>
-			<kind>input</kind>
-			<type>real</type>
-			<value>0.0; 0.0; 0.0; 0.0; 0.0</value>
-			<description></description>
-			<size>
-				<rows>5</rows>
-				<columns>1</columns>
-			</size>
-			<storage>
-				<name>V</name>
-				<index>2302</index>
-			</storage>
-			<iconindex>1</iconindex>
-		</modelVariable>
-		<modelVariable id="778">
 			<name>JointPoistionSetpoint</name>
 			<kind>input</kind>
 			<type>real</type>
@@ -12460,11 +12444,11 @@ code
 			</size>
 			<storage>
 				<name>V</name>
-				<index>2307</index>
+				<index>2302</index>
 			</storage>
 			<iconindex>1</iconindex>
 		</modelVariable>
-		<modelVariable id="779">
+		<modelVariable id="778">
 			<name>Base_joint_velocities</name>
 			<kind>input</kind>
 			<type>real</type>
@@ -12476,11 +12460,11 @@ code
 			</size>
 			<storage>
 				<name>V</name>
-				<index>2315</index>
+				<index>2310</index>
 			</storage>
 			<iconindex>1</iconindex>
 		</modelVariable>
-		<modelVariable id="780">
+		<modelVariable id="779">
 			<name>xyzypr</name>
 			<kind>input</kind>
 			<type>real</type>
@@ -12492,11 +12476,11 @@ code
 			</size>
 			<storage>
 				<name>V</name>
-				<index>2319</index>
+				<index>2314</index>
 			</storage>
 			<iconindex>1</iconindex>
 		</modelVariable>
-		<modelVariable id="781">
+		<modelVariable id="780">
 			<name>Htip0</name>
 			<kind>output</kind>
 			<type>real</type>
@@ -12508,7 +12492,23 @@ code
 			</size>
 			<storage>
 				<name>V</name>
-				<index>2325</index>
+				<index>2320</index>
+			</storage>
+			<iconindex>1</iconindex>
+		</modelVariable>
+		<modelVariable id="781">
+			<name>Arm1_joint_states</name>
+			<kind>input</kind>
+			<type>real</type>
+			<value>0.0; 0.0; 0.0; 0.0; 0.0</value>
+			<description></description>
+			<size>
+				<rows>5</rows>
+				<columns>1</columns>
+			</size>
+			<storage>
+				<name>V</name>
+				<index>2336</index>
 			</storage>
 			<iconindex>1</iconindex>
 		</modelVariable>
