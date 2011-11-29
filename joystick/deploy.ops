@@ -1,8 +1,6 @@
-import("rtt_rospack");
+import("rtt_rosnode");
 import("joystick_msgs");
 import("YouBot_joystick");
-
-loadService("Deployer", "rospack");
 
 runScript( rospack.find("YouBot_OODL") + "/deploy.ops")
 
