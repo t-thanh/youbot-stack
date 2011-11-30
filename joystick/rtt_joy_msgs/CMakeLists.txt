@@ -7,12 +7,13 @@ include($ENV{ROS_ROOT}/core/rosbuild/rosbuild.cmake)
 #  Release        : w/o debug symbols, w/ optimization
 #  RelWithDebInfo : w/ debug symbols, w/ optimization
 #  MinSizeRel     : w/o debug symbols, w/ optimization, stripped binaries
-set(ROS_BUILD_TYPE MinSizeRel)
+#set(ROS_BUILD_TYPE MinSizeRel)
 
 rosbuild_init()
+
+rosbuild_genmsg()
 
 rosbuild_include(rtt_rosnode GenerateRTTtypekit)
 
 ros_generate_rtt_typekit(joy)
-
 
