@@ -4,8 +4,8 @@
  *  file:  include\common\MotionProfiles.h
  *  model: RCCMotionStack
  *  expmt: RCCMotionStack
- *  date:  November 17, 2011
- *  time:  7:24:58 pm
+ *  date:  December 6, 2011
+ *  time:  4:08:17 pm
  *  user:  Campuslicentie
  *  from:  Universiteit Twente
  *  build: 4.1.2.2
