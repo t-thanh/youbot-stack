@@ -32,6 +32,7 @@ bool loadRTTPlugin( RTT::TaskContext* t )
 	globals->setValue( new Constant<ctrl_modes>("PLANE_ANGLE",YouBot::PLANE_ANGLE) );
 	globals->setValue( new Constant<ctrl_modes>("ANGULAR_VELOCITY",YouBot::ANGULAR_VELOCITY) );
 	globals->setValue( new Constant<ctrl_modes>("TORQUE",YouBot::TORQUE) );
+	globals->setValue( new Constant<ctrl_modes>("TWIST",YouBot::TWIST) );
 	globals->setValue( new Constant<ctrl_modes>("MOTOR_STOP",YouBot::MOTOR_STOP) );
     return true;
 }
