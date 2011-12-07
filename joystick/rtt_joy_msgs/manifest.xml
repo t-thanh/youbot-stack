@@ -1,7 +1,7 @@
 <package>
-  <description brief="joystick_msgs">
+  <description brief="rtt_joy_msgs">
     
-   joystick_msgs
+   rtt_joy_msgs
  
   </description>
   <author>create_rtt_msgs Generator</author>
@@ -10,7 +10,6 @@
   <url>http://ros.org/wiki/rtt_ros_integration</url>
   <depend package="rtt_rosnode"/>
   <depend package="joy"/>
-
 </package>
 
 
