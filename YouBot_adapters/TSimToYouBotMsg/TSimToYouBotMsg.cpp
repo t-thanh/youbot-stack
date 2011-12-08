@@ -41,6 +41,11 @@ namespace YouBot
 			log(Error) << "ctrl_mode cannot be MOTOR_STOP for this component." << endlog();
 		}
 
+		if(ctrl_mode == TWIST && dimension != 6)
+		{
+			log(Error) << "ctrl_mode TWIST expects a 6 dimensional vector." << endlog();
+		}
+
 		m_ctrl_mode = ctrl_mode;
 		m_dimension = dimension;
 
@@ -68,6 +73,11 @@ namespace YouBot
 			return false;
 		}
 		else if(m_ctrl_mode == TORQUE && ! output_cmd_torques.connected())
+		{
+			log(Error) << "The constructor ctrl_mode must match the connected output_cmd_* port." << endlog();
+			return false;
+		}
+		else if(m_ctrl_mode == TWIST && ! output_cmd_twist.connected())
 		{
 			log(Error) << "The constructor ctrl_mode must match the connected output_cmd_* port." << endlog();
 			return false;
@@ -127,6 +137,24 @@ namespace YouBot
 						m_output_cmd_torques.efforts[i] = m_input_cmd_signal.data[i];
 					}
 					output_cmd_torques.write(m_output_cmd_torques);
+					break;
+				}
+				case(TWIST):
+				{
+					if(m_input_cmd_signal.data.size() != 6)
+					{
+						this->error();
+						break;
+					}
+					m_output_cmd_twist.linear.x = m_input_cmd_signal.data[0];
+					m_output_cmd_twist.linear.y = m_input_cmd_signal.data[1];
+					m_output_cmd_twist.linear.z = m_input_cmd_signal.data[2];
+
+					m_output_cmd_twist.angular.x = m_input_cmd_signal.data[3];
+					m_output_cmd_twist.angular.y = m_input_cmd_signal.data[4];
+					m_output_cmd_twist.angular.z = m_input_cmd_signal.data[5];
+
+					output_cmd_twist.write(m_output_cmd_twist);
 					break;
 				}
 				default:
