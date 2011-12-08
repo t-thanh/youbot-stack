@@ -23,6 +23,8 @@ namespace YouBot
 			.doc("Connect OODL velocities. Converts 20Sim vectors to YouBot cmd messages.");
 		this->addPort("output_cmd_torques",output_cmd_torques)
 			.doc("Connect OODL torques. Converts 20Sim vectors to YouBot cmd messages.");
+    this->addPort("output_cmd_twist",output_cmd_twist)
+      .doc("Connect OODL twist. Converts 20Sim vectors to YouBot cmd messages.");
 
 		this->addEventPort("input_cmd_signal",input_cmd_signal)
 			.doc("Connect 20Sim controller signal. This is an event port.");
@@ -58,6 +60,7 @@ namespace YouBot
 		output_cmd_angles.setDataSample( m_output_cmd_angles );
 		output_cmd_velocities.setDataSample( m_output_cmd_velocities );
 		output_cmd_torques.setDataSample( m_output_cmd_torques );
+		output_cmd_twist.setDataSample(m_output_cmd_twist);
 	}
 
 	bool TSimToYouBotMsg::startHook()
