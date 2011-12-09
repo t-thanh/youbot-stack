@@ -18,9 +18,10 @@ namespace common20sim
 		std::size_t columns;
 
 		bool sizeCheck(std::size_t size);
+		XVMatrix(); //unusable -> fixed size!
+		XVMatrix& operator=(const XVMatrix& ass); // not implemented
 
 	public:
-		XVMatrix();
 		XVMatrix(XXMatrix& mat_source);
 		XVMatrix(double* mat_source,std::size_t rows, std::size_t columns);
 		XVMatrix(const XVMatrix& copy);
@@ -32,8 +33,6 @@ namespace common20sim
 		RTT::types::carray<double>& getCArray();
 		std::size_t size() const;
 		std::size_t capacity() const;
-
-		XVMatrix& operator=(const XVMatrix& ass);
 
 		double operator() (std::size_t row, std::size_t column) const;
 		double& operator() (std::size_t row, std::size_t column);

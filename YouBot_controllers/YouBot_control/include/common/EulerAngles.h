@@ -4,8 +4,8 @@
  *  file:  include\common\EulerAngles.h
  *  model: RCCMotionStack
  *  expmt: RCCMotionStack
- *  date:  December 6, 2011
- *  time:  4:08:17 pm
+ *  date:  December 8, 2011
+ *  time:  5:45:50 pm
  *  user:  Campuslicentie
  *  from:  Universiteit Twente
  *  build: 4.1.2.2

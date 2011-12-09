@@ -1,18 +1,20 @@
 var std.vector<ctrl_modes>  arm_ctrl_modes=std.vector<ctrl_modes>(5,TORQUE)
-var std.vector<ctrl_modes>  base_ctrl_modes=std.vector<ctrl_modes>(4,TORQUE)
+var std.vector<ctrl_modes>  base_ctrl_modes=std.vector<ctrl_modes>(4,TWIST)
 control.configure;
 control2arm.configure;
-control2arm_test.configure;
 arm2control.configure;
+
 base2control.configure;
 control2base.configure;
 //setup control mode
 youbot.Arm1.setControlModes(arm_ctrl_modes);
 youbot.Base.setControlModes(base_ctrl_modes);
 youbot.Arm1.clearControllerTimeouts();
+youbot.Base.clearControllerTimeouts();
+
 control2arm.initialize(TORQUE,5)
-control2arm_test.initialize(TORQUE,5)
-control2base.initialize(TORQUE,4)
+control2base.initialize(TWIST,6)
+
 arm2control.initialize(5);
 base2control.initialize;
 //making connections
@@ -20,12 +22,12 @@ base2control.initialize;
 var ConnPolicy cp_rt;
 cp_rt.type = DATA;  // Use ''BUFFER'' or ''DATA''
 cp_rt.lock_policy = LOCK_FREE; // Use  ''LOCKED'', ''LOCK_FREE'' or ''UNSYNC''
-//connect("control2arm.output_cmd_torques","youbot.Arm1.joint_cmd_torques",cp_rt)
-connect("control2arm_test.output_cmd_torques","youbot.Arm1.joint_cmd_torques",cp_rt)
+connect("control2arm.output_cmd_torques","youbot.Arm1.joint_cmd_torques",cp_rt)
 connect("arm2control.input_states","youbot.Arm1.joint_states",cp_rt)
-connect("control.bond_to_arm_omega","arm2control.output_velocities",cp_rt)
+connect("control2base.output_cmd_twist", "youbot.Base.cmd_twist", cp_rt);
+
 connect("youbot.Base.odometry_state","base2control.input_odometry", cp_rt)
-connect("youbot.Base.joint_cmd_torques","control2base.output_cmd_torques", cp_rt)
+//connect("youbot.Base.joint_cmd_torques","control2base.output_cmd_torques", cp_rt)
 
 arm2control.start
 control.start

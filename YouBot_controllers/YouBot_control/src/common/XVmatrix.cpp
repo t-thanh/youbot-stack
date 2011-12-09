@@ -8,7 +8,7 @@ namespace common20sim
 	* Implements constructor that uses provided link to a specific addresss
 	*/
 	XVMatrix::XVMatrix(double * mat_source, std::size_t rows, std::size_t columns) :
-			mat(mat_source), rows(rows), columns(columns)
+			mat(mat_source), mat_carray(mat_source, rows * columns), rows(rows), columns(columns)
 	{
 	}
 
@@ -23,7 +23,7 @@ namespace common20sim
 	* constructor from XXMatrix accessible in 20 sim
 	*/
 	XVMatrix::XVMatrix(XXMatrix & mat_source) :
-			mat(mat_source.mat), rows(mat_source.rows), columns(mat_source.columns)
+			mat(mat_source.mat), mat_carray(mat_source.mat, mat_source.rows * mat_source.columns), rows(mat_source.rows), columns(mat_source.columns)
 	{
 	}
 
@@ -47,7 +47,6 @@ namespace common20sim
 	*/
 	RTT::types::carray<double>& XVMatrix::getCArray()
 	{
-		mat_carray=RTT::types::carray<double>(mat, size());
 		return mat_carray;
 	}
 
