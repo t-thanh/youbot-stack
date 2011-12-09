@@ -72,6 +72,9 @@ namespace YouBot
 			case(MOTOR_STOP):
 				return "MOTOR_STOP";
 				break;
+			case(TWIST):
+			  return "TWIST";
+			  break;
 			default:
 				log(Error) << "Control mode not recognized." << endlog();
 				return "UNKNOWN";
