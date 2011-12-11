@@ -1,0 +1,47 @@
+import("rtt_rosnode");
+import("Sine"); // Component from which the OutputPort should be logged.
+import("DataTracer");
+
+// Please make sure that the to-be-logged component has used setDataSample on its OutputPorts.
+loadComponent("sine_sweep", "Sine::Sine");
+loadComponent("trace", "DataTracer::Sink");
+loadComponent("FileWriter", "DataTracer::CSVFileWriter");
+
+setActivity("sine_sweep", 0.01, HighestPriority, ORO_SCHED_RT);
+
+// The component and Sink must run with the same periodicity, otherwise down-sampling occurs.
+setActivity("trace", 0.01, HighestPriority, ORO_SCHED_RT);
+
+// The FileWriter should run at a lower frequency, to buffer data writing.
+setActivity("FileWriter", 1, LowestPriority, ORO_SCHED_RT);
+
+// Create a proper buffer between trace and FileWriter
+var ConnPolicy cp_nrt;
+cp_nrt.type = BUFFER;
+cp_nrt.lock_policy = LOCK_FREE;
+cp_nrt.size = 1000; // The buffer size should match the to-be-logged OutputPort.write frequency.
+
+sine_sweep.configure;
+
+// Connect the peers
+connectPeers("sine_sweep", "trace");
+connectPeers("trace", "FileWriter");
+
+// Configure the FileWriter and trace
+FileWriter.configure;
+// FileWriter.setFile("default2.csv"); //Chose a different name than default.csv
+trace.configure;
+
+// Connect the trace and file writer through the buffer
+connect("trace.buffer", "FileWriter.buffer", cp_nrt);
+
+// Start the FileWriter, the file will be opened.
+FileWriter.start;
+
+// Note: Add traces in the non real-time startup fase.
+trace.addTrace("sine_sweep.output");
+//trace.start; // Note: Only OutputPorts with setDataSample setup are ready to be started before any data has been received.
+
+// Start the experiment
+sine_sweep.start;
+trace.start;

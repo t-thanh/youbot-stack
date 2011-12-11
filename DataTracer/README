@@ -1,0 +1,31 @@
+= Orocos DataTracer components =
+
+== Purpose ==
+Store signal data (from hard real-time) into a CSV file for off-line analysis.
+
+== Problem ==
+Writing files in general is non real-time.
+
+== Solution == 
+The idea is to create two components, with different real-time settings and a buffer in between.
+A hard real-time component collects all data and places this in a pre-allocated (big) buffer.
+The non real-time component then reads, in spare-time, this buffer and writes the data to a file on disk.
+Key is that the threads are separated with a lock-free buffer, such that the hard real-time component
+is not influenced.  
+
+The components are split, to allow different coordination scenarios. Furthermore, the buffer 
+size (between Sink and CSVFileWriter) can thereby easily be adjusted.
+
+Sink: Collects all messages in real-time (if properly started during deployment)
+CSVFileWriter: Writes buffered vector<double> to a CSV file.
+
+== Deployment ==
+Please have a look at the example_deploy.ops script.
+
+== Extending the Sink conversion ==
+Please have a look at DTTypes.hpp on how to do this.
+
+== Note == 
+This component has NOT been tested yet. Furthermore, it is likely that a real-time
+operating system is necessary to guarantee proper working (file system writing might block
+higher priority threads).

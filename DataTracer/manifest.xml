@@ -1,0 +1,22 @@
+<package>
+  <description brief="DataTracer">
+
+     DataTracer
+
+  </description>
+  <author>Yury Brodskiy and Robert Wilterdink</author>
+  <license>LGPLv2.1 / BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>ce203</url>
+  <depend package="rtt"/>
+  <depend package="rtt_rosnode"/>
+  <depend package="rtt_std_msgs"/>
+  <depend package="rtt_sensor_msgs"/>
+  <depend package="rtt_geometry_msgs"/>
+  <depend package="rtt_motion_control_msgs"/>
+  <depend package="YouBot_OODL"/>
+  <depend package="tf" />
+
+</package>
+
+
