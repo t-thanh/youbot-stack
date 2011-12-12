@@ -47,3 +47,5 @@ Note: Almost every package contains a separate deploy.ops (Orocos deployment scr
 == DOCUMENTATION == 
 http://www.best-of-robotics.org/3rd_researchcamp/CodeGenerationForRTT
 
+== MAJOR UPDATE LOG ==
+12/12/2011 Cleaned stack, i.e. moved foreign includes/directories into external folder. To update: git submodule init; git submodule update; rm -rf ./rFSM ./soem;
