@@ -21,7 +21,13 @@ runScript(rospack.find("YouBot_deployment")+"/rtt_deploy/adapter_connections.ops
 //add executive
 //runScript(rospack.find("YouBot_executive")+"/deploy.ops")
 
+//runScript(rospack.find("DataTracer")+"/deploy.ops")
+
+//runScript(rospack.find("DataTracer")+"/traces.ops")
 youbot.Arm1.clearControllerTimeouts();
 youbot.Base.clearControllerTimeouts();
+//control2base.start
+//control2arm.start
+
 
 
