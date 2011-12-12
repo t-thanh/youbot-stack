@@ -26,6 +26,5 @@ Please have a look at the example_deploy.ops script.
 Please have a look at DTTypes.hpp on how to do this.
 
 == Note == 
-This component has NOT been tested yet. Furthermore, it is likely that a real-time
-operating system is necessary to guarantee proper working (file system writing might block
-higher priority threads).
+It is likely that a real-time operating system is necessary to guarantee proper working (file system writing 
+might block higher priority threads).
