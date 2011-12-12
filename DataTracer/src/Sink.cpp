@@ -175,6 +175,11 @@ namespace DataTracer
       }
       buffer_space += m_ports[i]->nr_of_elements;
 
+      if(i != 0)
+      {
+        column_buffer << ", ";
+      }
+
       if(!m_ports[i]->getElementNames(column_buffer))
       {
         log(Error) << "Could not get the column names for port: " << *(m_ports[i]->port_name) << endlog();
