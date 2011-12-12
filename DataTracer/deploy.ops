@@ -1,0 +1,32 @@
+import("DataTracer");
+
+// Please make sure that the to-be-logged component has used setDataSample on its OutputPorts.
+loadComponent("Tracer", "DataTracer::Sink");
+loadComponent("FileWriter", "DataTracer::CSVFileWriter");
+
+// The component and Sink must run with the same periodicity, otherwise down-sampling occurs.
+setActivity("Tracer", 0.001, HighestPriority, ORO_SCHED_RT);
+
+// The FileWriter should run at a lower frequency, to buffer data writing.
+setActivity("FileWriter", 0.1, LowestPriority, ORO_SCHED_RT);
+
+// Create a proper buffer between trace and FileWriter
+var ConnPolicy cp_nrt;
+cp_nrt.type = BUFFER;
+cp_nrt.lock_policy = LOCK_FREE;
+cp_nrt.size = 10000; // The buffer size should match the to-be-logged OutputPort.write frequency.
+
+// Connect the peers
+connectPeers("Tracer", "FileWriter");
+
+// Configure the FileWriter and trace
+FileWriter.configure;
+Tracer.configure;
+
+// Connect the trace and file writer through the buffer
+connect("Tracer.buffer", "FileWriter.buffer", cp_nrt);
+
+// Start the FileWriter, the file will be opened.
+FileWriter.start;
+
+

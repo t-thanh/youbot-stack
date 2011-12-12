@@ -1,0 +1,5 @@
+connectPeers("youbot", "Tracer");
+Tracer.addTrace("youbot.Arm1.joint_states");
+Tracer.addTrace("youbot.Base.joint_states");
+
+Tracer.start;
