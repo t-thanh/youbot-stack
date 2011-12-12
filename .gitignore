@@ -1,6 +1,6 @@
 bin/
 build/
-rFSM/
+#rFSM/
 # Compiled source #
 ###################
 *.com

@@ -11,7 +11,7 @@ RTTLUA_MODULES=`rospack find ocl`/lua/modules/?.lua
 if [ "x$LUA_PATH" == "x" ]; then
     LUA_PATH=";;"
 fi
-export LUA_PATH="$LUA_PATH;$RTTLUA_MODULES;$YOUBOT_PATH/rFSM/?.lua"
+export LUA_PATH="$LUA_PATH;$RTTLUA_MODULES;$YOUBOT_PATH/external/rFSM/?.lua"
 
 echo $LUA_PATH
 

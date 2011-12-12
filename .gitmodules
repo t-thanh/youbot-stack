@@ -1,6 +1,6 @@
-[submodule "rFSM"]
-	path = rFSM
-	url = https://github.com/kmarkus/rFSM.git
 [submodule "external/youbot_applications"]
 	path = external/youbot_applications
 	url = https://github.com/youbot/youbot_applications.git
+[submodule "external/rFSM"]
+	path = external/rFSM
+	url = https://github.com/kmarkus/rFSM.git

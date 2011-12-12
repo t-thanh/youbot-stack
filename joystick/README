@@ -1,6 +1,6 @@
 Requirements:
 * ROS joy package
-To install: svn co https://code.ros.org/svn/ros-pkg/stacks/joystick_drivers/tags/diamondback
+To install: svn co https://code.ros.org/svn/ros-pkg/stacks/joystick_drivers/tags/electric
 * A joystick
 
 Note: 
